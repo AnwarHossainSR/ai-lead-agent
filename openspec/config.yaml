@@ -1,32 +1,61 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Product: middle-east-lead-agent — an AI-assisted B2B lead generation and sales
+  intelligence platform targeting UAE and Saudi Arabia (Dubai, Abu Dhabi, Riyadh,
+  Jeddah) across Real Estate, Logistics, Hospitality, E-Commerce and Business
+  Services. It helps a solo senior full-stack engineer find companies that plausibly
+  need website modernization, custom platforms, backend/API work, or AWS/cloud
+  modernization.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Core pipeline (built incrementally, one phase at a time):
+  discovery -> verification -> website analysis -> technology detection ->
+  business opportunity analysis -> decision maker research -> lead scoring ->
+  AI research summary -> outreach draft -> HUMAN review -> manual outreach ->
+  response tracking -> evaluation.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  Tech stack (decided, do not change without asking):
+  - Monorepo: pnpm workspaces + Turborepo
+  - Frontend: Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS + shadcn/ui + Recharts
+  - Backend: NestJS + TypeScript, modular architecture
+  - Database: PostgreSQL (local via Docker Compose; AWS RDS later)
+  - ORM: Drizzle ORM + drizzle-kit migrations
+  - Validation: Zod at every trust boundary (API input, provider responses, AI output, config, worker payloads)
+  - Queue: BullMQ on Redis (local Docker; Upstash/ElastiCache later)
+  - Browser automation: Playwright. Website quality: Lighthouse
+  - AI: provider abstraction (AIProvider/AIService), structured + schema-validated outputs, versioned prompts
+  - Auth: intentionally skipped initially (Better Auth / Auth.js later)
+  - Testing: Vitest (unit + integration), Playwright (E2E)
+  - Local infra: Docker Compose. Secrets: .env.local. Logs: console + structured
+  - CI: GitHub Actions running lint + typecheck + test + build. No deployment initially
+
+  Non-negotiable product principles:
+  - Human approval is mandatory before any outreach. No automatic sending in the MVP.
+  - Never fabricate companies, contacts, emails, technologies, problems or plans.
+  - Always distinguish observed vs inferred vs unknown. Store "unknown" when unknown.
+  - Use deterministic code for scoring, dedup, validation, state transitions, persistence.
+    Use AI only for interpretation, summarization, classification and personalization.
+  - Build focused services, not one giant autonomous agent.
+  - Everything configurable: countries, cities, industries, services, scoring weights, statuses.
+
+  Working style: small vertical slices, small intentional commits (conventional commits),
+  run lint + typecheck + tests + build before calling anything done, never claim a
+  check passed unless it actually ran and passed.
+
+rules:
+  proposal:
+    - State explicitly which implementation phase(s) of the master roadmap this change covers.
+    - Include a "Non-goals" section naming what is deliberately deferred to a later change.
+  design:
+    - Record concrete versions, directory layout and file paths, not vague intentions.
+    - Every deviation from the decided stack must be called out with a reason.
+  tasks:
+    - Each task must be a small, independently verifiable step (roughly under 2 hours).
+    - Group tasks by phase/module so they map onto the master roadmap.
+    - Every group ends with a verification task (lint, typecheck, test, build as applicable).
+
+operations:
+  apply:
+    guidance:
+      - Implement one task at a time, then stop and report before continuing.
+      - Run the relevant checks and report real output. Never claim a passing check that was not run.
