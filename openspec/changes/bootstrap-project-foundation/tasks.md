@@ -6,13 +6,13 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 1. Repository and workspace scaffold
 
-- [ ] 1.1 Add root `package.json` (private, `packageManager` pinned to pnpm, `engines.node >= 22`), `pnpm-workspace.yaml` declaring `apps/*` and `packages/*`, and `.gitignore` covering `node_modules`, build output, `.env.local`, `.turbo`, Playwright artifacts and coverage
-- [ ] 1.2 Add `.gitattributes` normalising line endings (`* text=auto eol=lf`) and marking `pnpm-lock.yaml` and `packages/database/drizzle/*.sql` as generated
-- [ ] 1.3 Add `turbo.json` with `build`, `lint`, `typecheck`, `test`, `dev` tasks, correct `dependsOn` ordering and output declarations; add matching root scripts (`dev`, `build`, `lint`, `typecheck`, `test`, `format`)
-- [ ] 1.4 Add `packages/tsconfig` with `base.json`, `node.json` (for packages and the API) and `next.json` (for the web app), all `strict` with `noUncheckedIndexedAccess`
-- [ ] 1.5 Add `packages/eslint-config` as a shared flat config with the TypeScript rules plus the `no-restricted-properties` rule banning direct `process.env` access outside `packages/config`
-- [ ] 1.6 Add Prettier config and `.prettierignore` at the root, wired into the `format` script and enforced by ESLint
-- [ ] 1.7 Verify: `pnpm install` succeeds from a clean clone and `pnpm lint`, `pnpm typecheck`, `pnpm build` all pass on the empty workspace
+- [x] 1.1 Add root `package.json` (private, `packageManager` pinned to pnpm, `engines.node >= 22`), `pnpm-workspace.yaml` declaring `apps/*` and `packages/*`, and `.gitignore` covering `node_modules`, build output, `.env.local`, `.turbo`, Playwright artifacts and coverage
+- [x] 1.2 Add `.gitattributes` normalising line endings (`* text=auto eol=lf`) and marking `pnpm-lock.yaml` and `packages/database/drizzle/*.sql` as generated
+- [x] 1.3 Add `turbo.json` with `build`, `lint`, `typecheck`, `test`, `dev` tasks, correct `dependsOn` ordering and output declarations; add matching root scripts (`dev`, `build`, `lint`, `typecheck`, `test`, `format`)
+- [x] 1.4 Add `packages/tsconfig` with `base.json`, `node.json` (for packages and the API) and `next.json` (for the web app), all `strict` with `noUncheckedIndexedAccess`
+- [x] 1.5 Add `packages/eslint-config` as a shared flat config with the TypeScript rules plus the `no-restricted-properties` rule banning direct `process.env` access outside `packages/config`
+- [x] 1.6 Add Prettier config and `.prettierignore` at the root, wired into the `format` script and enforced by ESLint
+- [x] 1.7 Verify: `pnpm install` succeeds from a clean clone and `pnpm lint`, `pnpm typecheck`, `pnpm build` all pass on the empty workspace
 
 ## 2. Local infrastructure
 

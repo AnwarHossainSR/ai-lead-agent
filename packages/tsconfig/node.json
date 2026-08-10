@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node (packages and the NestJS API)",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "types": ["node"],
+
+    // NestJS relies on decorator metadata at runtime. Harmless for the
+    // non-Nest packages that also extend this config.
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*"]
+}

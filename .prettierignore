@@ -1,0 +1,18 @@
+node_modules/
+dist/
+build/
+out/
+.next/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+packages/database/drizzle/
+
+# Vendored agent tooling — not our source.
+.claude/
+
+# OpenSpec artifacts. The OpenSpec CLI parses these (tasks.md checkbox
+# numbering in particular); Prettier must not rewrite them.
+openspec/
