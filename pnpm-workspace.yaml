@@ -20,6 +20,11 @@ catalog:
   globals: 17.9.0
   "@types/node": 24.13.3
   vitest: 4.1.10
+  tsx: 4.23.12
 
   # Runtime
   zod: 4.4.3
+  drizzle-orm: 0.45.2
+  drizzle-kit: 0.31.10
+  postgres: 3.4.9
+  uuidv7: 1.2.1

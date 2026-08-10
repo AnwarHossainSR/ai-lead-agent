@@ -44,12 +44,12 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 5. Shared utilities
 
-- [ ] 5.1 Create `packages/shared` package skeleton with the same script and export conventions as `packages/config`
-- [ ] 5.2 Implement `normalizeDomain` (lowercase host, strip scheme, leading `www.`, port, path, query and fragment) returning `null` for absent or unparseable input
-- [ ] 5.3 Implement `normalizeCompanyName` (lowercase, collapse whitespace, strip punctuation and common legal suffixes including LLC, L.L.C., FZE, FZ-LLC, Ltd, Limited, WLL, PJSC, LLC-FZ)
-- [ ] 5.4 Add the `Unknown` marker type and helpers that map SQL `null` to and from it, so consumers never see an empty string standing in for a missing fact
-- [ ] 5.5 Add unit tests covering the spec's normalization cases plus unparseable, IDN, subdomain and trailing-dot inputs
-- [ ] 5.6 Verify: `pnpm --filter @mela/shared lint typecheck test` passes
+- [x] 5.1 Create `packages/shared` package skeleton with the same script and export conventions as `packages/config`
+- [x] 5.2 Implement `normalizeDomain` (lowercase host, strip scheme, leading `www.`, port, path, query and fragment) returning `null` for absent or unparseable input
+- [x] 5.3 Implement `normalizeCompanyName` (lowercase, collapse whitespace, strip punctuation and common legal suffixes including LLC, L.L.C., FZE, FZ-LLC, Ltd, Limited, WLL, PJSC, LLC-FZ)
+- [x] 5.4 Add the `Unknown` marker type and helpers that map SQL `null` to and from it, so consumers never see an empty string standing in for a missing fact
+- [x] 5.5 Add unit tests covering the spec's normalization cases plus unparseable, IDN, subdomain and trailing-dot inputs
+- [x] 5.6 Verify: `pnpm --filter @mela/shared lint typecheck test` passes
 
 ## 6. Database (Phase 2)
 
