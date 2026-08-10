@@ -124,7 +124,17 @@ Three mechanisms, applied by field shape:
 
 `packages/config/src/env/` exports one Zod schema per consumer (`apiEnvSchema`, `webEnvSchema`, `databaseEnvSchema`). Each application parses `process.env` once at startup and exports the frozen result; nothing else reads `process.env` directly, enforced by an ESLint rule (`no-restricted-properties`).
 
-`.env.example` is committed with placeholders and a comment per variable. `.env.local` is git-ignored. A unit test asserts every key in the schemas appears in `.env.example`, which is how the spec's "example file is complete" scenario stays true over time.
+`.env.example` is committed with placeholders and a comment per variable. A unit test asserts every key in the schemas appears in `.env.example`, which is how the spec's "example file is complete" scenario stays true over time.
+
+**Which file holds the real values** — revised during implementation. The original plan named `.env.local` as the single local file. Docker Compose does not read `.env.local`; it auto-loads a root `.env` and otherwise needs an explicit `--env-file` on every invocation, which would make `docker compose up -d` no longer a single command. The layout is therefore:
+
+| File | Read by | Committed |
+|---|---|---|
+| `.env.example` | nothing — it is the documented variable list | yes |
+| `.env` (root) | Docker Compose, the API, and the packages | no |
+| `apps/web/.env.local` | Next.js, for its own public variables | no |
+
+Both real-value files are git-ignored. `apps/web/.env.local` exists because Next.js auto-loads that name; splitting it from the root `.env` also keeps `NEXT_PUBLIC_*` variables visibly separate from server-side ones.
 
 ### D9 — Health checks via `@nestjs/terminus`
 

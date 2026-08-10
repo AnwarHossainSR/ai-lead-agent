@@ -1,0 +1,55 @@
+# Local development backing services.
+#
+# Start:  docker compose up -d
+# Stop:   docker compose down            (keeps data)
+# Reset:  docker compose down -v         (destroys data)
+#
+# Every value has a default, so the stack starts on a fresh clone with no
+# environment file. Compose automatically reads a root `.env` when present,
+# which is where local overrides belong.
+#
+# The credentials below are local-development defaults, not secrets. Nothing
+# here is reused in any deployed environment.
+
+name: mela
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: mela-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mela}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mela_local_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-mela}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # -q keeps the credentials out of the container log on every probe.
+      test: ["CMD-SHELL", "pg_isready -q -U $${POSTGRES_USER:-mela} -d $${POSTGRES_DB:-mela}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: mela-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  pgdata:
+  redisdata:

@@ -16,15 +16,15 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 2. Local infrastructure
 
-- [ ] 2.1 Add `docker-compose.yml` with PostgreSQL 17-alpine and Redis 7-alpine, pinned versions, named volumes (`pgdata`, `redisdata`) and host ports read from `POSTGRES_PORT` / `REDIS_PORT`
-- [ ] 2.2 Add `healthcheck` blocks to both services (`pg_isready`, `redis-cli ping`) with sensible interval, timeout and retries
-- [ ] 2.3 Verify: `docker compose up -d` brings both services to healthy, data survives `docker compose restart`, and changing `POSTGRES_PORT` in the environment file moves the published port
+- [x] 2.1 Add `docker-compose.yml` with PostgreSQL 17-alpine and Redis 7-alpine, pinned versions, named volumes (`pgdata`, `redisdata`) and host ports read from `POSTGRES_PORT` / `REDIS_PORT`
+- [x] 2.2 Add `healthcheck` blocks to both services (`pg_isready`, `redis-cli ping`) with sensible interval, timeout and retries
+- [x] 2.3 Verify: `docker compose up -d` brings both services to healthy, data survives `docker compose restart`, and changing `POSTGRES_PORT` in the environment file moves the published port
 
 ## 3. Environment configuration
 
 - [ ] 3.1 Create `packages/config` package skeleton (package.json, tsconfig, build/lint/typecheck/test scripts, exports map) with Zod as its only runtime dependency
 - [ ] 3.2 Add `src/env/` with `databaseEnvSchema`, `apiEnvSchema` and `webEnvSchema`, each parsing `process.env` once and exporting a frozen result, failing with a message that names the variable and its purpose
-- [ ] 3.3 Add committed `.env.example` with a placeholder and an explanatory comment for every variable, and confirm `.env.local` is git-ignored
+- [ ] 3.3 Add committed `.env.example` with a placeholder and an explanatory comment for every variable, and confirm the real-value files (`.env`, `apps/web/.env.local`) are git-ignored
 - [ ] 3.4 Add a unit test asserting every key in every env schema is present in `.env.example`, and a test asserting a missing or malformed variable aborts with a named error
 - [ ] 3.5 Verify: `pnpm --filter @mela/config test` passes; deleting a required variable from a local env file produces the expected startup error
 
