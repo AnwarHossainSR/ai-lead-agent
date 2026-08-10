@@ -19,6 +19,7 @@ catalog:
   eslint-config-prettier: 10.1.8
   globals: 17.9.0
   "@types/node": 24.13.3
+  vitest: 4.1.10
 
   # Runtime
   zod: 4.4.3

@@ -22,25 +22,25 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 3. Environment configuration
 
-- [ ] 3.1 Create `packages/config` package skeleton (package.json, tsconfig, build/lint/typecheck/test scripts, exports map) with Zod as its only runtime dependency
-- [ ] 3.2 Add `src/env/` with `databaseEnvSchema`, `apiEnvSchema` and `webEnvSchema`, each parsing `process.env` once and exporting a frozen result, failing with a message that names the variable and its purpose
-- [ ] 3.3 Add committed `.env.example` with a placeholder and an explanatory comment for every variable, and confirm the real-value files (`.env`, `apps/web/.env.local`) are git-ignored
-- [ ] 3.4 Add a unit test asserting every key in every env schema is present in `.env.example`, and a test asserting a missing or malformed variable aborts with a named error
-- [ ] 3.5 Verify: `pnpm --filter @mela/config test` passes; deleting a required variable from a local env file produces the expected startup error
+- [x] 3.1 Create `packages/config` package skeleton (package.json, tsconfig, build/lint/typecheck/test scripts, exports map) with Zod as its only runtime dependency
+- [x] 3.2 Add `src/env/` with `databaseEnvSchema`, `apiEnvSchema` and `webEnvSchema`, each parsing `process.env` once and exporting a frozen result, failing with a message that names the variable and its purpose
+- [x] 3.3 Add committed `.env.example` with a placeholder and an explanatory comment for every variable, and confirm the real-value files (`.env`, `apps/web/.env.local`) are git-ignored
+- [x] 3.4 Add a unit test asserting every key in every env schema is present in `.env.example`, and a test asserting a missing or malformed variable aborts with a named error
+- [x] 3.5 Verify: `pnpm --filter @mela/config test` passes; deleting a required variable from a local env file produces the expected startup error
 
 ## 4. Product configuration (Phase 0)
 
-- [ ] 4.1 Add countries and cities configuration with Zod schemas, `as const` exports, frozen values, and validation that every city references a defined country
-- [ ] 4.2 Add industries configuration with unique-identifier validation and the five initial industries
-- [ ] 4.3 Add offered services configuration (identifier, display name, description) and a `resolveService` helper that throws on an unknown identifier rather than returning a default
-- [ ] 4.4 Add lead lifecycle configuration: the fourteen statuses, the permitted transition map, an `initialStatus`, and load-time validation that every transition target is a defined status and that terminal statuses have none
-- [ ] 4.5 Add `canTransition(from, to)` and `permittedTransitions(from)` helpers whose refusals name the source, the target and the permitted targets
-- [ ] 4.6 Add lead priority band configuration plus `classifyPriority(score)`, with load-time validation that the bands cover 0–100 with no gap or overlap, and range refusal for scores outside 0–100
-- [ ] 4.7 Add lead scoring weight configuration (five components totalling 100) with load-time validation of the total
-- [ ] 4.8 Add outreach channel configuration for email, LinkedIn and WhatsApp, each declaring automated sending as not permitted
-- [ ] 4.9 Export the derived TypeScript union types (`CountryId`, `CityId`, `IndustryId`, `ServiceId`, `LeadStatus`, `LeadPriority`, `OutreachChannel`, `ScoreComponentId`) from the package root
-- [ ] 4.10 Add unit tests covering every scenario in `specs/product-configuration/spec.md`, including the boundary cases 90/89/80/79/70/69 and each rejection path
-- [ ] 4.11 Verify: `pnpm --filter @mela/config lint typecheck test` passes and every product-configuration scenario has a corresponding test
+- [x] 4.1 Add countries and cities configuration with Zod schemas, `as const` exports, frozen values, and validation that every city references a defined country
+- [x] 4.2 Add industries configuration with unique-identifier validation and the five initial industries
+- [x] 4.3 Add offered services configuration (identifier, display name, description) and a `resolveService` helper that throws on an unknown identifier rather than returning a default
+- [x] 4.4 Add lead lifecycle configuration: the fourteen statuses, the permitted transition map, an `initialStatus`, and load-time validation that every transition target is a defined status and that terminal statuses have none
+- [x] 4.5 Add `canTransition(from, to)` and `permittedTransitions(from)` helpers whose refusals name the source, the target and the permitted targets
+- [x] 4.6 Add lead priority band configuration plus `classifyPriority(score)`, with load-time validation that the bands cover 0–100 with no gap or overlap, and range refusal for scores outside 0–100
+- [x] 4.7 Add lead scoring weight configuration (five components totalling 100) with load-time validation of the total
+- [x] 4.8 Add outreach channel configuration for email, LinkedIn and WhatsApp, each declaring automated sending as not permitted
+- [x] 4.9 Export the derived TypeScript union types (`CountryId`, `CityId`, `IndustryId`, `ServiceId`, `LeadStatus`, `LeadPriority`, `OutreachChannel`, `ScoreComponentId`) from the package root
+- [x] 4.10 Add unit tests covering every scenario in `specs/product-configuration/spec.md`, including the boundary cases 90/89/80/79/70/69 and each rejection path
+- [x] 4.11 Verify: `pnpm --filter @mela/config lint typecheck test` passes and every product-configuration scenario has a corresponding test
 
 ## 5. Shared utilities
 

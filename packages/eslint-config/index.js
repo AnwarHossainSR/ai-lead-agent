@@ -70,7 +70,7 @@ export default tseslint.config(
   {
     // Config files and scripts legitimately need process.env before the
     // validated config exists.
-    files: ["**/*.config.{js,mjs,ts}", "**/scripts/**"],
+    files: ["**/*.config.{js,cjs,mjs,ts,cts,mts}", "**/scripts/**"],
     rules: {
       "no-restricted-properties": "off",
     },

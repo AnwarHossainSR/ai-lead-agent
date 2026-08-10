@@ -1,4 +1,9 @@
 {
+  // Path-bearing settings (include, exclude, files, outDir, rootDir, paths)
+  // are deliberately absent from every config in this package. TypeScript
+  // resolves relative paths against the file that *declares* them, not the
+  // file that extends it, so an "outDir": "dist" here would mean
+  // packages/tsconfig/dist for every consumer. Each package declares its own.
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Base",
   "compilerOptions": {
@@ -22,6 +27,5 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "incremental": true
-  },
-  "exclude": ["node_modules", "dist", ".next", "coverage"]
+  }
 }

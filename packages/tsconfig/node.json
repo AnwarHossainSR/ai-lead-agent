@@ -10,10 +10,6 @@
     // NestJS relies on decorator metadata at runtime. Harmless for the
     // non-Nest packages that also extend this config.
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
-    "outDir": "dist",
-    "rootDir": "src"
-  },
-  "include": ["src/**/*"]
+    "emitDecoratorMetadata": true
+  }
 }
