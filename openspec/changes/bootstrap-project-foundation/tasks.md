@@ -53,23 +53,23 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 6. Database (Phase 2)
 
-- [ ] 6.1 Create `packages/database` skeleton with Drizzle ORM, `drizzle-kit`, `postgres` driver and `uuidv7`; add `drizzle.config.ts` reading the validated database env
-- [ ] 6.2 Add the connection module exporting a pooled client and a `withTransaction` helper, plus a `closeConnection` used by tests
-- [ ] 6.3 Define the PostgreSQL enum types for lead status, lead priority, outreach channel, outreach status and certainty, derived from `@mela/config` values
-- [ ] 6.4 Add the `companies` table: columns, `NOT NULL` discovery source, partial unique index on `normalized_domain`, and the filter indexes from design D6
-- [ ] 6.5 Add the `contacts` table with `ON DELETE CASCADE` to companies and the `CHECK` constraint requiring a source URL whenever an email or phone is present
-- [ ] 6.6 Add the Zod schemas for JSONB payloads (`observation`, `businessOpportunity`, `technologyEvidence`), each requiring evidence and a `certainty` of `observed` or `inferred`
-- [ ] 6.7 Add the `website_analysis` table with the JSONB columns, 0–100 `CHECK` constraints on every score, and the `(company_id, created_at DESC)` index
-- [ ] 6.8 Add the `leads` table with the per-component score breakdown, unique `company_id`, `CHECK` constraints for total range and non-empty explanation, and the priority and score indexes
-- [ ] 6.9 Add the `outreach` table with the `CHECK` constraint preventing a sent state without an approval timestamp and preventing a sent timestamp earlier than approval
-- [ ] 6.10 Add validated insert and update helpers as the package's public write API (rejecting unknown country, city, industry and service identifiers) and export the raw tables for reads only
-- [ ] 6.11 Add `applyLeadStatusChange` enforcing `canTransition` and bumping `updated_at`, rejecting impermissible transitions without writing
-- [ ] 6.12 Generate the initial migration with `drizzle-kit generate`, commit the SQL, and add `db:migrate`, `db:check` and `db:studio` scripts
-- [ ] 6.13 Add `getLatestWebsiteAnalysis(companyId)` and confirm it returns the most recently created row
-- [ ] 6.14 Add the seed script: a small labelled example dataset, idempotent on re-run, refusing to run unless the target database is designated as development
-- [ ] 6.15 Add the integration test harness (create/reset a dedicated test database, apply migrations, truncate between tests)
-- [ ] 6.16 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`: source requirement, unknown-identifier rejection, duplicate domain, multiple website-less companies, cascade deletes, score range refusals, single lead per company, transition legality, approval-before-sent, migration idempotency, drift detection and seed idempotency
-- [ ] 6.17 Verify: migrations apply to an empty database, `pnpm db:check` reports no drift, and `pnpm --filter @mela/database test` passes with the Compose stack running
+- [x] 6.1 Create `packages/database` skeleton with Drizzle ORM, `drizzle-kit`, `postgres` driver and `uuidv7`; add `drizzle.config.ts` reading the validated database env
+- [x] 6.2 Add the connection module exporting a pooled client and a `withTransaction` helper, plus a `closeConnection` used by tests
+- [x] 6.3 Define the PostgreSQL enum types for lead status, lead priority, outreach channel, outreach status and certainty, derived from `@mela/config` values
+- [x] 6.4 Add the `companies` table: columns, `NOT NULL` discovery source, partial unique index on `normalized_domain`, and the filter indexes from design D6
+- [x] 6.5 Add the `contacts` table with `ON DELETE CASCADE` to companies and the `CHECK` constraint requiring a source URL whenever an email or phone is present
+- [x] 6.6 Add the Zod schemas for JSONB payloads (`observation`, `businessOpportunity`, `technologyEvidence`), each requiring evidence and a `certainty` of `observed` or `inferred`
+- [x] 6.7 Add the `website_analysis` table with the JSONB columns, 0–100 `CHECK` constraints on every score, and the `(company_id, created_at DESC)` index
+- [x] 6.8 Add the `leads` table with the per-component score breakdown, unique `company_id`, `CHECK` constraints for total range and non-empty explanation, and the priority and score indexes
+- [x] 6.9 Add the `outreach` table with the `CHECK` constraint preventing a sent state without an approval timestamp and preventing a sent timestamp earlier than approval
+- [x] 6.10 Add validated insert and update helpers as the package's public write API (rejecting unknown country, city, industry and service identifiers) and export the raw tables for reads only
+- [x] 6.11 Add `applyLeadStatusChange` enforcing `canTransition` and bumping `updated_at`, rejecting impermissible transitions without writing
+- [x] 6.12 Generate the initial migration with `drizzle-kit generate`, commit the SQL, and add `db:migrate`, `db:check` and `db:studio` scripts
+- [x] 6.13 Add `getLatestWebsiteAnalysis(companyId)` and confirm it returns the most recently created row
+- [x] 6.14 Add the seed script: a small labelled example dataset, idempotent on re-run, refusing to run unless the target database is designated as development
+- [x] 6.15 Add the integration test harness (create/reset a dedicated test database, apply migrations, truncate between tests)
+- [x] 6.16 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`: source requirement, unknown-identifier rejection, duplicate domain, multiple website-less companies, cascade deletes, score range refusals, single lead per company, transition legality, approval-before-sent, migration idempotency, drift detection and seed idempotency
+- [x] 6.17 Verify: migrations apply to an empty database, `pnpm db:check` reports no drift, and `pnpm --filter @mela/database test` passes with the Compose stack running
 
 ## 7. API application shell
 

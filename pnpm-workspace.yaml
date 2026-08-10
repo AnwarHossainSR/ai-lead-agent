@@ -2,6 +2,12 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# Dependency install scripts are blocked by default. esbuild is allowed because
+# its postinstall links the platform-specific binary that tsx, drizzle-kit and
+# vitest all execute through; without it those tools do not run at all.
+allowBuilds:
+  esbuild: true
+
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
 # happens here once instead of drifting across six package.json files.
@@ -20,7 +26,10 @@ catalog:
   globals: 17.9.0
   "@types/node": 24.13.3
   vitest: 4.1.10
-  tsx: 4.23.12
+  # Held one patch behind the newest release so it clears pnpm's minimum
+  # release age gate; a version published hours ago is exactly what a
+  # compromised-package window looks like.
+  tsx: 4.23.9
 
   # Runtime
   zod: 4.4.3
@@ -28,3 +37,11 @@ catalog:
   drizzle-kit: 0.31.10
   postgres: 3.4.9
   uuidv7: 1.2.1
+
+# vite declares tsx as an *optional* peer dependency, so with autoInstallPeers
+# pnpm pulls whatever the newest release is into every package that uses
+# vitest — including releases published hours ago, which is exactly what
+# pnpm's minimum release age gate exists to keep out. One pinned version
+# instead of three.
+overrides:
+  tsx: 4.23.9

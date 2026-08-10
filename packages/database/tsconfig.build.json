@@ -1,0 +1,9 @@
+{
+  // Tests and the integration harness are typechecked (tsconfig.json includes
+  // them) but never emitted, so consumers of this package only ever see
+  // production modules. The operator scripts are emitted: they are part of what
+  // the package does.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "coverage", "drizzle", "src/**/*.test.ts", "src/testing/**/*"]
+}
