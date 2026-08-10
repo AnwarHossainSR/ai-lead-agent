@@ -2,11 +2,15 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Dependency install scripts are blocked by default. esbuild is allowed because
-# its postinstall links the platform-specific binary that tsx, drizzle-kit and
-# vitest all execute through; without it those tools do not run at all.
+# Dependency install scripts are blocked by default. Both exceptions below are
+# native compilers whose postinstall does one thing: link the prebuilt binary
+# for this platform. Without it the tool has no executable at all.
+#   esbuild    — tsx, drizzle-kit and vitest all run through it
+#   @swc/core  — the only TypeScript transform that emits decorator metadata,
+#                which Nest's dependency injection reads at runtime
 allowBuilds:
   esbuild: true
+  "@swc/core": true
 
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
@@ -31,12 +35,37 @@ catalog:
   # compromised-package window looks like.
   tsx: 4.23.9
 
+  # SWC compiles the API's decorators with `emitDecoratorMetadata`, which
+  # esbuild — and therefore Vitest's default transform — does not implement.
+  # Without it Nest's dependency injection has no constructor parameter types
+  # to read and every provider fails to resolve.
+  "@swc/core": 1.15.47
+  "@swc-node/register": 1.12.1
+  unplugin-swc: 1.5.10
+  supertest: 7.2.2
+  "@types/supertest": 7.2.1
+
   # Runtime
   zod: 4.4.3
   drizzle-orm: 0.45.2
   drizzle-kit: 0.31.10
   postgres: 3.4.9
   uuidv7: 1.2.1
+
+  # API
+  # 11.1.29 was published today; pnpm's minimum release age gate exists to keep
+  # a just-published version out, and one patch back costs nothing.
+  "@nestjs/common": 11.1.28
+  "@nestjs/core": 11.1.28
+  "@nestjs/platform-express": 11.1.28
+  "@nestjs/testing": 11.1.28
+  "@nestjs/terminus": 11.1.1
+  reflect-metadata: 0.2.2
+  rxjs: 7.8.2
+  # ioredis 6 is ten days old and BullMQ — which arrives in Phase 15 and is the
+  # only reason Redis is here at all — is built against the 5.x line. Two
+  # majors of the same client in one process is not worth it for a PING.
+  ioredis: 5.11.1
 
 # vite declares tsx as an *optional* peer dependency, so with autoInstallPeers
 # pnpm pulls whatever the newest release is into every package that uses

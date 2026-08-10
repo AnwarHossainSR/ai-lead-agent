@@ -73,14 +73,14 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 7. API application shell
 
-- [ ] 7.1 Scaffold `apps/api` as a NestJS 11 application wired to the shared tsconfig, ESLint config and Vitest setup, with `dev`, `build`, `lint`, `typecheck` and `test` scripts
-- [ ] 7.2 Bootstrap the app against the validated API env, with a global validation pipe, a global route prefix, and CORS permitting the web origin
-- [ ] 7.3 Add the database module providing the Drizzle client via Nest DI and closing the pool on shutdown
-- [ ] 7.4 Add the Redis module providing a client used only by the health check, closing on shutdown
-- [ ] 7.5 Add the health module using `@nestjs/terminus` with a Postgres `SELECT 1` check and a Redis `PING` check, each bounded by a 2-second timeout, returning 503 when any check fails
-- [ ] 7.6 Configure structured JSON logging outside development and confirm no connection string or credential appears in startup or error output
-- [ ] 7.7 Add API tests: healthy response shape, 503 with Postgres stopped naming Postgres as unreachable and Redis as reachable, timeout behaviour, and absence of credentials in the failure body
-- [ ] 7.8 Verify: `pnpm --filter @mela/api lint typecheck test build` passes and `GET /health` returns healthy against the running Compose stack
+- [x] 7.1 Scaffold `apps/api` as a NestJS 11 application wired to the shared tsconfig, ESLint config and Vitest setup, with `dev`, `build`, `lint`, `typecheck` and `test` scripts
+- [x] 7.2 Bootstrap the app against the validated API env, with a global validation pipe, a global route prefix, and CORS permitting the web origin
+- [x] 7.3 Add the database module providing the Drizzle client via Nest DI and closing the pool on shutdown
+- [x] 7.4 Add the Redis module providing a client used only by the health check, closing on shutdown
+- [x] 7.5 Add the health module using `@nestjs/terminus` with a Postgres `SELECT 1` check and a Redis `PING` check, each bounded by a 2-second timeout, returning 503 when any check fails
+- [x] 7.6 Configure structured JSON logging outside development and confirm no connection string or credential appears in startup or error output
+- [x] 7.7 Add API tests: healthy response shape, 503 with Postgres stopped naming Postgres as unreachable and Redis as reachable, timeout behaviour, and absence of credentials in the failure body
+- [x] 7.8 Verify: `pnpm --filter @mela/api lint typecheck test build` passes and `GET /health` returns healthy against the running Compose stack
 
 ## 8. Web application shell
 

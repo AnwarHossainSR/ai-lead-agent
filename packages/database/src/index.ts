@@ -12,6 +12,7 @@ export {
   closeConnection,
   createIsolatedConnection,
   getDatabase,
+  pingDatabase,
   withTransaction,
   type Database,
   type DatabaseOptions,

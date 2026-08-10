@@ -1,4 +1,5 @@
 import { hydrateEnvironment, loadDatabaseEnv } from "@mela/config/env";
+import { sql } from "drizzle-orm";
 import { type PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -88,6 +89,18 @@ export function createIsolatedConnection(options: DatabaseOptions = {}): {
       await sql.end({ timeout: 5 });
     },
   };
+}
+
+/**
+ * A round trip that proves the server is answering.
+ *
+ * This lives here rather than in the API's health check because a pool that
+ * believes it holds a live connection is a database concern, and because it
+ * keeps `select 1` — and the Drizzle dependency it needs — on this side of the
+ * package boundary.
+ */
+export async function pingDatabase(executor: Executor): Promise<void> {
+  await executor.execute(sql`select 1`);
 }
 
 /**
