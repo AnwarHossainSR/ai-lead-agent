@@ -91,3 +91,13 @@ export {
   type OutreachChannel,
   type OutreachChannelId,
 } from "./outreach";
+
+export {
+  AI_MODEL_TIERS,
+  aiModelTierSchema,
+  findAIModelTier,
+  parseAIModelTiers,
+  resolveAIModelTier,
+  type AIModelTier,
+  type AIModelTierId,
+} from "./ai-model-tiers";
