@@ -6,9 +6,9 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 - [x] 1.1 Create `packages/ai` with the same script, tsconfig, ESLint and Vitest conventions as `packages/database`, depending on `@mela/config`, `@mela/database` and `zod`
 - [x] 1.2 Add model tier configuration to `packages/config`: the two tiers, their default model identifiers, and per-million-token input/output prices as validated data
-- [ ] 1.3 Add `AI_PROVIDER`, `ANTHROPIC_API_KEY`, `AI_MODEL_DEFAULT`, `AI_MODEL_FAST`, `AI_MAX_OUTPUT_TOKENS`, `AI_TIMEOUT_MS`, `AI_SPEND_CEILING_USD` and `AI_SPEND_WINDOW_HOURS` to the API env schema, with a `.describe()` on each stating its purpose
-- [ ] 1.4 Add all of them to `.env.example` with placeholders and comments, and confirm the existing completeness test covers the new keys
-- [ ] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes and a missing API key aborts startup with a message naming the variable
+- [x] 1.3 Add `GEMINI_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `AI_MODEL_DEFAULT`, `AI_MODEL_FAST`, `AI_MAX_OUTPUT_TOKENS`, `AI_TIMEOUT_MS`, `AI_SPEND_CEILING_USD` and `AI_SPEND_WINDOW_HOURS` to the API env schema, with a `.describe()` on each stating its purpose
+- [x] 1.4 Add all of them to `.env.example` with placeholders and comments, and confirm the existing completeness test covers the new keys
+- [x] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes and a missing API key aborts startup with a message naming the variable
 
 ## 2. Invocation audit table
 
@@ -22,7 +22,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 - [ ] 3.1 Define the `AIProvider` interface: a single request method taking rendered messages, a tool definition and a model, returning content plus token usage
 - [ ] 3.2 Add the failure classification module mapping provider conditions to retryable and terminal, per design D8
-- [ ] 3.3 Implement the Anthropic provider over `@anthropic-ai/sdk` with the configured timeout, exponential backoff with jitter, and `retry-after` honoured when present
+- [ ] 3.3 Implement the Gemini provider (`@google/genai`) and the Cloudflare Workers AI provider (REST via `fetch`), each with the configured timeout, exponential backoff with jitter, and rate-limit retry headers honoured when present
 - [ ] 3.4 Add the redaction guard: assert in unit tests that no error raised by the provider contains the API key
 - [ ] 3.5 Add a fake provider in `src/testing/` capable of returning valid output, invalid output, a rate limit, an auth failure and a hang
 - [ ] 3.6 Verify: unit tests cover every row of the D8 classification table

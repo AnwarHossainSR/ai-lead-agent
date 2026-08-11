@@ -8,12 +8,15 @@ const SUBJECT = "AI model tier configuration";
 
 /**
  * A prompt declares which tier it needs (design D3): `default` for evidence-
- * weighted reasoning, `fast` for cheap classification. Prices are
- * configuration, not a constant, because a vendor changes them and a
+ * weighted reasoning, `fast` for cheap classification. The two tiers are
+ * served by two different vendors — Gemini and Cloudflare Workers AI — not
+ * one vendor selected at runtime, so each tier names its own vendor. Prices
+ * are configuration, not a constant, because a vendor changes them and a
  * hardcoded number would be silently wrong the day they do.
  */
 export const aiModelTierSchema = z.object({
   id: identifierSchema,
+  vendor: z.enum(["gemini", "cloudflare-workers-ai"]),
   modelId: z.string().trim().min(1, "Expected a model identifier."),
   inputPricePerMillionTokensUsd: z.number().positive(),
   outputPricePerMillionTokensUsd: z.number().positive(),
@@ -32,18 +35,23 @@ export function parseAIModelTiers(raw: unknown): readonly AIModelTier[] {
   return deepFreeze(tiers);
 }
 
+// Prices are approximate, sourced from each vendor's published rate card at
+// time of writing. They drift — that is exactly what estimated_cost_usd
+// (design D6) is named for. Update here when a vendor changes theirs.
 const AI_MODEL_TIER_DATA = [
   {
     id: "default",
-    modelId: "claude-sonnet-5",
-    inputPricePerMillionTokensUsd: 3,
-    outputPricePerMillionTokensUsd: 15,
+    vendor: "gemini",
+    modelId: "gemini-2.5-pro",
+    inputPricePerMillionTokensUsd: 1.25,
+    outputPricePerMillionTokensUsd: 10,
   },
   {
     id: "fast",
-    modelId: "claude-haiku-4-5-20251001",
-    inputPricePerMillionTokensUsd: 1,
-    outputPricePerMillionTokensUsd: 5,
+    vendor: "cloudflare-workers-ai",
+    modelId: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    inputPricePerMillionTokensUsd: 0.29,
+    outputPricePerMillionTokensUsd: 2.25,
   },
 ] as const;
 

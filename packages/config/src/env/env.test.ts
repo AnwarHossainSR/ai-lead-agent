@@ -88,7 +88,13 @@ describe("a missing variable is refused", () => {
       expect.unreachable("loadApiEnv should have refused an empty environment");
     } catch (error: unknown) {
       const failure = error as EnvironmentValidationError;
-      expect([...failure.variables].sort()).toEqual(["DATABASE_URL", "REDIS_URL"]);
+      expect([...failure.variables].sort()).toEqual([
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN",
+        "DATABASE_URL",
+        "GEMINI_API_KEY",
+        "REDIS_URL",
+      ]);
     }
   });
 });
@@ -111,6 +117,9 @@ describe("a malformed variable is refused", () => {
         API_PORT: "not-a-port",
         DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
         REDIS_URL: "redis://localhost:6379",
+        GEMINI_API_KEY: "test-gemini-key",
+        CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+        CLOUDFLARE_API_TOKEN: "test-cf-token",
       });
       expect.unreachable("loadApiEnv should have refused a non-numeric port");
     } catch (error: unknown) {
@@ -126,8 +135,29 @@ describe("a malformed variable is refused", () => {
         API_PORT: "70000",
         DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
         REDIS_URL: "redis://localhost:6379",
+        GEMINI_API_KEY: "test-gemini-key",
+        CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+        CLOUDFLARE_API_TOKEN: "test-cf-token",
       }),
     ).toThrow(/API_PORT/);
+  });
+
+  it("names the expected shape for a malformed spend ceiling", () => {
+    try {
+      loadApiEnv({
+        DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
+        REDIS_URL: "redis://localhost:6379",
+        GEMINI_API_KEY: "test-gemini-key",
+        CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+        CLOUDFLARE_API_TOKEN: "test-cf-token",
+        AI_SPEND_CEILING_USD: "not-a-number",
+      });
+      expect.unreachable("loadApiEnv should have refused a non-numeric spend ceiling");
+    } catch (error: unknown) {
+      const failure = error as EnvironmentValidationError;
+      expect(failure.variables).toEqual(["AI_SPEND_CEILING_USD"]);
+      expect(failure.message).toContain("Expected a positive number");
+    }
   });
 });
 
@@ -139,6 +169,9 @@ describe("failure messages carry no credential", () => {
       loadApiEnv({
         DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
         REDIS_URL: `http://mela:${password}@localhost:6379`,
+        GEMINI_API_KEY: "test-gemini-key",
+        CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+        CLOUDFLARE_API_TOKEN: "test-cf-token",
       });
       expect.unreachable("loadApiEnv should have refused a non-Redis URL");
     } catch (error: unknown) {
@@ -153,6 +186,9 @@ describe("a valid environment is accepted", () => {
   const validApiEnv = {
     DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
     REDIS_URL: "redis://localhost:6379",
+    GEMINI_API_KEY: "test-gemini-key",
+    CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+    CLOUDFLARE_API_TOKEN: "test-cf-token",
   };
 
   it("applies the documented defaults", () => {
@@ -161,6 +197,12 @@ describe("a valid environment is accepted", () => {
     expect(env.NODE_ENV).toBe("development");
     expect(env.API_PORT).toBe(3001);
     expect(env.WEB_ORIGIN).toBe("http://localhost:3000");
+    expect(env.AI_MODEL_DEFAULT).toBe("gemini-2.5-pro");
+    expect(env.AI_MODEL_FAST).toBe("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
+    expect(env.AI_MAX_OUTPUT_TOKENS).toBe(4_096);
+    expect(env.AI_TIMEOUT_MS).toBe(60_000);
+    expect(env.AI_SPEND_CEILING_USD).toBe(20);
+    expect(env.AI_SPEND_WINDOW_HOURS).toBe(24);
   });
 
   it("parses a port into a number", () => {

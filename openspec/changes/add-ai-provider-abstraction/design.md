@@ -21,7 +21,7 @@ Three constraints shape everything below:
 
 **Non-Goals:**
 
-- A second provider implementation.
+- A third provider implementation. Two ship here — Gemini and Cloudflare Workers AI, one per tier — because those are the keys the project holds; a third is future scope.
 - Streaming, embeddings, vector search, or any retrieval mechanism.
 - Any product-facing feature. The only prompt shipped here exists to test the machinery.
 - A caching layer for identical prompts. Worth doing, not worth guessing at before there is a workload.
@@ -41,8 +41,9 @@ packages/ai/
 ├─ src/
 │  ├─ provider/
 │  │  ├─ provider.ts            AIProvider interface
-│  │  ├─ anthropic.ts           the one implementation
-│  │  └─ errors.ts              retryable vs terminal classification
+│  │  ├─ gemini.ts               default tier
+│  │  ├─ cloudflare.ts           fast tier
+│  │  └─ errors.ts              retryable vs terminal classification, per vendor
 │  ├─ prompts/
 │  │  ├─ registry.ts            name+version -> definition
 │  │  └─ <name>/v1.ts           template, input type, output schema
@@ -56,13 +57,17 @@ packages/ai/
 
 `AIProvider` knows about messages, tokens and HTTP failures. It knows nothing about prompts, schemas or cost ceilings. `AIService` knows nothing about HTTP.
 
-### D3 — Anthropic first, `@anthropic-ai/sdk`
+### D3 — Two vendors, one per tier: Gemini and Cloudflare Workers AI
 
-**Models:** `AI_MODEL_DEFAULT` defaults to `claude-sonnet-5`, `AI_MODEL_FAST` to `claude-haiku-4-5-20251001`. Each prompt declares which of the two tiers it needs; a prompt doing evidence-weighted reasoning over a website analysis is not the same job as classifying an industry string.
+**Models:** `AI_MODEL_DEFAULT` defaults to `gemini-2.5-pro`, `AI_MODEL_FAST` to `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. Each prompt declares which of the two tiers it needs; a prompt doing evidence-weighted reasoning over a website analysis is not the same job as classifying an industry string — and unlike D1's original plan, that split is not just a price tier of one vendor, it is two separate `AIProvider` implementations.
 
-**Why Anthropic:** it is the provider whose key the project holds, and the SDK supports tool-use-shaped structured output, which is how D4 gets schema conformance rather than JSON-in-prose.
+**Why two vendors instead of one:** this is the project owner's provider choice — the API keys held are Gemini and Cloudflare, not Anthropic. `AIProvider` already existed to make this a contained change: each tier's `AIModelTier` config (in `packages/config`) now carries a `vendor` field, and the tier a prompt requests determines which implementation `AIService` calls. There is no runtime-selectable `AI_PROVIDER` variable, because the choice is not one axis — it is fixed per tier.
 
-**Deviation from the decided stack:** none. The stack says "provider abstraction, structured + schema-validated outputs, versioned prompts" without naming a vendor.
+**Why Gemini for the default tier:** the SDK (`@google/genai`) supports function-calling-shaped structured output, which is how D4 gets schema conformance rather than JSON-in-prose, for the reasoning-heavy calls that most need it to hold.
+
+**Why Cloudflare Workers AI for the fast tier:** cheap, and Workers AI's catalog includes instruction-tuned models with function-calling support — `AI_MODEL_FAST` must name one of those, since D4's structured-output path is not optional per tier.
+
+**Deviation from the decided stack:** none in kind — the stack says "provider abstraction, structured + schema-validated outputs, versioned prompts" without naming a vendor. It is a deviation from this design's original D1, which planned one vendor first and treated a second as a later, optional addition; that non-goal no longer holds. `AIProvider`'s small transport interface (D2) is what makes carrying two from the start a contained cost rather than a rewrite.
 
 ### D4 — Structured output via tool definition, validated with Zod regardless
 
@@ -123,6 +128,8 @@ No prompt text, no response text, no key. Later changes add `ai_invocation_id` c
 
 Every call is bounded by `AI_TIMEOUT_MS` (default 60000 — these are long analytical calls, not request-path work).
 
+**Two vendors, one table.** Gemini and Cloudflare Workers AI signal these conditions differently — different status codes, different rate-limit headers — so each provider implementation maps its own vendor's responses onto this same retryable/terminal classification. The table is the contract; `gemini.ts` and `cloudflare.ts` each satisfy it independently.
+
 ### D9 — Testing
 
 - **Unit, no network:** registry validation, prompt rendering including the injection case, output validation and the repair path, failure classification, cost estimation, spend-ceiling arithmetic.
@@ -136,4 +143,5 @@ Every call is bounded by `AI_TIMEOUT_MS` (default 60000 — these are long analy
 - **The repair attempt doubles cost on a bad prompt** → invocation records make a prompt with a high repair rate visible; the attempt count is stored per call.
 - **A schema too strict for the model to satisfy** looks like a provider problem and is a prompt problem → the failure error names the prompt, the version and the failing fields, so it reads as what it is.
 - **Prompt injection from scraped page content** → separate blocks and delimited input reduce it; it does not eliminate it. The real mitigation is downstream: nothing this package returns is trusted enough to write without validation, and no model output ever drives a state transition or an outreach send.
-- **Vendor lock-in through the interface's shape** → `AIProvider` is deliberately small. If a second vendor does not fit, the interface was wrong and changing it is a contained edit.
+- **Two vendors from day one, not one** → carries more integration surface (and D9's "no test calls a real provider" now applies twice) than the original single-vendor plan. Accepted because it reflects which keys the project actually holds; `AIProvider`'s small interface (D2) is what keeps a second implementation a contained addition rather than a rewrite.
+- **Cloudflare Workers AI's function-calling support is model-specific, not catalog-wide** → `AI_MODEL_FAST` must name a model that supports it; the default is chosen for that reason and changing it is a configuration decision to make deliberately, not a drop-in swap.

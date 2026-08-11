@@ -12,6 +12,10 @@ describe("configured tiers", () => {
     expect(AI_MODEL_TIERS.map((tier) => tier.id)).toEqual(["default", "fast"]);
   });
 
+  it("are served by two different vendors", () => {
+    expect(AI_MODEL_TIERS.map((tier) => tier.vendor)).toEqual(["gemini", "cloudflare-workers-ai"]);
+  });
+
   it("each declare a model id and positive prices", () => {
     for (const tier of AI_MODEL_TIERS) {
       expect(tier.modelId.length).toBeGreaterThan(0);
@@ -23,7 +27,8 @@ describe("configured tiers", () => {
 
 describe("resolving a tier", () => {
   it("returns the configured entry", () => {
-    expect(resolveAIModelTier("default").modelId).toBe("claude-sonnet-5");
+    expect(resolveAIModelTier("default").modelId).toBe("gemini-2.5-pro");
+    expect(resolveAIModelTier("fast").modelId).toBe("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
   });
 
   it("refuses an unknown identifier", () => {
@@ -41,12 +46,14 @@ describe("duplicate identifiers", () => {
       parseAIModelTiers([
         {
           id: "default",
+          vendor: "gemini",
           modelId: "a",
           inputPricePerMillionTokensUsd: 1,
           outputPricePerMillionTokensUsd: 1,
         },
         {
           id: "default",
+          vendor: "gemini",
           modelId: "b",
           inputPricePerMillionTokensUsd: 1,
           outputPricePerMillionTokensUsd: 1,
@@ -63,6 +70,7 @@ describe("non-positive prices", () => {
       parseAIModelTiers([
         {
           id: "default",
+          vendor: "gemini",
           modelId: "a",
           inputPricePerMillionTokensUsd: 0,
           outputPricePerMillionTokensUsd: 1,
@@ -70,5 +78,22 @@ describe("non-positive prices", () => {
       ]);
 
     expect(load).toThrow(/inputPricePerMillionTokensUsd/);
+  });
+});
+
+describe("unrecognised vendor", () => {
+  it("is refused at load time", () => {
+    const load = (): unknown =>
+      parseAIModelTiers([
+        {
+          id: "default",
+          vendor: "openai",
+          modelId: "a",
+          inputPricePerMillionTokensUsd: 1,
+          outputPricePerMillionTokensUsd: 1,
+        },
+      ]);
+
+    expect(load).toThrow(/vendor/);
   });
 });

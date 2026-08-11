@@ -14,7 +14,7 @@ Building this first also keeps the boundary honest: the abstraction has no idea 
 
 **New package `packages/ai`**
 
-- `AIProvider` — the thin transport interface over one vendor: send a request, get a response, surface usage. One implementation to start (Anthropic).
+- `AIProvider` — the thin transport interface over one vendor: send a request, get a response, surface usage. Two implementations, one per tier: Gemini for the default (reasoning) tier, Cloudflare Workers AI for the fast (classification) tier — the vendors whose keys the project holds.
 - `AIService` — the only thing application code calls. Takes a registered prompt name, a version, and typed input; returns output parsed by that prompt's Zod schema.
 - A prompt registry where each prompt is a versioned module exporting its template, its input type, and its output schema. Prompt text is code, reviewed in pull requests, never assembled from user input.
 - Structured output requested from the provider and then validated. A response that does not satisfy the schema is retried once with the validation error, then fails — it is never coerced, defaulted or partially accepted.
@@ -27,7 +27,7 @@ Building this first also keeps the boundary honest: the abstraction has no idea 
 
 **Environment**
 
-- `AI_PROVIDER`, `ANTHROPIC_API_KEY`, `AI_MODEL_DEFAULT`, `AI_MODEL_FAST`, `AI_MAX_OUTPUT_TOKENS`, `AI_SPEND_CEILING_USD` added to the validated schema and to `.env.example`.
+- `GEMINI_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `AI_MODEL_DEFAULT`, `AI_MODEL_FAST`, `AI_MAX_OUTPUT_TOKENS`, `AI_TIMEOUT_MS`, `AI_SPEND_CEILING_USD` and `AI_SPEND_WINDOW_HOURS` added to the validated schema and to `.env.example`. There is no single `AI_PROVIDER` variable — the vendor is fixed per tier, not runtime-selectable.
 
 ## Capabilities
 
@@ -43,7 +43,7 @@ Building this first also keeps the boundary honest: the abstraction has no idea 
 ## Impact
 
 - New workspace package `packages/ai`, depended on by `apps/api` and (later) the worker process.
-- New dependency `@anthropic-ai/sdk`. No AI dependency currently exists in the repository.
+- New dependencies `@google/genai` (Gemini) and a direct `fetch` call to the Cloudflare Workers AI REST API (no SDK needed for one endpoint). No AI dependency currently exists in the repository.
 - One new migration in `packages/database`.
 - `apps/api` gains an AI module wiring `AIService` into Nest DI; no HTTP route in this change.
 
@@ -52,7 +52,7 @@ Building this first also keeps the boundary honest: the abstraction has no idea 
 Deliberately deferred:
 
 - **Any product feature that uses AI** — opportunity analysis, research summaries and outreach drafts are their own changes. This change ships the mechanism and one throwaway prompt used only by its tests.
-- **A second provider implementation** — the interface exists so a second one is possible, but building one now would be designing against an imaginary requirement.
+- **A third provider implementation** — two ship here (Gemini, Cloudflare Workers AI), one per tier, because those are the keys the project holds. A third is future scope.
 - **Streaming responses** — nothing in the pipeline renders tokens as they arrive; every call is a background analysis with a structured result.
 - **Embeddings, vector storage, retrieval** — no capability needs them yet.
 - **Automatic outreach** — this change makes drafting possible later. Human approval before sending is unchanged and non-negotiable.

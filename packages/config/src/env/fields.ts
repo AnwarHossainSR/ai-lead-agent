@@ -42,3 +42,17 @@ export const tcpPort = z
   .regex(/^\d+$/, "Expected a TCP port number between 1 and 65535.")
   .transform((value) => Number.parseInt(value, 10))
   .refine((port) => port >= 1 && port <= 65535, "Expected a TCP port number between 1 and 65535.");
+
+/** A positive whole number, e.g. a token limit, a timeout in milliseconds, or a window in hours. */
+export const positiveInteger = z
+  .string()
+  .regex(/^\d+$/, "Expected a positive whole number.")
+  .transform((value) => Number.parseInt(value, 10))
+  .refine((value) => value > 0, "Expected a positive whole number.");
+
+/** A positive decimal amount, e.g. a USD spend ceiling. */
+export const positiveAmount = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, "Expected a positive number, e.g. 25 or 25.50.")
+  .transform((value) => Number.parseFloat(value))
+  .refine((value) => value > 0, "Expected a positive number, e.g. 25 or 25.50.");
