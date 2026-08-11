@@ -1,0 +1,7 @@
+{
+  // Tests and the test helpers are typechecked (tsconfig.json includes them)
+  // but never emitted: nothing in dist/ should be able to import a fixture.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "coverage", "src/**/*.test.ts", "src/testing/**/*"]
+}

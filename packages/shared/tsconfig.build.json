@@ -1,0 +1,7 @@
+{
+  // Tests are typechecked (tsconfig.json includes them) but never emitted into
+  // dist, so consumers of this package only ever see production modules.
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "coverage", "src/**/*.test.ts"]
+}

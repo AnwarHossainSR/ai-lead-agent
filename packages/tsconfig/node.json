@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node (packages and the NestJS API)",
+  "extends": "./base.json",
+  "compilerOptions": {
+    // Node16 rather than CommonJS/Node: only the newer resolver reads the
+    // "exports" map in package.json, which is how subpath entries such as
+    // "@mela/config/env" resolve. No package here declares "type": "module",
+    // so the emitted JavaScript is still CommonJS.
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "types": ["node"],
+
+    // NestJS relies on decorator metadata at runtime. Harmless for the
+    // non-Nest packages that also extend this config.
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}

@@ -1,0 +1,152 @@
+## Purpose
+
+Defines the platform's domain vocabulary — target markets, industries, offered services, lead lifecycle, priority bands, outreach channels and scoring weights — as validated configuration data, so the business definition of the product can change without changing application code.
+
+## ADDED Requirements
+
+### Requirement: Target markets are configuration
+
+The system SHALL define its target countries and cities as configuration data. Each country entry SHALL carry a stable identifier, a display name, an ISO 3166-1 alpha-2 code, and an enabled flag. Each city entry SHALL carry a stable identifier, a display name, and the identifier of the country it belongs to. The system SHALL NOT hardcode country or city names in application logic.
+
+#### Scenario: Initial markets are present
+
+- **WHEN** the target market configuration is loaded
+- **THEN** it contains United Arab Emirates and Saudi Arabia as enabled countries
+- **AND** it contains Dubai and Abu Dhabi under United Arab Emirates, and Riyadh and Jeddah under Saudi Arabia
+
+#### Scenario: A new city is added without code changes
+
+- **WHEN** a new city entry referencing an existing country identifier is added to the configuration
+- **THEN** the configuration loads successfully and the new city is available to every consumer
+- **AND** no application source file outside the configuration needs to be edited
+
+#### Scenario: A city references an unknown country
+
+- **WHEN** the configuration contains a city whose country identifier does not match any configured country
+- **THEN** configuration loading fails with an error naming the offending city and the unknown country identifier
+
+#### Scenario: Disabled countries are excluded from active targeting
+
+- **WHEN** a country is marked as not enabled
+- **THEN** the list of active target countries excludes it and its cities
+- **AND** the country remains resolvable by identifier so historical records referencing it still render
+
+### Requirement: Industries are configuration
+
+The system SHALL define target industries as configuration data. Each industry entry SHALL carry a stable identifier, a display name, and an enabled flag. Industry identifiers SHALL be unique.
+
+#### Scenario: Initial industries are present
+
+- **WHEN** the industry configuration is loaded
+- **THEN** it contains Real Estate, Logistics, Hospitality, E-Commerce and Business Services as enabled industries
+
+#### Scenario: Duplicate industry identifiers are rejected
+
+- **WHEN** the configuration contains two industries with the same identifier
+- **THEN** configuration loading fails with an error naming the duplicated identifier
+
+### Requirement: Offered services are configuration
+
+The system SHALL define the services that can be recommended to a lead as configuration data. Each service entry SHALL carry a stable identifier, a display name, and a short description of what the service delivers. Every recommended service produced anywhere in the platform SHALL reference one of these identifiers.
+
+#### Scenario: Initial services are present
+
+- **WHEN** the service configuration is loaded
+- **THEN** it includes at minimum website modernization, web application development, custom business platforms, backend and API development, and AWS and cloud modernization
+
+#### Scenario: An unknown service identifier is rejected
+
+- **WHEN** a consumer resolves a service identifier that is not present in the configuration
+- **THEN** the resolution fails with an error naming the unknown identifier rather than returning a default or empty service
+
+### Requirement: Lead lifecycle statuses and transitions are configuration
+
+The system SHALL define the set of lead statuses and, for each status, the set of statuses it may transition to. The configured statuses SHALL be: discovered, verified, analyzing, qualified, high_priority, contacted, replied, interested, meeting, proposal, won, lost, not_interested, rejected. The system SHALL expose a decision function that answers whether a given transition is permitted.
+
+#### Scenario: A permitted transition is allowed
+
+- **WHEN** a transition from `discovered` to `verified` is checked
+- **THEN** the transition is reported as permitted
+
+#### Scenario: An arbitrary transition is refused
+
+- **WHEN** a transition from `discovered` to `won` is checked
+- **THEN** the transition is reported as not permitted
+- **AND** the refusal names the source status, the target status, and the statuses that are permitted from the source
+
+#### Scenario: Terminal statuses have no outbound transitions
+
+- **WHEN** the permitted transitions from `won`, `lost`, `not_interested` or `rejected` are requested
+- **THEN** an empty set is returned
+
+#### Scenario: Every configured transition target is a known status
+
+- **WHEN** the lifecycle configuration is loaded
+- **THEN** loading fails if any transition target is not itself a configured status
+
+### Requirement: Lead priority bands are configuration
+
+The system SHALL classify a lead score between 0 and 100 into a named priority band using configured score ranges. The default bands SHALL be: 90–100 very_high, 80–89 high, 70–79 medium, below 70 low.
+
+#### Scenario: A score is classified into its band
+
+- **WHEN** a lead score of 92 is classified
+- **THEN** the priority is `very_high`
+
+#### Scenario: Band boundaries are inclusive and unambiguous
+
+- **WHEN** scores of 90, 89, 80, 79, 70 and 69 are classified
+- **THEN** the results are `very_high`, `high`, `high`, `medium`, `medium` and `low` respectively
+
+#### Scenario: Bands cover the full range without gaps or overlap
+
+- **WHEN** the priority band configuration is loaded
+- **THEN** loading fails if the bands leave any score in 0–100 unclassified or assign any score to more than one band
+
+#### Scenario: An out-of-range score is refused
+
+- **WHEN** a score below 0 or above 100 is classified
+- **THEN** classification fails with an error stating the valid range
+
+### Requirement: Lead scoring weights are configuration
+
+The system SHALL define lead scoring as a set of weighted components, each with a stable identifier, a display name, and a maximum point value. The default components SHALL be business fit (30), technical opportunity (30), business opportunity (20), decision maker found (10), and company quality (10).
+
+#### Scenario: Default weights total 100
+
+- **WHEN** the scoring weight configuration is loaded
+- **THEN** the sum of all component maximums equals 100
+
+#### Scenario: Weights that do not total 100 are rejected
+
+- **WHEN** the configuration is edited so component maximums sum to a value other than 100
+- **THEN** configuration loading fails with an error reporting the actual total
+
+#### Scenario: Weights can be retuned without code changes
+
+- **WHEN** a component maximum is changed and another is changed so the total remains 100
+- **THEN** the configuration loads successfully and consumers observe the new maximums
+
+### Requirement: Outreach channels are configuration
+
+The system SHALL define the available outreach channels as configuration data. The configured channels SHALL be email, linkedin and whatsapp. Each channel SHALL declare whether automated sending is permitted; in this change every channel SHALL declare automated sending as not permitted.
+
+#### Scenario: No channel permits automated sending
+
+- **WHEN** the outreach channel configuration is loaded
+- **THEN** every channel reports that automated sending is not permitted
+
+### Requirement: Configuration is validated at load time
+
+The system SHALL validate all product configuration against an explicit schema when it is loaded, and SHALL fail loudly on the first invalid value rather than falling back to defaults or silently dropping entries. Validated configuration SHALL be exposed to consumers as read-only typed values.
+
+#### Scenario: Invalid configuration halts startup
+
+- **WHEN** any part of the product configuration fails schema validation
+- **THEN** loading throws an error identifying the failing field path and the reason
+- **AND** no partially-validated configuration object is returned
+
+#### Scenario: Consumers cannot mutate configuration
+
+- **WHEN** a consumer attempts to modify a loaded configuration value at runtime
+- **THEN** the modification is rejected and the configuration remains unchanged

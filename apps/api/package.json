@@ -1,0 +1,43 @@
+{
+  "name": "@mela/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "NestJS REST API",
+  "main": "./dist/main.js",
+  "scripts": {
+    "dev": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@mela/config": "workspace:*",
+    "@mela/database": "workspace:*",
+    "@mela/shared": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@nestjs/terminus": "catalog:",
+    "ioredis": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@mela/eslint-config": "workspace:*",
+    "@mela/tsconfig": "workspace:*",
+    "@nestjs/testing": "catalog:",
+    "@swc-node/register": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@types/supertest": "catalog:",
+    "eslint": "catalog:",
+    "supertest": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}
