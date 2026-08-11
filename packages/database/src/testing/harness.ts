@@ -70,7 +70,14 @@ async function ensureDatabaseExists(adminUrl: string, databaseName: string): Pro
 }
 
 /** Every table, in an order that does not matter because TRUNCATE cascades. */
-const TABLES = ["outreach", "leads", "website_analysis", "contacts", "companies"] as const;
+const TABLES = [
+  "outreach",
+  "leads",
+  "website_analysis",
+  "contacts",
+  "companies",
+  "ai_invocations",
+] as const;
 
 /**
  * Empties every table. Called between test cases so each one starts from a

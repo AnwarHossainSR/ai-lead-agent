@@ -50,3 +50,10 @@ export {
   submitOutreachForApproval,
   type InsertOutreachInput,
 } from "./outreach";
+
+export {
+  insertAIInvocation,
+  insertAIInvocationInputSchema,
+  spendInWindow,
+  type InsertAIInvocationInput,
+} from "./ai-invocations";

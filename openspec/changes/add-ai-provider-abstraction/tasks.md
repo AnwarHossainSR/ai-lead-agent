@@ -12,11 +12,11 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 2. Invocation audit table
 
-- [ ] 2.1 Add the `ai_invocation_outcome` enum and the `ai_invocations` table to the Drizzle schema, with `CHECK` constraints for non-negative token counts and cost
-- [ ] 2.2 Add the validated write helper recording an invocation, and a `spendInWindow(hours)` read helper
-- [ ] 2.3 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.4 Add integration tests: an invocation is stored with its accounting, an unrecognised outcome is refused, no credential is stored
-- [ ] 2.5 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the `ai_invocation_outcome` enum and the `ai_invocations` table to the Drizzle schema, with `CHECK` constraints for non-negative token counts and cost
+- [x] 2.2 Add the validated write helper recording an invocation, and a `spendInWindow(hours)` read helper
+- [x] 2.3 Generate and commit the migration; confirm `pnpm db:check` reports no drift
+- [x] 2.4 Add integration tests: an invocation is stored with its accounting, an unrecognised outcome is refused, no credential is stored
+- [x] 2.5 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
 
 ## 3. Provider transport
 
