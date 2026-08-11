@@ -51,8 +51,14 @@ describe("scenarios are consumed in order", () => {
 });
 
 describe("a rate_limited scenario", () => {
-  it("throws a retryable AIProviderError carrying the retry-after hint", async () => {
-    const provider = new FakeAIProvider().enqueue({ kind: "rate_limited", retryAfterMs: 2_000 });
+  it("retries and eventually throws the retryable AIProviderError", async () => {
+    // Enqueue 3 rate_limited scenarios (one per retry attempt) — after all
+    // retries are exhausted, the original AIProviderError is rethrown.
+    const provider = new FakeAIProvider().enqueue(
+      { kind: "rate_limited", retryAfterMs: 2_000 },
+      { kind: "rate_limited", retryAfterMs: 2_000 },
+      { kind: "rate_limited", retryAfterMs: 2_000 },
+    );
 
     const error = await provider.request(request()).catch((thrown: unknown) => thrown);
 

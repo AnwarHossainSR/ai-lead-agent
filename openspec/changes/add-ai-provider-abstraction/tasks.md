@@ -38,14 +38,14 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 5. The service
 
-- [ ] 5.1 Convert a prompt's Zod output schema to JSON Schema and supply it as a single-tool definition
-- [ ] 5.2 Add the validation path: parse with Zod, one repair attempt carrying the validation error, then fail naming prompt, version and failing fields
-- [ ] 5.3 Add cost estimation from token counts and the configured prices, with a unit test asserting the arithmetic against a known count
-- [ ] 5.4 Add spend-ceiling enforcement querying the window before each call, refusing with an error naming the ceiling and the window, and recording the refusal as an invocation outcome
-- [ ] 5.5 Wire invocation recording into every path: success, invalid output, provider error, ceiling refusal
-- [ ] 5.6 Assemble `AIService` as the package's only public entry point and export it from the package root
-- [ ] 5.7 Add unit tests against the fake provider covering every scenario in `specs/ai-provider/spec.md`
-- [ ] 5.8 Verify: `pnpm --filter @mela/ai lint typecheck test build` passes
+- [x] 5.1 Convert a prompt's Zod output schema to JSON Schema and supply it as a single-tool definition
+- [x] 5.2 Add the validation path: parse with Zod, one repair attempt carrying the validation error, then fail naming prompt, version and failing fields
+- [x] 5.3 Add cost estimation from token counts and the configured prices, with a unit test asserting the arithmetic against a known count
+- [x] 5.4 Add spend-ceiling enforcement querying the window before each call, refusing with an error naming the ceiling and the window, and recording the refusal as an invocation outcome
+- [x] 5.5 Wire invocation recording into every path: success, invalid output, provider error, ceiling refusal
+- [x] 5.6 Assemble `AIService` as the package's only public entry point and export it from the package root
+- [x] 5.7 Add unit tests against the fake provider covering every scenario in `specs/ai-provider/spec.md`
+- [x] 5.8 Verify: `pnpm --filter @mela/ai lint typecheck test build` passes
 
 ## 6. API wiring
 

@@ -45,18 +45,7 @@ function render(input: TestClassifyInput): RenderedPrompt {
     input.input,
     "classify_result",
     "Classify the input text as needs_website, no_need, or insufficient_evidence.",
-    {
-      type: "object",
-      properties: {
-        classification: {
-          type: "string",
-          enum: ["needs_website", "no_need", "insufficient_evidence"],
-        },
-        confidence: { type: "number" },
-        reasoning: { type: "string" },
-      },
-      required: ["classification", "confidence", "reasoning"],
-    },
+    testClassifyOutputSchema.toJSONSchema() as Record<string, unknown>,
   );
 }
 

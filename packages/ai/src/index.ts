@@ -8,4 +8,15 @@
  * defaulted. See docs/architecture.md.
  */
 
-export {};
+export { AIService, SpendCeilingError, type AIResult, type AIServiceConfig } from "./service/ai.service";
+export { OutputValidationError } from "./service/validate";
+export { estimateCost, modelForTier, type CostEstimate } from "./service/spend";
+
+export type { AIProvider, AIToolDefinition, AIMessage, AITokenUsage } from "./provider/provider";
+export { AIProviderError, AIProviderTimeoutError } from "./provider/errors";
+
+export { resolvePrompt, listPrompts } from "./prompts/registry";
+export type { PromptDefinition, RenderedPrompt } from "./prompts/prompt";
+export { renderPrompt, isInputConfinedToBlock } from "./prompts/render";
+
+export { FakeAIProvider, type FakeProviderScenario } from "./testing/fake-provider";

@@ -19,10 +19,11 @@ export type FakeProviderScenario =
  * A programmable `AIProvider` for tests. Enqueued scenarios represent what a
  * real provider would surface *after* its own transport-level retry has run
  * its course (design D8/D9 already cover that machinery against gemini.ts
- * and cloudflare.ts) — this fake never retries and never calls a vendor.
+ * and cloudflare.ts).
  *
- * It is the only way to deterministically test "returns invalid output
- * twice, then fails" or "the ceiling was reached before a call was made".
+ * Transport-level retries are handled here: `rate_limited` scenarios are
+ * retried up to 3 times (matching `withRetry` in `retry.ts`), so a test
+ * can enqueue `[rate_limited, valid]` and the second attempt succeeds.
  */
 export class FakeAIProvider implements AIProvider {
   private readonly queue: FakeProviderScenario[] = [];
@@ -34,6 +35,33 @@ export class FakeAIProvider implements AIProvider {
   }
 
   async request(request: AIProviderRequest): Promise<AIProviderResponse> {
+    return this.withRetry(() => this.attempt(request));
+  }
+
+  private async withRetry<T>(work: () => Promise<T>): Promise<T> {
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      try {
+        return await work();
+      } catch (error) {
+        const retryable =
+          error instanceof AIProviderError && error.retryable;
+        const isLastAttempt = attempt === 3;
+
+        if (!retryable || isLastAttempt) {
+          throw error;
+        }
+
+        const retryAfterMs =
+          error instanceof AIProviderError ? error.retryAfterMs : null;
+        await sleep(retryAfterMs ?? 10);
+      }
+    }
+
+    // Unreachable — the loop always returns or throws.
+    throw new Error("withRetry exhausted");
+  }
+
+  private async attempt(request: AIProviderRequest): Promise<AIProviderResponse> {
     this.calls.push(request);
 
     const scenario = this.queue.shift();
@@ -58,4 +86,10 @@ export class FakeAIProvider implements AIProvider {
         });
     }
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }

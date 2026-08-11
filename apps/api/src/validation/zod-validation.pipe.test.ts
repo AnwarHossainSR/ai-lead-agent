@@ -4,6 +4,8 @@ import request from "supertest";
 import { afterEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 
+import { type ApiEnv } from "@mela/config/env";
+
 import { configureApp } from "../create-app";
 import { silentLogger } from "../testing/silent-logger";
 import { type InferDto, createZodDto } from "./zod-dto";
@@ -47,7 +49,13 @@ async function createPipeApp(): Promise<INestApplication> {
     GEMINI_API_KEY: "test-gemini-key",
     CLOUDFLARE_ACCOUNT_ID: "test-cf-account",
     CLOUDFLARE_API_TOKEN: "test-cf-token",
-  });
+    AI_MODEL_DEFAULT: "gemini-2.5-pro",
+    AI_MODEL_FAST: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    AI_MAX_OUTPUT_TOKENS: 4096,
+    AI_TIMEOUT_MS: 60000,
+    AI_SPEND_CEILING_USD: 20,
+    AI_SPEND_WINDOW_HOURS: 24,
+  } satisfies ApiEnv);
 
   await app.init();
   return app;
