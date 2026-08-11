@@ -102,7 +102,7 @@ describe("a missing variable is refused", () => {
 describe("a malformed variable is refused", () => {
   it("names the expected shape for a connection string", () => {
     try {
-      loadDatabaseEnv({ DATABASE_URL: "mysql://localhost:3306/mela" });
+      loadDatabaseEnv({ DATABASE_URL: "oracle://localhost:1521/mela" });
       expect.unreachable("loadDatabaseEnv should have refused a non-PostgreSQL URL");
     } catch (error: unknown) {
       const failure = error as EnvironmentValidationError;
