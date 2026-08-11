@@ -4,7 +4,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Package skeleton and configuration
 
-- [ ] 1.1 Create `packages/ai` with the same script, tsconfig, ESLint and Vitest conventions as `packages/database`, depending on `@mela/config`, `@mela/database` and `zod`
+- [x] 1.1 Create `packages/ai` with the same script, tsconfig, ESLint and Vitest conventions as `packages/database`, depending on `@mela/config`, `@mela/database` and `zod`
 - [ ] 1.2 Add model tier configuration to `packages/config`: the two tiers, their default model identifiers, and per-million-token input/output prices as validated data
 - [ ] 1.3 Add `AI_PROVIDER`, `ANTHROPIC_API_KEY`, `AI_MODEL_DEFAULT`, `AI_MODEL_FAST`, `AI_MAX_OUTPUT_TOKENS`, `AI_TIMEOUT_MS`, `AI_SPEND_CEILING_USD` and `AI_SPEND_WINDOW_HOURS` to the API env schema, with a `.describe()` on each stating its purpose
 - [ ] 1.4 Add all of them to `.env.example` with placeholders and comments, and confirm the existing completeness test covers the new keys

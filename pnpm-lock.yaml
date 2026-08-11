@@ -245,6 +245,37 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/ai:
+    dependencies:
+      '@mela/config':
+        specifier: workspace:*
+        version: link:../config
+      '@mela/database':
+        specifier: workspace:*
+        version: link:../database
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@mela/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@mela/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      eslint:
+        specifier: 'catalog:'
+        version: 10.8.1(jiti@2.7.0)(supports-color@7.2.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@24.13.3)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.9))
+
   packages/config:
     dependencies:
       zod:
@@ -6325,7 +6356,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 24.13.3
+      '@types/node': 20.19.43
       form-data: 4.0.6
 
   '@types/supertest@7.2.1':
