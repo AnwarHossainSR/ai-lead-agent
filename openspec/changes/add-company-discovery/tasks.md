@@ -33,12 +33,12 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 4. Politeness: robots and rate limiting
 
-- [ ] 4.1 Implement `robots.txt` fetching, per-origin caching with a 24-hour TTL, and path evaluation, treating a malformed or unreachable file as disallowing
-- [ ] 4.2 Implement the per-source token bucket taking the slower of the configured interval and the declared crawl-delay
-- [ ] 4.3 Implement block detection — 403, 429 without `retry-after`, and bot-challenge response signatures — ending the source for the run
-- [ ] 4.4 Add a test asserting the module exposes no proxy, user-agent-rotation or challenge-solving option
-- [ ] 4.5 Add unit tests covering disallowed paths, crawl-delay spacing, and abandonment on block
-- [ ] 4.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 4.1 Implement `robots.txt` fetching, per-origin caching with a 24-hour TTL, and path evaluation, treating a malformed or unreachable file as disallowing
+- [x] 4.2 Implement the per-source token bucket taking the slower of the configured interval and the declared crawl-delay
+- [x] 4.3 Implement block detection — 403, 429 without `retry-after`, and bot-challenge response signatures — ending the source for the run
+- [x] 4.4 Add a test asserting the module exposes no proxy, user-agent-rotation or challenge-solving option
+- [x] 4.5 Add unit tests covering disallowed paths, crawl-delay spacing, and abandonment on block
+- [x] 4.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 5. Deduplication
 
