@@ -70,7 +70,14 @@ export class RobotsPolicy {
 
     for (const group of groups) {
       for (const rule of group.rules) {
-        if (path.startsWith(rule.path) && (best === null || rule.path.length > best.length)) {
+        if (!path.startsWith(rule.path)) {
+          continue;
+        }
+        if (best === null || rule.path.length > best.length) {
+          best = { kind: rule.kind, length: rule.path.length };
+        } else if (rule.path.length === best.length && rule.kind === "allow") {
+          // A tie between an allow and a disallow resolves to allow, as
+          // Google's crawler treats it.
           best = { kind: rule.kind, length: rule.path.length };
         }
       }

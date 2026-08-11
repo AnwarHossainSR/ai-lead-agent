@@ -65,7 +65,7 @@ describe("parseRobotsTxt", () => {
 
   it("reads the declared crawl delay from the matching group", () => {
     const policy = parseRobotsTxt(
-      "User-agent: *\nDisallow: /a\nCrawl-delay: 5\nUser-agent: other\nDisallow: /b\nCrawl-delay: 0.5",
+      "User-agent: mela\nDisallow: /a\nCrawl-delay: 5\nUser-agent: other\nDisallow: /b\nCrawl-delay: 0.5",
     );
 
     expect(policy.crawlDelaySeconds("mela-bot/1.0")).toBe(5);
