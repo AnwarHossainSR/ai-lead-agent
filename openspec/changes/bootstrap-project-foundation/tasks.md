@@ -93,13 +93,13 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 9. Continuous integration and documentation
 
-- [ ] 9.1 Add `.github/workflows/ci.yml` running on push and pull request: checkout, pnpm and Node setup with caching, install with a frozen lockfile
-- [ ] 9.2 Add PostgreSQL and Redis service containers to the test job with health gating, and run `lint`, `typecheck`, `test` (including migrations and database integration tests) and `build`
-- [ ] 9.3 Confirm the workflow contains no publish or deploy step and that a deliberately broken type fails the run
-- [ ] 9.4 Write `README.md`: what the product is, prerequisites, first-time setup, the command set, and a link to the deeper docs
-- [ ] 9.5 Write `docs/development.md` (pinned versions, starting and stopping services, migrations, seeding, running each test suite, troubleshooting on Windows)
-- [ ] 9.6 Write `docs/architecture.md` and `docs/data-model.md` describing only what now exists, sourced from `design.md`
-- [ ] 9.7 Write `docs/implementation-progress.md` recording this change as complete and listing Phases 3–17 as not started
+- [x] 9.1 Add `.github/workflows/ci.yml` running on push and pull request: checkout, pnpm and Node setup with caching, install with a frozen lockfile
+- [x] 9.2 Add PostgreSQL and Redis service containers to the test job with health gating, and run `lint`, `typecheck`, `test` (including migrations and database integration tests) and `build`
+- [x] 9.3 Confirm the workflow contains no publish or deploy step and that a deliberately broken type fails the run
+- [x] 9.4 Write `README.md`: what the product is, prerequisites, first-time setup, the command set, and a link to the deeper docs
+- [x] 9.5 Write `docs/development.md` (pinned versions, starting and stopping services, migrations, seeding, running each test suite, troubleshooting on Windows)
+- [x] 9.6 Write `docs/architecture.md` and `docs/data-model.md` describing only what now exists, sourced from `design.md`
+- [x] 9.7 Write `docs/implementation-progress.md` recording this change as complete and listing Phases 3–17 as not started
 - [ ] 9.8 Verify: every command, path and capability named in the documentation exists in the repository
 
 ## 10. Final verification
