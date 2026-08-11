@@ -1,8 +1,7 @@
 import { z } from "zod";
 
-import { assertUniqueIdentifiers, ConfigurationError, parseOrThrow } from "../internal/errors";
+import { assertUniqueIdentifiers, parseOrThrow } from "../internal/errors";
 import { deepFreeze } from "../internal/freeze";
-import { identifierSchema } from "../internal/identifier";
 
 /**
  * The check identifiers the system implements. A rule naming an unknown check
@@ -131,8 +130,8 @@ const VERIFICATION_POLITENESS_DATA = {
   batchConcurrency: 4,
 } as const;
 
-export const VERIFICATION_RULE = parseVerificationRule(VERIFICATION_RULE_DATA);
-export const VERIFICATION_POLITENESS = parseVerificationPoliteness(VERIFICATION_POLITENESS_DATA);
+export const VERIFICATION_RULE = deepFreeze(parseVerificationRule(VERIFICATION_RULE_DATA));
+export const VERIFICATION_POLITENESS = deepFreeze(parseVerificationPoliteness(VERIFICATION_POLITENESS_DATA));
 
 /**
  * Per-country registry configuration for the registry check.

@@ -23,7 +23,7 @@ import {
   type DiscoverySourceResult,
   validateCandidate,
 } from "./sources/source";
-import { TokenBucket, effectiveRequestIntervalMs } from "./rate-limiter";
+import { TokenBucket, effectiveRequestIntervalMs } from "../http/rate-limiter";
 
 /**
  * The input to start a discovery run (design D6).

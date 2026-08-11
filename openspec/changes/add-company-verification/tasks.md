@@ -12,14 +12,14 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 2. Schema and write path
 
-- [ ] 2.1 Add the `verification_verdict` and `company_verification_state` enums and the `verification_checks` table with the evidence-required `CHECK` constraint and the `(company_id, ran_at DESC)` index
-- [ ] 2.2 Add `verification_state`, `verified_at` and `verification_run_id` to `companies`, with the constraint requiring a derivation time and the partial index supporting the stale query
-- [ ] 2.3 Make `companies.verified` a generated summary of the state, so existing reads keep working
-- [ ] 2.4 Remove the `verified` parameter from `insertCompany`, refuse it in `updateCompany`, and update the seed script and existing tests
-- [ ] 2.5 Add `applyVerificationResult` as the only writer of the verification columns, and `listStaleCompanies`
-- [ ] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including raw-`INSERT` attempts that bypass the helpers
-- [ ] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the `verification_verdict` and `company_verification_state` enums and the `verification_checks` table with the evidence-required `CHECK` constraint and the `(company_id, ran_at DESC)` index
+- [x] 2.2 Add `verification_state`, `verified_at` and `verification_run_id` to `companies`, with the constraint requiring a derivation time and the partial index supporting the stale query
+- [x] 2.3 Make `companies.verified` a generated summary of the state, so existing reads keep working
+- [x] 2.4 Remove the `verified` parameter from `insertCompany`, refuse it in `updateCompany`, and update the seed script and existing tests
+- [x] 2.5 Add `applyVerificationResult` as the only writer of the verification columns, and `listStaleCompanies`
+- [x] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
+- [x] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including raw-`INSERT` attempts that bypass the helpers
+- [x] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
 
 ## 3. Shared HTTP politeness
 

@@ -77,6 +77,7 @@ const TABLES = [
   "contacts",
   "company_discovery_sources",
   "companies",
+  "verification_checks",
   "discovery_run_sources",
   "discovery_runs",
   "ai_invocations",

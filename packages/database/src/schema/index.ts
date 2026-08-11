@@ -16,4 +16,5 @@ export * from "./website-analysis";
 export * from "./leads";
 export * from "./outreach";
 export * from "./ai-invocations";
+export * from "./verification-checks";
 export * from "./relations";

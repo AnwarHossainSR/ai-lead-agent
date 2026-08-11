@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { discoveryRuns } from "./discovery";
+import { companyVerificationStateEnum } from "./enums";
 
 /**
  * A company that has been discovered and may become a lead.
@@ -51,7 +52,19 @@ export const companies = pgTable(
 
     // Whether a human or a verification step has confirmed the company exists
     // and the details match. Discovery alone does not make it true.
-    verified: boolean("verified").notNull().default(false),
+    // Now derived from verification_state rather than set directly.
+    verified: boolean("verified")
+      .notNull()
+      .generatedAlwaysAs(sql`(verification_state = 'verified')::boolean`),
+
+    // Verification state derived from check results.
+    verificationState: companyVerificationStateEnum("verification_state")
+      .notNull()
+      .default("never_checked"),
+    // When the verification state was last derived.
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    // The verification run that derived the current state.
+    verificationRunId: uuid("verification_run_id"),
 
     // Marks rows created by the seed script so example data is never mistaken
     // for researched data.

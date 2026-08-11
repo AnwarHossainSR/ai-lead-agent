@@ -137,3 +137,32 @@ export const discoverySourceOutcomeEnum = pgEnum(
   "discovery_source_outcome",
   DISCOVERY_SOURCE_OUTCOMES,
 );
+
+/**
+ * Outcome of one verification check. `passed` and `failed` require evidence;
+ * `unknown` means the check could not determine anything (timeout, block,
+ * missing registry).
+ */
+export const VERIFICATION_VERDICTS = ["passed", "failed", "unknown"] as const;
+
+export type VerificationVerdict = (typeof VERIFICATION_VERDICTS)[number];
+
+export const verificationVerdictEnum = pgEnum("verification_verdict", VERIFICATION_VERDICTS);
+
+/**
+ * A company's derived verification state. `never_checked` is the initial
+ * state; the rest are derived from check results.
+ */
+export const COMPANY_VERIFICATION_STATES = [
+  "never_checked",
+  "verified",
+  "unverified",
+  "unreachable",
+] as const;
+
+export type CompanyVerificationState = (typeof COMPANY_VERIFICATION_STATES)[number];
+
+export const companyVerificationStateEnum = pgEnum(
+  "company_verification_state",
+  COMPANY_VERIFICATION_STATES,
+);

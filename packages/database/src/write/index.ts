@@ -15,14 +15,20 @@ export {
 } from "./errors";
 
 export {
+  applyVerificationResult,
+  applyVerificationResultInputSchema,
+  deriveVerificationState,
   findCompanyByNormalizedDomain,
   findCompanyByNormalizedName,
   insertCompany,
   insertCompanyInputSchema,
+  listStaleCompanies,
   updateCompany,
   updateCompanyInputSchema,
+  type ApplyVerificationResultInput,
   type InsertCompanyInput,
   type UpdateCompanyInput,
+  type VerificationCheckResult,
 } from "./companies";
 
 export { insertContact, insertContactInputSchema, type InsertContactInput } from "./contacts";
