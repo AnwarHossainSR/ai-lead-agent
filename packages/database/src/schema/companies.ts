@@ -55,6 +55,7 @@ export const companies = pgTable(
     // Now derived from verification_state rather than set directly.
     verified: boolean("verified")
       .notNull()
+      .default(sql`DEFAULT`)
       .generatedAlwaysAs(sql`(verification_state = 'verified')::boolean`),
 
     // Verification state derived from check results.
