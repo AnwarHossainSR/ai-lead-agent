@@ -33,7 +33,7 @@ describe("the file-import source reads a CSV list", () => {
         city: "dubai",
         companySize: "50-200",
       });
-      expect(result.candidates[1].website).toBeUndefined();
+      expect(result.candidates[1]!.website).toBeUndefined();
     }
   });
 
@@ -71,7 +71,7 @@ describe("the file-import source reads a JSON list", () => {
     expect(result.outcome).toBe("succeeded");
     if (result.outcome === "succeeded") {
       expect(result.candidates).toHaveLength(2);
-      expect(result.candidates[1].website).toBeUndefined();
+      expect(result.candidates[1]!.website).toBeUndefined();
     }
   });
 });

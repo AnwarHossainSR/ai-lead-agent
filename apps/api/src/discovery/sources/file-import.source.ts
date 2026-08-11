@@ -2,10 +2,10 @@ import { readFile } from "node:fs/promises";
 
 import { validateCandidate } from "./source";
 import type {
+  DiscoveredCandidate,
   DiscoveryRequest,
   DiscoverySource,
   DiscoverySourceResult,
-  DiscoverySourceSuccess,
 } from "./source";
 
 /**
@@ -55,7 +55,7 @@ export class FileImportSource implements DiscoverySource {
       return { outcome: "failed", reason: FILE_IMPORT_REJECTION_REASONS.malformed_file };
     }
 
-    const candidates: DiscoverySourceSuccess["candidates"] = [];
+    const candidates: DiscoveredCandidate[] = [];
     const rejections: Record<string, number> = {};
 
     for (const row of rows) {

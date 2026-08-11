@@ -24,12 +24,12 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 3. Source adapter interface and the file-import adapter
 
-- [ ] 3.1 Define the `DiscoverySource` interface and the `DiscoveredCandidate` type with a required `sourceUrl` and every unverifiable attribute optional
-- [ ] 3.2 Add the Zod schema validating a candidate at the adapter boundary, rejecting a missing or blank source URL with a named reason
-- [ ] 3.3 Implement the `file-import` adapter reading a CSV or JSON list, validating each row, and reporting rejections by reason
-- [ ] 3.4 Add a fake source in `src/discovery/testing/` capable of returning candidates, an empty result, a block, and a failure
-- [ ] 3.5 Add unit tests: a candidate without a source URL is rejected, omitted attributes stay absent, no URL is constructed
-- [ ] 3.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 3.1 Define the `DiscoverySource` interface and the `DiscoveredCandidate` type with a required `sourceUrl` and every unverifiable attribute optional
+- [x] 3.2 Add the Zod schema validating a candidate at the adapter boundary, rejecting a missing or blank source URL with a named reason
+- [x] 3.3 Implement the `file-import` adapter reading a CSV or JSON list, validating each row, and reporting rejections by reason
+- [x] 3.4 Add a fake source in `src/discovery/testing/` capable of returning candidates, an empty result, a block, and a failure
+- [x] 3.5 Add unit tests: a candidate without a source URL is rejected, omitted attributes stay absent, no URL is constructed
+- [x] 3.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 4. Politeness: robots and rate limiting
 

@@ -88,7 +88,7 @@ const optionalFact = z.preprocess(
     }
     return value;
   },
-  z.string().trim().min(1, "Expected a value or nothing at all; a blank string is not a fact."),
+  z.string().trim().min(1, "Expected a value or nothing at all; a blank string is not a fact.").optional(),
 );
 
 /**
@@ -120,11 +120,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * `invalid_candidate`. Nothing guessed is ever returned.
  */
 export function validateCandidate(input: unknown): CandidateValidation {
-  if (
-    !isRecord(input) ||
-    typeof input.sourceUrl !== "string" ||
-    input.sourceUrl.trim().length === 0
-  ) {
+  if (!isRecord(input)) {
+    return { ok: false, reason: CANDIDATE_REJECTION_REASONS.invalid_candidate };
+  }
+
+  if (typeof input.sourceUrl !== "string" || input.sourceUrl.trim().length === 0) {
     return { ok: false, reason: CANDIDATE_REJECTION_REASONS.missing_source_url };
   }
 

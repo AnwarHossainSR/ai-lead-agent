@@ -46,8 +46,8 @@ export class FakeDiscoverySource implements DiscoverySource {
 /** A source that always returns the given candidates (or none, for empty). */
 export function fakeSucceededSource(
   sourceId: string,
-  candidates: DiscoverySourceResult["candidates"] = [],
-  rejections: DiscoverySourceResult["rejections"] = [],
+  candidates: DiscoverySourceSuccess["candidates"] = [],
+  rejections: DiscoverySourceSuccess["rejections"] = [],
 ): FakeDiscoverySource {
   return new FakeDiscoverySource(sourceId, [{ outcome: "succeeded", candidates, rejections }]);
 }
