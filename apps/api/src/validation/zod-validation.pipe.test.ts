@@ -44,6 +44,9 @@ async function createPipeApp(): Promise<INestApplication> {
     DATABASE_URL: "postgresql://unused:unused@127.0.0.1:1/unused",
     REDIS_URL: "redis://127.0.0.1:1",
     WEB_ORIGIN: "http://localhost:3000",
+    GEMINI_API_KEY: "test-gemini-key",
+    CLOUDFLARE_ACCOUNT_ID: "test-cf-account",
+    CLOUDFLARE_API_TOKEN: "test-cf-token",
   });
 
   await app.init();

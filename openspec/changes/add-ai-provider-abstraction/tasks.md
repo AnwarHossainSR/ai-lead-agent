@@ -29,12 +29,12 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 4. Prompt registry
 
-- [ ] 4.1 Add the prompt definition type (name, version, tier, input schema, output schema, `render`) and the frozen registry built at module load
-- [ ] 4.2 Add load-time validation: duplicate name+version fails, and a prompt whose rendered output omits its input fails
-- [ ] 4.3 Add `render` conventions placing instructions and input in separate blocks with the input delimited and never interpolated into instruction text
-- [ ] 4.4 Add one test-only prompt used solely to exercise the machinery, with a schema that includes an explicit "insufficient evidence" outcome
-- [ ] 4.5 Add unit tests: unregistered name refused naming the registered ones, unregistered version refused naming the existing versions, injection case confined to the input block
-- [ ] 4.6 Verify: `pnpm --filter @mela/ai lint typecheck test` passes
+- [x] 4.1 Add the prompt definition type (name, version, tier, input schema, output schema, `render`) and the frozen registry built at module load
+- [x] 4.2 Add load-time validation: duplicate name+version fails, and a prompt whose rendered output omits its input fails
+- [x] 4.3 Add `render` conventions placing instructions and input in separate blocks with the input delimited and never interpolated into instruction text
+- [x] 4.4 Add one test-only prompt used solely to exercise the machinery, with a schema that includes an explicit "insufficient evidence" outcome
+- [x] 4.5 Add unit tests: unregistered name refused naming the registered ones, unregistered version refused naming the existing versions, injection case confined to the input block
+- [x] 4.6 Verify: `pnpm --filter @mela/ai lint typecheck test` passes
 
 ## 5. The service
 
