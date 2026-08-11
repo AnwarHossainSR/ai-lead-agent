@@ -103,18 +103,7 @@ export class DedupService {
       // A database refusal here is not a failure — the candidate mapped to a
       // company that now exists, so it is a duplicate.
       if (error instanceof DuplicateCompanyError) {
-        const existingByDomain =
-          error.existingCompanyId === null
-            ? await findCompanyByNormalizedDomain(
-                executor,
-                error.normalizedDomain,
-              )
-            : undefined;
-        const raceWinner =
-          existingByDomain ??
-          (error.existingCompanyId === null
-            ? undefined
-            : (await this.findCompanyById(executor, error.existingCompanyId)));
+        const raceWinner = await findCompanyByNormalizedDomain(executor, error.normalizedDomain);
 
         if (raceWinner !== undefined) {
           return this.recordDuplicate(executor, raceWinner, input);
@@ -137,19 +126,6 @@ export class DedupService {
     });
 
     return { kind: "duplicate", company };
-  }
-
-  private async findCompanyById(
-    executor: Executor,
-    id: string,
-  ): Promise<CompanyRow | undefined> {
-    const [row] = await executor
-      .select()
-      .from(companiesTable)
-      .where(companiesTable.id.equals(id))
-      .limit(1);
-
-    return row;
   }
 
   /**
