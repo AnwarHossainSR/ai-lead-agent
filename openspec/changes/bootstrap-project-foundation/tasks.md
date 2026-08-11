@@ -88,7 +88,7 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 - [x] 8.2 Configure Tailwind CSS and initialise shadcn/ui, committing the generated components directory and the design tokens
 - [x] 8.3 Build the application shell: root layout, header, sidebar navigation placeholders and a placeholder dashboard area
 - [x] 8.4 Add server-side fetching of the API health endpoint with a bounded timeout, rendering a healthy state and a clearly-labelled degraded state, never an unhandled error page
-- [ ] 8.5 Add Playwright to `apps/web` with a smoke test asserting the shell renders and shows API status in both the healthy and unavailable cases
+- [x] 8.5 Add Playwright to `apps/web` with a smoke test asserting the shell renders and shows API status in both the healthy and unavailable cases
 - [ ] 8.6 Verify: `pnpm --filter @mela/web lint typecheck test build` passes and the shell renders correctly with the API both running and stopped
 
 ## 9. Continuous integration and documentation
