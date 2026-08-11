@@ -104,7 +104,7 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 10. Final verification
 
-- [ ] 10.1 From a clean clone on a machine with Docker running: install, start the stack, migrate, seed, and start both applications; confirm `/health` is healthy and the web shell renders
-- [ ] 10.2 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
-- [ ] 10.3 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test or a recorded manual verification; list any that do not
-- [ ] 10.4 Run `openspec validate bootstrap-project-foundation --strict` and resolve anything it reports
+- [x] 10.1 From a clean clone on a machine with Docker running: install, start the stack, migrate, seed, and start both applications; confirm `/health` is healthy and the web shell renders
+- [x] 10.2 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
+- [x] 10.3 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test or a recorded manual verification; list any that do not
+- [x] 10.4 Run `openspec validate bootstrap-project-foundation --strict` and resolve anything it reports
