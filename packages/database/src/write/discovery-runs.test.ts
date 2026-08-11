@@ -31,7 +31,15 @@ function violatesConstraint(error: unknown, constraint: string): boolean {
       return false;
     }
 
-    if ((candidate as { constraint?: unknown }).constraint === constraint) {
+    // postgres-js reports check violations as `constraint_name` and some other
+    // errors as `constraint`; accepting both keeps the walk robust to the
+    // driver's formatting.
+    const { constraint: direct, constraint_name: named } = candidate as {
+      constraint?: unknown;
+      constraint_name?: unknown;
+    };
+
+    if (direct === constraint || named === constraint) {
       return true;
     }
 

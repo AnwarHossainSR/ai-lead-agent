@@ -13,14 +13,14 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 2. Schema for runs and provenance
 
-- [ ] 2.1 Add the `discovery_run_outcome` and `discovery_source_outcome` enums and the `discovery_runs` table with its `CHECK` constraints
-- [ ] 2.2 Add `discovery_run_sources` with the unique `(run_id, source_id)`, non-negative count constraints and cascade delete
-- [ ] 2.3 Add `company_discovery_sources` with its composite primary key and cascade delete
-- [ ] 2.4 Add the nullable `discovery_run_id` on `companies` with `ON DELETE SET NULL`, and the partial unique index preventing two runs in progress for one country and industry
-- [ ] 2.5 Add validated write helpers: start a run, record a per-source result, finish a run, and record a company source
-- [ ] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`
-- [ ] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the `discovery_run_outcome` and `discovery_source_outcome` enums and the `discovery_runs` table with its `CHECK` constraints
+- [x] 2.2 Add `discovery_run_sources` with the unique `(run_id, source_id)`, non-negative count constraints and cascade delete
+- [x] 2.3 Add `company_discovery_sources` with its composite primary key and cascade delete
+- [x] 2.4 Add the nullable `discovery_run_id` on `companies` with `ON DELETE SET NULL`, and the partial unique index preventing two runs in progress for one country and industry
+- [x] 2.5 Add validated write helpers: start a run, record a per-source result, finish a run, and record a company source
+- [x] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
+- [x] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`
+- [x] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
 
 ## 3. Source adapter interface and the file-import adapter
 
