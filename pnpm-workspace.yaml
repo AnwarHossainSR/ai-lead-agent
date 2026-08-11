@@ -17,6 +17,7 @@ allowBuilds:
   "@swc/core": true
   "@google/genai": true
   protobufjs: true
+  unrs-resolver: true
 
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
