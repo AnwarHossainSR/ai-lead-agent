@@ -100,7 +100,7 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 - [x] 9.5 Write `docs/development.md` (pinned versions, starting and stopping services, migrations, seeding, running each test suite, troubleshooting on Windows)
 - [x] 9.6 Write `docs/architecture.md` and `docs/data-model.md` describing only what now exists, sourced from `design.md`
 - [x] 9.7 Write `docs/implementation-progress.md` recording this change as complete and listing Phases 3–17 as not started
-- [ ] 9.8 Verify: every command, path and capability named in the documentation exists in the repository
+- [x] 9.8 Verify: every command, path and capability named in the documentation exists in the repository
 
 ## 10. Final verification
 
