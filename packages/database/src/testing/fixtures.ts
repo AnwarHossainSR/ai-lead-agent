@@ -1,3 +1,4 @@
+import type { InsertAIInvocationInput } from "../write/ai-invocations";
 import type { InsertCompanyInput } from "../write/companies";
 import type { InsertContactInput } from "../write/contacts";
 import type { InsertLeadInput } from "../write/leads";
@@ -31,6 +32,24 @@ export function contactInput(
     name: "Example Contact",
     certainty: "observed",
     researchSource: "test fixture",
+    ...overrides,
+  };
+}
+
+export function aiInvocationInput(
+  overrides: Partial<InsertAIInvocationInput> = {},
+): InsertAIInvocationInput {
+  return {
+    promptName: "test_prompt",
+    promptVersion: 1,
+    model: "gemini-2.5-pro",
+    tier: "default",
+    inputTokens: 100,
+    outputTokens: 50,
+    estimatedCostUsd: 0.001,
+    latencyMs: 250,
+    attempts: 1,
+    outcome: "succeeded",
     ...overrides,
   };
 }

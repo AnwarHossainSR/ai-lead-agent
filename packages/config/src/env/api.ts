@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { httpUrl, postgresUrl, redisUrl, tcpPort } from "./fields";
+import { httpUrl, positiveAmount, positiveInteger, postgresUrl, redisUrl, tcpPort } from "./fields";
 import { createEnvLoader } from "./load";
 
 /** Everything the NestJS API reads at startup. */
@@ -33,6 +33,67 @@ export const apiEnvSchema = z.object({
     .describe(
       "Origin the web application is served from. The API permits CORS requests from it and no other.",
     ),
+
+  // Two vendors, one per tier — not a runtime-selectable "AI_PROVIDER". The
+  // default tier's evidence-weighted reasoning runs on Gemini; the fast
+  // tier's cheap classification runs on Cloudflare Workers AI.
+  GEMINI_API_KEY: z
+    .string()
+    .trim()
+    .min(1, "Expected the Gemini API key.")
+    .describe(
+      "Google Gemini API key, used for the default tier. Secret — never logged, never returned in a health response, never present in an error message.",
+    ),
+
+  CLOUDFLARE_ACCOUNT_ID: z
+    .string()
+    .trim()
+    .min(1, "Expected the Cloudflare account id.")
+    .describe("Cloudflare account id. Workers AI is called at a URL scoped to this account."),
+
+  CLOUDFLARE_API_TOKEN: z
+    .string()
+    .trim()
+    .min(1, "Expected the Cloudflare API token.")
+    .describe(
+      "Cloudflare API token scoped to Workers AI, used for the fast tier. Secret — never logged, never returned in a health response, never present in an error message.",
+    ),
+
+  AI_MODEL_DEFAULT: z
+    .string()
+    .trim()
+    .min(1)
+    .default("gemini-2.5-pro")
+    .describe(
+      "Gemini model identifier for the default tier: evidence-weighted reasoning over research and analysis.",
+    ),
+
+  AI_MODEL_FAST: z
+    .string()
+    .trim()
+    .min(1)
+    .default("@cf/meta/llama-3.3-70b-instruct-fp8-fast")
+    .describe(
+      "Cloudflare Workers AI model identifier for the fast tier: cheap classification and short extraction. Must be a model in Cloudflare's catalog that supports function calling — that is how structured output is requested (design D4).",
+    ),
+
+  AI_MAX_OUTPUT_TOKENS: positiveInteger
+    .default(4_096)
+    .describe("Maximum output tokens requested per model call."),
+
+  AI_TIMEOUT_MS: positiveInteger
+    .default(60_000)
+    .describe(
+      "Bound on a single model call, in milliseconds. These are long analytical calls, not request-path work.",
+    ),
+
+  AI_SPEND_CEILING_USD: positiveAmount
+    .default(20)
+    .describe("Maximum estimated spend permitted within AI_SPEND_WINDOW_HOURS before calls are refused."),
+
+  AI_SPEND_WINDOW_HOURS: positiveInteger
+    .default(24)
+    .describe("Rolling window, in hours, over which AI_SPEND_CEILING_USD is enforced."),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

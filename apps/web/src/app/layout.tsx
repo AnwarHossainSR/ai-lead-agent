@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "AI-assisted B2B lead generation and sales intelligence platform",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

@@ -2,15 +2,22 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Dependency install scripts are blocked by default. Both exceptions below are
-# native compilers whose postinstall does one thing: link the prebuilt binary
-# for this platform. Without it the tool has no executable at all.
-#   esbuild    — tsx, drizzle-kit and vitest all run through it
-#   @swc/core  — the only TypeScript transform that emits decorator metadata,
-#                which Nest's dependency injection reads at runtime
+# Dependency install scripts are blocked by default.
+#   esbuild, @swc/core  — native compilers whose postinstall does one thing:
+#                         link the prebuilt binary for this platform. Without
+#                         it the tool has no executable at all.
+#   protobufjs          — postinstall only checks a version-scheme convention
+#                         between it and its dependent and warns to stderr;
+#                         read in full before allowing.
+#   @google/genai        — declares a `prepare` script whose referenced file
+#                         (scripts/prepare.js) is not present in the published
+#                         package, so it is a no-op; harmless to allow.
 allowBuilds:
   esbuild: true
   "@swc/core": true
+  "@google/genai": true
+  protobufjs: true
+  unrs-resolver: true
 
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
@@ -66,6 +73,9 @@ catalog:
   # only reason Redis is here at all — is built against the 5.x line. Two
   # majors of the same client in one process is not worth it for a PING.
   ioredis: 5.11.1
+
+  # AI
+  "@google/genai": 2.16.0
 
 # vite declares tsx as an *optional* peer dependency, so with autoInstallPeers
 # pnpm pulls whatever the newest release is into every package that uses

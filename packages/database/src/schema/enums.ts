@@ -83,3 +83,20 @@ export const CERTAINTIES = ["observed", "inferred"] as const;
 export type Certainty = (typeof CERTAINTIES)[number];
 
 export const certaintyEnum = pgEnum("certainty", CERTAINTIES);
+
+/**
+ * Outcome of one language model call (design D6). `succeeded` is a usable
+ * result; the other three still cost money and are recorded so a high
+ * failure or refusal rate is visible rather than invisible in a table of
+ * successes only.
+ */
+export const AI_INVOCATION_OUTCOMES = [
+  "succeeded",
+  "invalid_output",
+  "provider_error",
+  "refused_by_ceiling",
+] as const;
+
+export type AIInvocationOutcome = (typeof AI_INVOCATION_OUTCOMES)[number];
+
+export const aiInvocationOutcomeEnum = pgEnum("ai_invocation_outcome", AI_INVOCATION_OUTCOMES);
