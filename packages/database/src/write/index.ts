@@ -16,6 +16,7 @@ export {
 
 export {
   findCompanyByNormalizedDomain,
+  findCompanyByNormalizedName,
   insertCompany,
   insertCompanyInputSchema,
   updateCompany,
@@ -57,3 +58,18 @@ export {
   spendInWindow,
   type InsertAIInvocationInput,
 } from "./ai-invocations";
+
+export {
+  finishDiscoveryRun,
+  finishDiscoveryRunInputSchema,
+  recordCompanyDiscoverySource,
+  recordCompanyDiscoverySourceInputSchema,
+  recordDiscoveryRunSource,
+  recordDiscoveryRunSourceInputSchema,
+  startDiscoveryRun,
+  startDiscoveryRunInputSchema,
+  type FinishDiscoveryRunInput,
+  type RecordCompanyDiscoverySourceInput,
+  type RecordDiscoveryRunSourceInput,
+  type StartDiscoveryRunInput,
+} from "./discovery-runs";

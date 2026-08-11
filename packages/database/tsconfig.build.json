@@ -1,9 +1,11 @@
 {
-  // Tests and the integration harness are typechecked (tsconfig.json includes
-  // them) but never emitted, so consumers of this package only ever see
-  // production modules. The operator scripts are emitted: they are part of what
-  // the package does.
+  // Test files are typechecked (tsconfig.json includes them) but never emitted,
+  // so consumers of this package only ever see production modules. The
+  // integration harness is emitted: it is exported as `@mela/database/testing`
+  // so other packages run their integration tests against the same dedicated
+  // `_test` database. The operator scripts are emitted too: they are part of
+  // what the package does.
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "dist", "coverage", "drizzle", "src/**/*.test.ts", "src/testing/**/*"]
+  "exclude": ["node_modules", "dist", "coverage", "drizzle", "src/**/*.test.ts"]
 }

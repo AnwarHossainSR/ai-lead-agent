@@ -4,49 +4,49 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Discovery source configuration
 
-- [ ] 1.1 Add discovery source configuration to `packages/config`: identifier, display name, kind, enabled, covered countries, maximum request rate, crawl permission — with `as const` exports and frozen values
-- [ ] 1.2 Add load-time validation: duplicate identifiers, coverage of unconfigured countries, and non-positive request rates all fail at load
-- [ ] 1.3 Add `resolveDiscoverySource` refusing an unknown identifier with a message listing the configured ones, and export the derived `DiscoverySourceId` union
-- [ ] 1.4 Add the three initial source declarations (`file-import`, `places`, one directory) with crawl permission defaulting to denied
-- [ ] 1.5 Add unit tests covering every scenario in `specs/product-configuration/spec.md`, including the assertion that the schema has no robots-override field
-- [ ] 1.6 Verify: `pnpm --filter @mela/config lint typecheck test` passes
+- [x] 1.1 Add discovery source configuration to `packages/config`: identifier, display name, kind, enabled, covered countries, maximum request rate, crawl permission — with `as const` exports and frozen values
+- [x] 1.2 Add load-time validation: duplicate identifiers, coverage of unconfigured countries, and non-positive request rates all fail at load
+- [x] 1.3 Add `resolveDiscoverySource` refusing an unknown identifier with a message listing the configured ones, and export the derived `DiscoverySourceId` union
+- [x] 1.4 Add the three initial source declarations (`file-import`, `places`, one directory) with crawl permission defaulting to denied
+- [x] 1.5 Add unit tests covering every scenario in `specs/product-configuration/spec.md`, including the assertion that the schema has no robots-override field
+- [x] 1.6 Verify: `pnpm --filter @mela/config lint typecheck test` passes
 
 ## 2. Schema for runs and provenance
 
-- [ ] 2.1 Add the `discovery_run_outcome` and `discovery_source_outcome` enums and the `discovery_runs` table with its `CHECK` constraints
-- [ ] 2.2 Add `discovery_run_sources` with the unique `(run_id, source_id)`, non-negative count constraints and cascade delete
-- [ ] 2.3 Add `company_discovery_sources` with its composite primary key and cascade delete
-- [ ] 2.4 Add the nullable `discovery_run_id` on `companies` with `ON DELETE SET NULL`, and the partial unique index preventing two runs in progress for one country and industry
-- [ ] 2.5 Add validated write helpers: start a run, record a per-source result, finish a run, and record a company source
-- [ ] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`
-- [ ] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the `discovery_run_outcome` and `discovery_source_outcome` enums and the `discovery_runs` table with its `CHECK` constraints
+- [x] 2.2 Add `discovery_run_sources` with the unique `(run_id, source_id)`, non-negative count constraints and cascade delete
+- [x] 2.3 Add `company_discovery_sources` with its composite primary key and cascade delete
+- [x] 2.4 Add the nullable `discovery_run_id` on `companies` with `ON DELETE SET NULL`, and the partial unique index preventing two runs in progress for one country and industry
+- [x] 2.5 Add validated write helpers: start a run, record a per-source result, finish a run, and record a company source
+- [x] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
+- [x] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`
+- [x] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
 
 ## 3. Source adapter interface and the file-import adapter
 
-- [ ] 3.1 Define the `DiscoverySource` interface and the `DiscoveredCandidate` type with a required `sourceUrl` and every unverifiable attribute optional
-- [ ] 3.2 Add the Zod schema validating a candidate at the adapter boundary, rejecting a missing or blank source URL with a named reason
-- [ ] 3.3 Implement the `file-import` adapter reading a CSV or JSON list, validating each row, and reporting rejections by reason
-- [ ] 3.4 Add a fake source in `src/discovery/testing/` capable of returning candidates, an empty result, a block, and a failure
-- [ ] 3.5 Add unit tests: a candidate without a source URL is rejected, omitted attributes stay absent, no URL is constructed
-- [ ] 3.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 3.1 Define the `DiscoverySource` interface and the `DiscoveredCandidate` type with a required `sourceUrl` and every unverifiable attribute optional
+- [x] 3.2 Add the Zod schema validating a candidate at the adapter boundary, rejecting a missing or blank source URL with a named reason
+- [x] 3.3 Implement the `file-import` adapter reading a CSV or JSON list, validating each row, and reporting rejections by reason
+- [x] 3.4 Add a fake source in `src/discovery/testing/` capable of returning candidates, an empty result, a block, and a failure
+- [x] 3.5 Add unit tests: a candidate without a source URL is rejected, omitted attributes stay absent, no URL is constructed
+- [x] 3.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 4. Politeness: robots and rate limiting
 
-- [ ] 4.1 Implement `robots.txt` fetching, per-origin caching with a 24-hour TTL, and path evaluation, treating a malformed or unreachable file as disallowing
-- [ ] 4.2 Implement the per-source token bucket taking the slower of the configured interval and the declared crawl-delay
-- [ ] 4.3 Implement block detection — 403, 429 without `retry-after`, and bot-challenge response signatures — ending the source for the run
-- [ ] 4.4 Add a test asserting the module exposes no proxy, user-agent-rotation or challenge-solving option
-- [ ] 4.5 Add unit tests covering disallowed paths, crawl-delay spacing, and abandonment on block
-- [ ] 4.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 4.1 Implement `robots.txt` fetching, per-origin caching with a 24-hour TTL, and path evaluation, treating a malformed or unreachable file as disallowing
+- [x] 4.2 Implement the per-source token bucket taking the slower of the configured interval and the declared crawl-delay
+- [x] 4.3 Implement block detection — 403, 429 without `retry-after`, and bot-challenge response signatures — ending the source for the run
+- [x] 4.4 Add a test asserting the module exposes no proxy, user-agent-rotation or challenge-solving option
+- [x] 4.5 Add unit tests covering disallowed paths, crawl-delay spacing, and abandonment on block
+- [x] 4.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 5. Deduplication
 
-- [ ] 5.1 Implement the deterministic dedup service: normalized domain first, then normalized name within the same country, then new
-- [ ] 5.2 Wire it to update provenance on a match rather than creating a second company
-- [ ] 5.3 Add unit and integration tests: two sources yielding one company, rediscovery counted as duplicate, two website-less companies with different names both stored, same name merged
-- [ ] 5.4 Add a test asserting no code path in the dedup service calls a language model
-- [ ] 5.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 5.1 Implement the deterministic dedup service: normalized domain first, then normalized name within the same country, then new
+- [x] 5.2 Wire it to update provenance on a match rather than creating a second company
+- [x] 5.3 Add unit and integration tests: two sources yielding one company, rediscovery counted as duplicate, two website-less companies with different names both stored, same name merged
+- [x] 5.4 Add a test asserting no code path in the dedup service calls a language model
+- [x] 5.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 6. Run orchestration
 

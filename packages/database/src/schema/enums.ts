@@ -100,3 +100,40 @@ export const AI_INVOCATION_OUTCOMES = [
 export type AIInvocationOutcome = (typeof AI_INVOCATION_OUTCOMES)[number];
 
 export const aiInvocationOutcomeEnum = pgEnum("ai_invocation_outcome", AI_INVOCATION_OUTCOMES);
+
+/**
+ * How a discovery run ended. `running` is the state while it is in flight;
+ * the rest are terminal. `partial` is the honest name for a run where one
+ * source failed and another succeeded; `limit_reached` says *which* limit is
+ * carried in the run's failure reason.
+ */
+export const DISCOVERY_RUN_OUTCOMES = [
+  "running",
+  "succeeded",
+  "partial",
+  "limit_reached",
+  "failed",
+] as const;
+
+export type DiscoveryRunOutcome = (typeof DISCOVERY_RUN_OUTCOMES)[number];
+
+export const discoveryRunOutcomeEnum = pgEnum("discovery_run_outcome", DISCOVERY_RUN_OUTCOMES);
+
+/**
+ * How one source fared within a run. `skipped` covers both a source disabled
+ * for the run and a path that `robots.txt` disallows; `blocked` means the
+ * source stopped answering and we stopped asking — never evaded.
+ */
+export const DISCOVERY_SOURCE_OUTCOMES = [
+  "succeeded",
+  "skipped",
+  "blocked",
+  "failed",
+] as const;
+
+export type DiscoverySourceOutcome = (typeof DISCOVERY_SOURCE_OUTCOMES)[number];
+
+export const discoverySourceOutcomeEnum = pgEnum(
+  "discovery_source_outcome",
+  DISCOVERY_SOURCE_OUTCOMES,
+);

@@ -1,5 +1,5 @@
 import { normalizeCompanyName, normalizeDomain } from "@mela/shared";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -54,6 +54,10 @@ export const insertCompanyInputSchema = z
     discoverySource: z.string().trim().min(1, "Expected the source this company was found in."),
     discoverySourceUrl: z.url("Expected the URL this company was found at."),
 
+    // The run that first found this company, when one did. Optional: a
+    // manually entered company has no run.
+    discoveryRunId: z.string().uuid("Expected the discovery run identifier.").nullish(),
+
     verified: z.boolean().default(false),
     isExample: z.boolean().default(false),
   })
@@ -93,6 +97,7 @@ export async function insertCompany(
         description: value.description ?? null,
         discoverySource: value.discoverySource,
         discoverySourceUrl: value.discoverySourceUrl,
+        discoveryRunId: value.discoveryRunId ?? null,
         verified: value.verified,
         isExample: value.isExample,
       })
@@ -121,6 +126,25 @@ export async function findCompanyByNormalizedDomain(
     .select()
     .from(companies)
     .where(eq(companies.normalizedDomain, normalizedDomain))
+    .limit(1);
+
+  return row;
+}
+
+/**
+ * The second deduplication key (design D5): normalized name within the same
+ * country. Deliberately country-scoped — "Al Noor Trading" in Dubai and in
+ * Riyadh are usually different companies — and returned at most once.
+ */
+export async function findCompanyByNormalizedName(
+  executor: Executor,
+  countryId: string,
+  normalizedName: string,
+): Promise<CompanyRow | undefined> {
+  const [row] = await executor
+    .select()
+    .from(companies)
+    .where(and(eq(companies.countryId, countryId), eq(companies.normalizedName, normalizedName)))
     .limit(1);
 
   return row;

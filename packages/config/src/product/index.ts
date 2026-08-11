@@ -93,6 +93,20 @@ export {
 } from "./outreach";
 
 export {
+  ACTIVE_DISCOVERY_SOURCES,
+  DISCOVERY_SOURCES,
+  discoverySourceKindSchema,
+  discoverySourceSchema,
+  findDiscoverySource,
+  isDiscoverySourceId,
+  parseDiscoverySources,
+  resolveDiscoverySource,
+  type DiscoverySource,
+  type DiscoverySourceId,
+  type DiscoverySourceKind,
+} from "./discovery-sources";
+
+export {
   AI_MODEL_TIERS,
   aiModelTierSchema,
   findAIModelTier,

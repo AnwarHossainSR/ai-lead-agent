@@ -61,7 +61,7 @@ jobs:
         env:
           POSTGRES_USER: mela
           POSTGRES_PASSWORD: mela_test
-          POSTGRES_DB: mela_test
+          POSTGRES_DB: mela
         ports:
           - 5432:5432
         options: >-
@@ -79,7 +79,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://mela:mela_test@localhost:5432/mela_test
+      DATABASE_URL: postgresql://mela:mela_test@localhost:5432/mela
       REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4
