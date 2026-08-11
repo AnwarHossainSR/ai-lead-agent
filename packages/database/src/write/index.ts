@@ -16,6 +16,7 @@ export {
 
 export {
   findCompanyByNormalizedDomain,
+  findCompanyByNormalizedName,
   insertCompany,
   insertCompanyInputSchema,
   updateCompany,
