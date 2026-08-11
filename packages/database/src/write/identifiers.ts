@@ -1,11 +1,13 @@
 import {
   CITIES,
   COUNTRIES,
+  DISCOVERY_SOURCES,
   INDUSTRIES,
   SERVICES,
   findCity,
   isCityId,
   isCountryId,
+  isDiscoverySourceId,
   isIndustryId,
   isServiceId,
 } from "@mela/config";
@@ -54,6 +56,12 @@ export const serviceIdSchema = configuredIdentifier(
   "service",
   isServiceId,
   SERVICES.map((service) => service.id),
+);
+
+export const discoverySourceIdSchema = configuredIdentifier(
+  "discovery source",
+  isDiscoverySourceId,
+  DISCOVERY_SOURCES.map((source) => source.id),
 );
 
 /**

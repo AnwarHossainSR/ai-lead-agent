@@ -1,6 +1,8 @@
 import { sql } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
+import { discoveryRuns } from "./discovery";
+
 /**
  * A company that has been discovered and may become a lead.
  *
@@ -39,6 +41,13 @@ export const companies = pgTable(
     // it was found is indistinguishable from an invented one.
     discoverySource: text("discovery_source").notNull(),
     discoverySourceUrl: text("discovery_source_url").notNull(),
+
+    // The run that first found this company, when one did. NULL for a company
+    // entered by hand. Deleting a run clears this rather than the company: a
+    // run is housekeeping, a company is a record of a real business.
+    discoveryRunId: uuid("discovery_run_id").references(() => discoveryRuns.id, {
+      onDelete: "set null",
+    }),
 
     // Whether a human or a verification step has confirmed the company exists
     // and the details match. Discovery alone does not make it true.

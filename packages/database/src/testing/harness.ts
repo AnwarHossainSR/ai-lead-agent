@@ -75,7 +75,10 @@ const TABLES = [
   "leads",
   "website_analysis",
   "contacts",
+  "company_discovery_sources",
   "companies",
+  "discovery_run_sources",
+  "discovery_runs",
   "ai_invocations",
 ] as const;
 

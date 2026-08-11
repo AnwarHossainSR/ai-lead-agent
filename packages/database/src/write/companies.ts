@@ -54,6 +54,10 @@ export const insertCompanyInputSchema = z
     discoverySource: z.string().trim().min(1, "Expected the source this company was found in."),
     discoverySourceUrl: z.url("Expected the URL this company was found at."),
 
+    // The run that first found this company, when one did. Optional: a
+    // manually entered company has no run.
+    discoveryRunId: z.string().uuid("Expected the discovery run identifier.").nullish(),
+
     verified: z.boolean().default(false),
     isExample: z.boolean().default(false),
   })
@@ -93,6 +97,7 @@ export async function insertCompany(
         description: value.description ?? null,
         discoverySource: value.discoverySource,
         discoverySourceUrl: value.discoverySourceUrl,
+        discoveryRunId: value.discoveryRunId ?? null,
         verified: value.verified,
         isExample: value.isExample,
       })

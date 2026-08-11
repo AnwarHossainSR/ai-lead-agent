@@ -4,12 +4,12 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Discovery source configuration
 
-- [ ] 1.1 Add discovery source configuration to `packages/config`: identifier, display name, kind, enabled, covered countries, maximum request rate, crawl permission — with `as const` exports and frozen values
-- [ ] 1.2 Add load-time validation: duplicate identifiers, coverage of unconfigured countries, and non-positive request rates all fail at load
-- [ ] 1.3 Add `resolveDiscoverySource` refusing an unknown identifier with a message listing the configured ones, and export the derived `DiscoverySourceId` union
-- [ ] 1.4 Add the three initial source declarations (`file-import`, `places`, one directory) with crawl permission defaulting to denied
-- [ ] 1.5 Add unit tests covering every scenario in `specs/product-configuration/spec.md`, including the assertion that the schema has no robots-override field
-- [ ] 1.6 Verify: `pnpm --filter @mela/config lint typecheck test` passes
+- [x] 1.1 Add discovery source configuration to `packages/config`: identifier, display name, kind, enabled, covered countries, maximum request rate, crawl permission — with `as const` exports and frozen values
+- [x] 1.2 Add load-time validation: duplicate identifiers, coverage of unconfigured countries, and non-positive request rates all fail at load
+- [x] 1.3 Add `resolveDiscoverySource` refusing an unknown identifier with a message listing the configured ones, and export the derived `DiscoverySourceId` union
+- [x] 1.4 Add the three initial source declarations (`file-import`, `places`, one directory) with crawl permission defaulting to denied
+- [x] 1.5 Add unit tests covering every scenario in `specs/product-configuration/spec.md`, including the assertion that the schema has no robots-override field
+- [x] 1.6 Verify: `pnpm --filter @mela/config lint typecheck test` passes
 
 ## 2. Schema for runs and provenance
 
