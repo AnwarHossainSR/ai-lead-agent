@@ -84,8 +84,8 @@ Groups 1–3 cover Phase 1 (Project Foundation) tooling. Group 4 covers Phase 0 
 
 ## 8. Web application shell
 
-- [ ] 8.1 Scaffold `apps/web` as a Next.js 16 App Router application with React 19, TypeScript and the shared tooling configs
-- [ ] 8.2 Configure Tailwind CSS and initialise shadcn/ui, committing the generated components directory and the design tokens
+- [x] 8.1 Scaffold `apps/web` as a Next.js 16 App Router application with React 19, TypeScript and the shared tooling configs
+- [x] 8.2 Configure Tailwind CSS and initialise shadcn/ui, committing the generated components directory and the design tokens
 - [ ] 8.3 Build the application shell: root layout, header, sidebar navigation placeholders and a placeholder dashboard area
 - [ ] 8.4 Add server-side fetching of the API health endpoint with a bounded timeout, rendering a healthy state and a clearly-labelled degraded state, never an unhandled error page
 - [ ] 8.5 Add Playwright to `apps/web` with a smoke test asserting the shell renders and shows API status in both the healthy and unavailable cases
