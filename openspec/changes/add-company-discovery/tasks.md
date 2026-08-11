@@ -42,11 +42,11 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 5. Deduplication
 
-- [ ] 5.1 Implement the deterministic dedup service: normalized domain first, then normalized name within the same country, then new
-- [ ] 5.2 Wire it to update provenance on a match rather than creating a second company
-- [ ] 5.3 Add unit and integration tests: two sources yielding one company, rediscovery counted as duplicate, two website-less companies with different names both stored, same name merged
-- [ ] 5.4 Add a test asserting no code path in the dedup service calls a language model
-- [ ] 5.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 5.1 Implement the deterministic dedup service: normalized domain first, then normalized name within the same country, then new
+- [x] 5.2 Wire it to update provenance on a match rather than creating a second company
+- [x] 5.3 Add unit and integration tests: two sources yielding one company, rediscovery counted as duplicate, two website-less companies with different names both stored, same name merged
+- [x] 5.4 Add a test asserting no code path in the dedup service calls a language model
+- [ ] 5.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes — blocked on a real Upstash `REDIS_URL` in `.env`; lint, typecheck and the dedup tests are green
 
 ## 6. Run orchestration
 
