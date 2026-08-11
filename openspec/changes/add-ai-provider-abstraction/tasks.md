@@ -49,15 +49,15 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 6. API wiring
 
-- [ ] 6.1 Add an AI module to `apps/api` providing `AIService` through Nest DI, built from the validated environment
-- [ ] 6.2 Confirm no HTTP route exposes the service in this change, and that startup logs name no key
-- [ ] 6.3 Verify: `pnpm --filter @mela/api lint typecheck test build` passes and the API still starts with `/health` healthy
+- [x] 6.1 Add an AI module to `apps/api` providing `AIService` through Nest DI, built from the validated environment
+- [x] 6.2 Confirm no HTTP route exposes the service in this change, and that startup logs name no key
+- [x] 6.3 Verify: `pnpm --filter @mela/api lint typecheck test build` passes and the API still starts with `/health` healthy
 
 ## 7. Documentation and final verification
 
-- [ ] 7.1 Document the package in `docs/architecture.md`: the two layers, the prompt versioning rule, and the "validated, never coerced" contract
-- [ ] 7.2 Add a short `docs/ai-prompts.md` covering how to add a prompt and why an existing version is never edited
-- [ ] 7.3 Update `docs/implementation-progress.md`
-- [ ] 7.4 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
-- [ ] 7.5 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
-- [ ] 7.6 Run `openspec validate add-ai-provider-abstraction --strict` and resolve anything it reports
+- [x] 7.1 Document the package in `docs/architecture.md`: the two layers, the prompt versioning rule, and the "validated, never coerced" contract
+- [x] 7.2 Add a short `docs/ai-prompts.md` covering how to add a prompt and why an existing version is never edited
+- [x] 7.3 Update `docs/implementation-progress.md`
+- [x] 7.4 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
+- [x] 7.5 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
+- [x] 7.6 Run `openspec validate add-ai-provider-abstraction --strict` and resolve anything it reports
