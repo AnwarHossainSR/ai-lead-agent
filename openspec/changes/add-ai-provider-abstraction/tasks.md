@@ -20,8 +20,8 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 3. Provider transport
 
-- [ ] 3.1 Define the `AIProvider` interface: a single request method taking rendered messages, a tool definition and a model, returning content plus token usage
-- [ ] 3.2 Add the failure classification module mapping provider conditions to retryable and terminal, per design D8
+- [x] 3.1 Define the `AIProvider` interface: a single request method taking rendered messages, a tool definition and a model, returning content plus token usage
+- [x] 3.2 Add the failure classification module mapping provider conditions to retryable and terminal, per design D8
 - [ ] 3.3 Implement the Gemini provider (`@google/genai`) and the Cloudflare Workers AI provider (REST via `fetch`), each with the configured timeout, exponential backoff with jitter, and rate-limit retry headers honoured when present
 - [ ] 3.4 Add the redaction guard: assert in unit tests that no error raised by the provider contains the API key
 - [ ] 3.5 Add a fake provider in `src/testing/` capable of returning valid output, invalid output, a rate limit, an auth failure and a hang
