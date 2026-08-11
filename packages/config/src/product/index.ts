@@ -115,3 +115,22 @@ export {
   type AIModelTier,
   type AIModelTierId,
 } from "./ai-model-tiers";
+
+export {
+  REGISTRY_CONFIGS,
+  VERIFICATION_POLITENESS,
+  VERIFICATION_RULE,
+  isVerificationCheckId,
+  parseRegistryConfigs,
+  parseVerificationPoliteness,
+  parseVerificationRule,
+  registryConfigSchema,
+  verificationCheckConfigSchema,
+  verificationPolitenessSchema,
+  verificationRuleSchema,
+  type RegistryConfig,
+  type VerificationCheckConfig,
+  type VerificationCheckId,
+  type VerificationPoliteness,
+  type VerificationRule,
+} from "./verification";

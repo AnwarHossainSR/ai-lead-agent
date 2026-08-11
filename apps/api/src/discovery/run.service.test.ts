@@ -138,6 +138,26 @@ describe("source selection", () => {
     const fileImportSource = runSources.find((s) => s.sourceId === "file_import");
     expect(fileImportSource?.outcome).toBe("skipped");
   });
+
+  it("does not include disabled sources like places", async () => {
+    const fileImport = fakeSucceededSource("file_import", []);
+    const places = fakeSucceededSource("places", []);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
+      ["file_import", fileImport],
+      ["places", places],
+    ]);
+
+    const result = await runService.executeRun(
+      harness.database,
+      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      runRequest(),
+    );
+
+    expect(result.run.outcome).toBe("succeeded");
+    // file_import was called, places was not (it's disabled in config)
+    expect(fileImport.requests).toHaveLength(1);
+    expect(places.requests).toHaveLength(0);
+  });
 });
 
 describe("candidate processing", () => {

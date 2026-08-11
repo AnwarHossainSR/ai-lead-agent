@@ -129,6 +129,76 @@ Tracks outreach attempts to contacts.
 - `outreach_sent_requires_approval_check` - Cannot be sent without approval
 - `outreach_sent_after_approval_check` - Sent timestamp must be after approval
 
+### discovery_runs
+
+Tracks company discovery runs.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| country_id | TEXT | Country identifier (e.g., "uae") |
+| city_id | TEXT | City identifier (optional) |
+| industry_id | TEXT | Industry identifier (e.g., "logistics") |
+| started_at | TIMESTAMP | Run start time |
+| finished_at | TIMESTAMP | Run completion time (nullable while running) |
+| outcome | discovery_run_outcome | Final outcome |
+| candidate_limit | INTEGER | Maximum candidates to store |
+| duration_limit_seconds | INTEGER | Maximum run duration |
+| failure_reason | TEXT | Reason for failure (if applicable) |
+
+**Constraints:**
+- `discovery_runs_finished_at_after_started_at` - Finished time must be after start time
+- `discovery_runs_candidate_limit_positive` - Candidate limit must be >= 1
+- `discovery_runs_duration_limit_positive` - Duration limit must be >= 1
+
+**Indexes:**
+- `discovery_runs_one_running_per_territory` (partial unique on `country_id, industry_id` WHERE `outcome = 'running'`)
+- `discovery_runs_started_at_idx` (on `started_at`)
+
+### discovery_run_sources
+
+Tracks per-source results within a discovery run.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| run_id | UUID | Foreign key to discovery_runs |
+| source_id | TEXT | Source identifier (e.g., "file_import") |
+| outcome | discovery_source_outcome | Source outcome |
+| returned_count | INTEGER | Candidates returned by source |
+| stored_count | INTEGER | Candidates stored from source |
+| duplicate_count | INTEGER | Duplicate candidates rejected |
+| rejected_count | INTEGER | Invalid candidates rejected |
+| rejections | JSONB | Rejection reasons with counts |
+| note | TEXT | Additional note (e.g., block reason) |
+
+**Constraints:**
+- `discovery_run_sources_run_id_fk` - Foreign key to discovery_runs (CASCADE DELETE)
+- `discovery_run_sources_returned_non_negative` - Returned count >= 0
+- `discovery_run_sources_stored_non_negative` - Stored count >= 0
+- `discovery_run_sources_duplicate_non_negative` - Duplicate count >= 0
+- `discovery_run_sources_rejected_non_negative` - Rejected count >= 0
+
+**Indexes:**
+- `discovery_run_sources_run_source_key` (unique on `run_id, source_id`)
+
+### company_discovery_sources
+
+Tracks which source discovered each company.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| company_id | UUID | Foreign key to companies |
+| source_id | TEXT | Source identifier |
+| source_url | TEXT | URL where company was found |
+| first_seen_at | TIMESTAMP | When first discovered |
+| last_seen_at | TIMESTAMP | When last rediscovered |
+
+**Constraints:**
+- `company_discovery_sources_company_id_fk` - Foreign key to companies (CASCADE DELETE)
+- `company_discovery_sources_company_source_pk` - Composite primary key on (`company_id, source_id`)
+- `company_discovery_sources_source_url_not_blank` - Source URL must not be blank
+
 ## Enums
 
 ### lead_status

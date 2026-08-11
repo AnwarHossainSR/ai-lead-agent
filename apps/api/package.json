@@ -22,6 +22,7 @@
     "@nestjs/core": "catalog:",
     "@nestjs/platform-express": "catalog:",
     "@nestjs/terminus": "catalog:",
+    "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",

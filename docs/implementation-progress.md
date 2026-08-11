@@ -4,6 +4,8 @@
 
 **`add-ai-provider-abstraction` in progress (30/39 tasks).** Provider transport, prompt registry, and the service layer are implemented. API wiring and documentation remain.
 
+**`add-company-discovery` in progress (40/52 tasks).** Source configuration, database schema, file-import adapter, places adapter, rate limiting, deduplication, run orchestration, and API surface are implemented. Documentation and final verification remain.
+
 **Pipeline: not started.** Fifteen more changes are planned and validated in `openspec/changes/`.
 None has been applied.
 

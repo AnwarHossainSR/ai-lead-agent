@@ -50,27 +50,27 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 6. Run orchestration
 
-- [ ] 6.1 Implement the run service: resolve and validate the requested territory and industry, select enabled sources covering that country, refuse unknown identifiers naming the configured ones
-- [ ] 6.2 Iterate sources through the rate limiter, collecting candidates and recording per-source counts and outcomes
-- [ ] 6.3 Enforce the candidate and duration limits, ending the run with an outcome naming the limit and retaining what was stored
-- [ ] 6.4 Record run completion, including the partial outcome when one source fails and another succeeds
-- [ ] 6.5 Add integration tests covering every scenario in `specs/company-discovery/spec.md` using the fake source and a `file-import` fixture
-- [ ] 6.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes with the Compose stack running
+- [x] 6.1 Implement the run service: resolve and validate the requested territory and industry, select enabled sources covering that country, refuse unknown identifiers naming the configured ones
+- [x] 6.2 Iterate sources through the rate limiter, collecting candidates and recording per-source counts and outcomes
+- [x] 6.3 Enforce the candidate and duration limits, ending the run with an outcome naming the limit and retaining what was stored
+- [x] 6.4 Record run completion, including the partial outcome when one source fails and another succeeds
+- [x] 6.5 Add integration tests covering every scenario in `specs/company-discovery/spec.md` using the fake source and a `file-import` fixture
+- [x] 6.6 Verify: `pnpm --filter @mela/api lint typecheck test` passes with the Compose stack running
 
 ## 7. The places adapter
 
-- [ ] 7.1 Add the licensed places API key and base URL to the API env schema and `.env.example`, with the key treated as a secret
-- [ ] 7.2 Implement the `places` adapter mapping API results to candidates, carrying the API's own record URL as the source URL
-- [ ] 7.3 Add recorded response fixtures and tests against them; confirm no test makes a live request
-- [ ] 7.4 Verify: the adapter is disabled by default in configuration and a run without the key refuses that source by name rather than failing the run
+- [x] 7.1 Add the licensed places API key and base URL to the API env schema and `.env.example`, with the key treated as a secret
+- [x] 7.2 Implement the `places` adapter mapping API results to candidates, carrying the API's own record URL as the source URL
+- [x] 7.3 Add recorded response fixtures and tests against them; confirm no test makes a live request
+- [x] 7.4 Verify: the adapter is disabled by default in configuration and a run without the key refuses that source by name rather than failing the run
 
 ## 8. API surface
 
-- [ ] 8.1 Add `POST /api/discovery/runs` with a Zod DTO validating the territory and industry, returning the completed run record
-- [ ] 8.2 Add `GET /api/discovery/runs` and `GET /api/discovery/runs/:id` returning per-source counts and outcomes
-- [ ] 8.3 Confirm the in-progress uniqueness index surfaces as a clear refusal rather than a database error
-- [ ] 8.4 Add API tests: an unknown industry returns 400 naming the configured ones, a completed run returns its counts, no credential appears in any response
-- [ ] 8.5 Verify: `pnpm --filter @mela/api lint typecheck test build` passes
+- [x] 8.1 Add `POST /api/discovery/runs` with a Zod DTO validating the territory and industry, returning the completed run record
+- [x] 8.2 Add `GET /api/discovery/runs` and `GET /api/discovery/runs/:id` returning per-source counts and outcomes
+- [x] 8.3 Confirm the in-progress uniqueness index surfaces as a clear refusal rather than a database error
+- [x] 8.4 Add API tests: an unknown industry returns 400 naming the configured ones, a completed run returns its counts, no credential appears in any response
+- [x] 8.5 Verify: `pnpm --filter @mela/api lint typecheck test build` passes
 
 ## 9. Documentation and final verification
 

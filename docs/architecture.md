@@ -34,6 +34,7 @@ MELA (Middle East Lead Agent) is an AI-assisted B2B lead generation platform bui
 
 NestJS REST API providing:
 - Health check endpoints (`GET /health`)
+- Discovery run endpoints (`POST /api/discovery/runs`, `GET /api/discovery/runs`, `GET /api/discovery/runs/:id`)
 - Product configuration APIs
 - Lead management endpoints
 - Outreach management endpoints
@@ -114,3 +115,38 @@ Shared ESLint configuration:
 - `process.env` access restricted to `packages/config` only
 - CORS configured for web origin only
 - No credentials in health responses
+
+## Company Discovery
+
+The discovery module orchestrates finding new companies across configured territories and industries.
+
+### Sources
+
+Discovery sources are pluggable adapters that find companies:
+
+- **`file_import`** — reads a CSV or JSON list the operator already has. The only source that contacts no third party.
+- **`places`** — calls a licensed business listings API. Disabled by default; requires an API key.
+- **`business_directory`** — reads a public directory. Not yet implemented.
+
+Sources are configured in `packages/config/src/product/discovery-sources.ts` with:
+- Identifier, display name, kind
+- Whether the source is enabled
+- Which countries it covers
+- Maximum request rate per minute
+- Crawl permission (defaults to denied)
+
+### Run Lifecycle
+
+1. **Validation** — territory and industry identifiers are validated against configuration
+2. **Source Selection** — enabled sources covering the requested country are selected
+3. **Rate Limiting** — sources are iterated through token buckets respecting configured rates
+4. **Candidate Processing** — candidates are deduplicated, validated, and stored
+5. **Limit Enforcement** — candidate and duration limits end the run early if hit
+6. **Outcome Recording** — run completion records success, partial, failed, or limit_reached
+
+### Design Decisions
+
+- **No anti-bot evasion** — a source that blocks us is recorded as blocked and left alone
+- **No fabrication** — candidates without a source URL are rejected; optional attributes stay absent when not provided
+- **Deterministic deduplication** — domain first, then name within country, no LLM involvement
+- **Human approval before outreach** — discovery finds companies; outreach requires explicit approval

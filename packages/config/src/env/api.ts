@@ -94,6 +94,23 @@ export const apiEnvSchema = z.object({
   AI_SPEND_WINDOW_HOURS: positiveInteger
     .default(24)
     .describe("Rolling window, in hours, over which AI_SPEND_CEILING_USD is enforced."),
+
+  // ---------------------------------------------------------------------------
+  // Discovery sources
+  // ---------------------------------------------------------------------------
+
+  PLACES_API_KEY: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .describe(
+      "API key for the licensed places provider. When absent the places source is disabled for the run.",
+    ),
+
+  PLACES_BASE_URL: httpUrl
+    .default("https://api.places.example.com/v1")
+    .describe("Base URL for the licensed places provider."),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

@@ -3,6 +3,7 @@ import { Module } from "@nestjs/common";
 import { AIModule } from "./ai/ai.module";
 import { EnvModule } from "./config/env.module";
 import { DatabaseModule } from "./database/database.module";
+import { DiscoveryModule } from "./discovery/discovery.module";
 import { HealthModule } from "./health/health.module";
 import { RedisModule } from "./redis/redis.module";
 
@@ -13,6 +14,6 @@ import { RedisModule } from "./redis/redis.module";
  * in later phases.
  */
 @Module({
-  imports: [EnvModule, DatabaseModule, RedisModule, HealthModule, AIModule],
+  imports: [EnvModule, DatabaseModule, RedisModule, HealthModule, AIModule, DiscoveryModule],
 })
 export class AppModule {}
