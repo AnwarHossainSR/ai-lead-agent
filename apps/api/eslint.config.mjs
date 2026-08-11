@@ -18,4 +18,12 @@ export default [
       "@typescript-eslint/consistent-type-imports": "off",
     },
   },
+  {
+    // Test setup files legitimately set process.env before the validated
+    // config exists, so the test runner can load required env vars.
+    files: ["src/testing/**"],
+    rules: {
+      "no-restricted-properties": "off",
+    },
+  },
 ];

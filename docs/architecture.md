@@ -60,6 +60,26 @@ Database layer using Drizzle ORM:
 - Migration management
 - Seed scripts
 
+### packages/ai
+
+The platform's only sanctioned path to a language model. Two layers:
+
+- **`AIProvider`** — thin transport over one vendor (Gemini or Cloudflare Workers AI). Knows about messages, tokens and HTTP failures. Knows nothing about prompts, schemas or cost ceilings.
+- **`AIService`** — the only thing application code calls. Resolves a prompt by name and version, renders it, calls the provider, validates output against a Zod schema (with one repair attempt), estimates cost, enforces the spend ceiling, and records every invocation.
+
+Prompts are versioned modules reviewed like code (`src/prompts/<name>/v<n>.ts`). A published version is never edited. Output is requested as structured data via a single-tool definition and always parsed against the prompt's declared Zod schema — never coerced, never defaulted.
+
+Every call is recorded in `ai_invocations` with the prompt name, version, model, token counts, estimated cost, latency, and outcome. No prompt text, no response text, no key is stored.
+
+```
+packages/ai/
+├─ src/
+│  ├─ provider/          AIProvider interface, Gemini + Cloudflare implementations, retry, errors
+│  ├─ prompts/           PromptDefinition type, registry, render conventions, test-classify prompt
+│  ├─ service/           AIService, output validation, cost estimation
+│  └─ testing/           FakeAIProvider for deterministic tests
+```
+
 ### packages/shared
 
 Shared utilities:

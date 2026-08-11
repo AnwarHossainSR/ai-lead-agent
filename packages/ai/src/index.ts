@@ -14,6 +14,8 @@ export { estimateCost, modelForTier, type CostEstimate } from "./service/spend";
 
 export type { AIProvider, AIToolDefinition, AIMessage, AITokenUsage } from "./provider/provider";
 export { AIProviderError, AIProviderTimeoutError } from "./provider/errors";
+export { GeminiProvider } from "./provider/gemini";
+export { CloudflareProvider, type CloudflareCredentials } from "./provider/cloudflare";
 
 export { resolvePrompt, listPrompts } from "./prompts/registry";
 export type { PromptDefinition, RenderedPrompt } from "./prompts/prompt";

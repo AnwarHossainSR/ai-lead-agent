@@ -2,11 +2,9 @@
 
 ## Current Status
 
-**Foundation complete.** The monorepo, local infrastructure, environment validation, product
-configuration, shared utilities, database schema, API shell, web shell, CI workflow and
-documentation are built, tested and archived as `bootstrap-project-foundation`.
+**`add-ai-provider-abstraction` in progress (30/39 tasks).** Provider transport, prompt registry, and the service layer are implemented. API wiring and documentation remain.
 
-**Pipeline: not started.** Sixteen changes are planned and validated in `openspec/changes/`.
+**Pipeline: not started.** Fifteen more changes are planned and validated in `openspec/changes/`.
 None has been applied.
 
 ## Completed
@@ -91,7 +89,8 @@ Each change also carries deltas against the three existing capabilities where it
 | `@mela/config`   | 9          | 119   | passing |
 | `@mela/shared`   | 3          | 66    | passing |
 | `@mela/database` | 7          | 82    | passing |
-| `@mela/api`      | 7          | 40    | passing |
+| `@mela/ai`       | 7          | 76    | passing |
+| `@mela/api`      | 8          | 44    | passing |
 | `@mela/web`      | 5          | —     | passing |
 
 ## Next step

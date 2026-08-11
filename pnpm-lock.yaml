@@ -113,6 +113,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@mela/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@mela/config':
         specifier: workspace:*
         version: link:../../packages/config
