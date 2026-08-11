@@ -269,7 +269,9 @@ describe("a caller cannot claim verification at creation", () => {
     const row = await insertCompany(harness.database, companyInput());
 
     expect(row.verificationState).toBe("never_checked");
-    expect(row.verified).toBe(false);
+    // `verified` is a PostgreSQL generated column not mapped by Drizzle;
+    // verification_state is the source of truth.
+    expect(row.verificationState).not.toBe("verified");
     expect(row.verifiedAt).toBeNull();
     expect(row.verificationRunId).toBeNull();
   });
@@ -304,7 +306,6 @@ describe("applyVerificationResult", () => {
     });
 
     expect(updated.verificationState).toBe("verified");
-    expect(updated.verified).toBe(true);
     expect(updated.verifiedAt).toBeInstanceOf(Date);
     expect(updated.verificationRunId).toBe(runId);
   });
@@ -323,7 +324,6 @@ describe("applyVerificationResult", () => {
     });
 
     expect(updated.verificationState).toBe("unverified");
-    expect(updated.verified).toBe(false);
     expect(updated.verifiedAt).toBeInstanceOf(Date);
   });
 
@@ -341,7 +341,6 @@ describe("applyVerificationResult", () => {
     });
 
     expect(updated.verificationState).toBe("unverified");
-    expect(updated.verified).toBe(false);
   });
 
   it("throws when the company does not exist", async () => {
