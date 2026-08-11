@@ -107,6 +107,33 @@ describe("an authentication failure", () => {
   });
 });
 
+describe("an invalid request", () => {
+  it("is not retried", async () => {
+    generateContent.mockRejectedValue(new MockApiError(400, "malformed schema"));
+
+    const error = await settle(new GeminiProvider("k").request(request())).catch(
+      (thrown: unknown) => thrown,
+    );
+
+    expect(error).toBeInstanceOf(AIProviderError);
+    expect((error as AIProviderError).condition).toBe("invalid_request");
+    expect(generateContent).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("a connection failure below the SDK", () => {
+  it("is classified as transient and retried", async () => {
+    generateContent
+      .mockRejectedValueOnce(new TypeError("fetch failed"))
+      .mockResolvedValueOnce(contentResponse({ industry: "logistics" }));
+
+    const response = await settle(new GeminiProvider("k").request(request()));
+
+    expect(response.content).toEqual({ industry: "logistics" });
+    expect(generateContent).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("a hanging call", () => {
   it("is bounded by the timeout and retried as transient", async () => {
     // Mirrors what the real SDK does: it never settles on its own, but

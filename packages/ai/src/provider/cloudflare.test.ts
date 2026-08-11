@@ -111,6 +111,33 @@ describe("an authentication failure", () => {
   });
 });
 
+describe("an invalid request", () => {
+  it("is not retried", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(400, { success: false }));
+
+    const error = await settle(provider().request(request())).catch((thrown: unknown) => thrown);
+
+    expect(error).toBeInstanceOf(AIProviderError);
+    expect((error as AIProviderError).condition).toBe("invalid_request");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("a connection failure below the HTTP layer", () => {
+  it("is classified as transient and retried", async () => {
+    fetchMock
+      .mockRejectedValueOnce(new TypeError("fetch failed"))
+      .mockResolvedValueOnce(
+        jsonResponse(200, { success: true, result: { tool_calls: [{ name: "classify", arguments: {} }] } }),
+      );
+
+    const response = await settle(provider().request(request()));
+
+    expect(response.content).toEqual({});
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("a server error", () => {
   it("is retried as transient", async () => {
     fetchMock
