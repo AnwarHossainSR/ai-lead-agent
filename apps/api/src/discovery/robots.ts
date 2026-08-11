@@ -97,16 +97,27 @@ export class RobotsPolicy {
   }
 }
 
+type RawGroup = { agents: string[]; rules: RobotsRule[]; delay: number | null };
+
+function toGroup(raw: RawGroup): RobotsGroup {
+  return {
+    userAgents: raw.agents,
+    rules: raw.rules,
+    crawlDelaySeconds: raw.delay,
+  };
+}
+
 /**
- * Parses `robots.txt`. A file with no recognisable directives is treated as
- * malformed and therefore as disallowing everything: an empty file legally
- * permits everything, but this project resolves ambiguity toward the source
+ * Parses `robots.txt`. An empty file is a valid file and permits everything; a
+ * file with directives that never formed a user-agent group is malformed and
+ * treated as disallowing everything. Both resolutions err toward the source
  * that hosts it, and a source explicitly configured as crawlable can be
  * re-checked by a human.
  */
 export function parseRobotsTxt(content: string): RobotsPolicy {
   const groups: RobotsGroup[] = [];
-  let current: { agents: string[]; rules: RobotsRule[]; delay: number | null } | null = null;
+  let current: RawGroup | null = null;
+  let sawDirective = false;
 
   for (const rawLine of content.split(/\r?\n/)) {
     const line = rawLine.split("#")[0]!.trim();
@@ -116,6 +127,7 @@ export function parseRobotsTxt(content: string): RobotsPolicy {
     }
 
     const colon = line.indexOf(":");
+    sawDirective = true;
 
     if (colon === -1) {
       continue;
@@ -129,7 +141,7 @@ export function parseRobotsTxt(content: string): RobotsPolicy {
         // Consecutive user-agent lines belong to one group; a user-agent line
         // after rules have started closes the previous group.
         if (current !== null && current.rules.length > 0) {
-          groups.push(current);
+          groups.push(toGroup(current));
           current = null;
         }
         current ??= { agents: [], rules: [], delay: null };
@@ -161,7 +173,13 @@ export function parseRobotsTxt(content: string): RobotsPolicy {
   }
 
   if (current !== null) {
-    groups.push(current);
+    groups.push(toGroup(current));
+  }
+
+  // An empty file is a valid robots.txt and permits everything. Only a file
+  // with directives that never formed a group is malformed.
+  if (!sawDirective) {
+    return RobotsPolicy.allowAll();
   }
 
   return groups.length > 0 ? RobotsPolicy.fromGroups(groups) : RobotsPolicy.disallowAll();
