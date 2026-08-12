@@ -1,6 +1,6 @@
 {
-  "id": "e3d3f10a-b13b-4279-838c-d6fe8555b75b",
-  "prevId": "bdd6c1b6-176b-42bc-8537-e5a79822a7e8",
+  "id": "eef79c63-b0b6-4c64-8c17-8756a2913b54",
+  "prevId": "e73cf990-bd92-4c75-ba68-9699f0c37754",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -92,17 +92,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "verified": {
-          "name": "verified",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "generated": {
-            "as": "(verification_state = 'verified')::boolean",
-            "type": "stored"
-          },
-          "default": false
-        },
         "verification_state": {
           "name": "verification_state",
           "type": "company_verification_state",
@@ -179,21 +168,6 @@
             },
             {
               "expression": "industry_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "companies_verified_idx": {
-          "name": "companies_verified_idx",
-          "columns": [
-            {
-              "expression": "verified",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -717,11 +691,62 @@
           "primaryKey": false,
           "notNull": true
         },
+        "outcome": {
+          "name": "outcome",
+          "type": "website_analysis_outcome",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'completed'"
+        },
+        "failure_reason": {
+          "name": "failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "analyzed_url": {
           "name": "analyzed_url",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "http_status": {
+          "name": "http_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "desktop_screenshot_path": {
+          "name": "desktop_screenshot_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mobile_screenshot_path": {
+          "name": "mobile_screenshot_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rendered_html_path": {
+          "name": "rendered_html_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "audit_report_path": {
+          "name": "audit_report_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unverified_override": {
+          "name": "unverified_override",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "performance_score": {
           "name": "performance_score",
@@ -823,6 +848,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "website_analysis_company_outcome_idx": {
+          "name": "website_analysis_company_outcome_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "outcome",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -863,6 +909,14 @@
         "website_analysis_ux_score_range": {
           "name": "website_analysis_ux_score_range",
           "value": "\"website_analysis\".\"ux_score\" IS NULL OR (\"website_analysis\".\"ux_score\" >= 0 AND \"website_analysis\".\"ux_score\" <= 100)"
+        },
+        "website_analysis_failure_reason_required": {
+          "name": "website_analysis_failure_reason_required",
+          "value": "(\"website_analysis\".\"outcome\" = 'completed') OR (\"website_analysis\".\"failure_reason\" IS NOT NULL AND \"website_analysis\".\"failure_reason\" != '')"
+        },
+        "website_analysis_no_scores_on_failure": {
+          "name": "website_analysis_no_scores_on_failure",
+          "value": "(\"website_analysis\".\"outcome\" IN ('blocked', 'skipped', 'failed')) => (\n        \"website_analysis\".\"performance_score\" IS NULL AND\n        \"website_analysis\".\"accessibility_score\" IS NULL AND\n        \"website_analysis\".\"seo_score\" IS NULL AND\n        \"website_analysis\".\"mobile_score\" IS NULL AND\n        \"website_analysis\".\"ux_score\" IS NULL\n      )"
         }
       },
       "isRLSEnabled": false
@@ -1342,6 +1396,109 @@
         }
       },
       "isRLSEnabled": false
+    },
+    "public.verification_checks": {
+      "name": "verification_checks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "check_id": {
+          "name": "check_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verdict": {
+          "name": "verdict",
+          "type": "verification_verdict",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evidence": {
+          "name": "evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evidence_url": {
+          "name": "evidence_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verification_run_id": {
+          "name": "verification_run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ran_at": {
+          "name": "ran_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "verification_checks_company_ran_at_idx": {
+          "name": "verification_checks_company_ran_at_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ran_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "verification_checks_company_id_companies_id_fk": {
+          "name": "verification_checks_company_id_companies_id_fk",
+          "tableFrom": "verification_checks",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "verification_checks_evidence_required": {
+          "name": "verification_checks_evidence_required",
+          "value": "(\"verification_checks\".\"verdict\" IN ('passed', 'failed') AND \"verification_checks\".\"evidence\" IS NOT NULL)\n          OR \"verification_checks\".\"verdict\" = 'unknown'"
+        }
+      },
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -1453,6 +1610,17 @@
         "passed",
         "failed",
         "unknown"
+      ]
+    },
+    "public.website_analysis_outcome": {
+      "name": "website_analysis_outcome",
+      "schema": "public",
+      "values": [
+        "completed",
+        "partial",
+        "blocked",
+        "skipped",
+        "failed"
       ]
     }
   },
