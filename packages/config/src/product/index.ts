@@ -135,3 +135,14 @@ export {
   type VerificationPoliteness,
   type VerificationRule,
 } from "./verification";
+
+export {
+  ANALYSIS_CONFIG,
+  analysisConfigSchema,
+  observationRuleSchema,
+  parseAnalysisConfig,
+  viewportSchema,
+  type AnalysisConfig,
+  type ObservationRule,
+  type Viewport,
+} from "./analysis";
