@@ -56,6 +56,10 @@ async function createPipeApp(): Promise<INestApplication> {
     AI_SPEND_CEILING_USD: 20,
     AI_SPEND_WINDOW_HOURS: 24,
     PLACES_BASE_URL: "https://maps.googleapis.com",
+    ANALYSIS_ARTIFACT_ROOT: "./test-analysis-artifacts",
+    ANALYSIS_NAVIGATION_TIMEOUT_MS: 30000,
+    ANALYSIS_RUN_TIMEOUT_MS: 120000,
+    ANALYSIS_MAX_PAGE_BYTES: 10485760,
   } satisfies ApiEnv);
 
   await app.init();

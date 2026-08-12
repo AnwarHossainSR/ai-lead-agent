@@ -38,7 +38,7 @@ export class AnalysisController {
   @HttpCode(HttpStatus.ACCEPTED)
   async startAnalysis(
     @Param("id") id: string,
-    @Body() body: StartAnalysisDto,
+    @Body() _body: StartAnalysisDto,
   ): Promise<{
     readonly companyId: string;
     readonly status: string;

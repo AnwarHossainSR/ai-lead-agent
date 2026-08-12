@@ -32,7 +32,7 @@ describe("observation rules", () => {
       const capture = makeCapture({ url: "http://example.com" });
       const observations = noHttpsRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("HTTPS");
+      expect(observations[0]?.description).toContain("HTTPS");
     });
 
     it("returns empty for HTTPS sites", () => {
@@ -47,7 +47,7 @@ describe("observation rules", () => {
       const capture = makeCapture({ html: "<html><head></head></html>" });
       const observations = missingViewportMetaRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("viewport");
+      expect(observations[0]?.description).toContain("viewport");
     });
 
     it("returns empty when viewport is present", () => {
@@ -64,7 +64,7 @@ describe("observation rules", () => {
       });
       const observations = consoleErrorsRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("1 console error");
+      expect(observations[0]?.description).toContain("1 console error");
     });
 
     it("returns empty when no errors", () => {
@@ -81,7 +81,7 @@ describe("observation rules", () => {
       });
       const observations = failedRequestsRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("1 failed request");
+      expect(observations[0]?.description).toContain("1 failed request");
     });
 
     it("returns empty when no failures", () => {
@@ -96,7 +96,7 @@ describe("observation rules", () => {
       const capture = makeCapture({ html: "<html><head></head></html>" });
       const observations = missingTitleRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("title");
+      expect(observations[0]?.description).toContain("title");
     });
 
     it("returns observation when title is empty", () => {
@@ -117,7 +117,7 @@ describe("observation rules", () => {
       const capture = makeCapture({ html: "<html><head></head></html>" });
       const observations = missingMetaDescriptionRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("meta description");
+      expect(observations[0]?.description).toContain("meta description");
     });
 
     it("returns empty when description is present", () => {
@@ -132,7 +132,7 @@ describe("observation rules", () => {
       const capture = makeCapture({ html: "<html><head></head></html>" });
       const observations = missingFaviconRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("favicon");
+      expect(observations[0]?.description).toContain("favicon");
     });
 
     it("returns empty when favicon is present", () => {
@@ -147,7 +147,7 @@ describe("observation rules", () => {
       const capture = makeCapture({ transferSize: 11 * 1024 * 1024 });
       const observations = excessivePageWeightRule(capture);
       expect(observations).toHaveLength(1);
-      expect(observations[0].description).toContain("Page weight");
+      expect(observations[0]?.description).toContain("Page weight");
     });
 
     it("returns empty when page is within limits", () => {

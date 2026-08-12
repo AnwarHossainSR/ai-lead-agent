@@ -37,6 +37,7 @@
     "@types/node": "catalog:",
     "@types/supertest": "catalog:",
     "eslint": "catalog:",
+    "playwright": "^1.62.1",
     "supertest": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
