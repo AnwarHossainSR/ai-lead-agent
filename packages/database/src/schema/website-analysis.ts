@@ -99,7 +99,7 @@ export const websiteAnalysis = pgTable(
     // No scores on blocked, skipped, or failed analyses
     check(
       "website_analysis_no_scores_on_failure",
-      sql`(${table.outcome} IN ('blocked', 'skipped', 'failed')) => (
+      sql`NOT (${table.outcome} IN ('blocked', 'skipped', 'failed')) OR (
         ${table.performanceScore} IS NULL AND
         ${table.accessibilityScore} IS NULL AND
         ${table.seoScore} IS NULL AND
