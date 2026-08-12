@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -60,6 +61,7 @@ export class AnalysisController {
   /**
    * GET /api/companies/:id/analysis/latest — get the latest analysis.
    */
+  @Get(":id/analysis/latest")
   async getLatestAnalysis(
     @Param("id") id: string,
   ): Promise<{
@@ -91,6 +93,7 @@ export class AnalysisController {
   /**
    * GET /api/companies/:id/analysis — list all analyses for a company.
    */
+  @Get(":id/analysis")
   async listAnalyses(
     @Param("id") id: string,
   ): Promise<{
