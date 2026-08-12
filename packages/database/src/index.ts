@@ -22,3 +22,4 @@ export {
 export * from "./schema";
 export * from "./schemas/evidence";
 export * from "./write";
+export * from "./input-assembly";

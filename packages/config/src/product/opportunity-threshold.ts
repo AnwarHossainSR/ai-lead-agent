@@ -14,6 +14,8 @@ const thresholdSchema = z.object({
   requireCompletedAnalysis: z.boolean().default(false),
 });
 
+export const opportunityThresholdSchema = thresholdSchema;
+
 export type OpportunityThreshold = z.infer<typeof thresholdSchema>;
 
 export function parseThresholdConfig(raw: unknown): OpportunityThreshold {

@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import type { Executor } from "../client";
@@ -6,7 +5,7 @@ import { uuidv7 } from "uuidv7";
 import { type OpportunityRow, opportunities } from "../schema/opportunities";
 import { parseInput } from "./errors";
 
-const insertOpportunityInputSchema = z.object({
+export const insertOpportunityInputSchema = z.object({
   analysisRunId: z.uuid("Expected the opportunity analysis run identifier."),
   companyId: z.uuid("Expected the identifier of the company."),
   categoryId: z.string().trim().min(1, "Expected a category identifier."),

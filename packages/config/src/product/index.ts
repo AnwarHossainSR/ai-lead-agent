@@ -159,7 +159,6 @@ export {
 } from "./analysis";
 
 export {
-  OPPORTUNITY_THRESHOLD,
   opportunityThresholdSchema,
   parseThresholdConfig,
   type OpportunityThreshold,

@@ -8,6 +8,7 @@ import { DiscoveryModule } from "./discovery/discovery.module";
 import { HealthModule } from "./health/health.module";
 import { RedisModule } from "./redis/redis.module";
 import { VerificationModule } from "./verification/verification.module";
+import { OpportunityModule } from "./opportunity/opportunity.module";
 
 /**
  * The application shell. Four modules, no domain behaviour: this change
@@ -25,6 +26,7 @@ import { VerificationModule } from "./verification/verification.module";
     DiscoveryModule,
     VerificationModule,
     AnalysisModule,
+    OpportunityModule,
   ],
 })
 export class AppModule {}

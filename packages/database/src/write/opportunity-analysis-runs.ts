@@ -1,4 +1,3 @@
-import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { Executor } from "../client";
@@ -6,7 +5,7 @@ import { uuidv7 } from "uuidv7";
 import { type OpportunityAnalysisRunRow, opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
 import { parseInput } from "./errors";
 
-const insertOpportunityAnalysisRunInputSchema = z.object({
+export const insertOpportunityAnalysisRunInputSchema = z.object({
   companyId: z.uuid("Expected the identifier of the company being analyzed."),
   websiteAnalysisId: z.uuid("Expected the website analysis identifier.").optional(),
   promptVersion: z.number().int().positive("Expected a positive prompt version."),
@@ -21,7 +20,7 @@ const insertOpportunityAnalysisRunInputSchema = z.object({
       }),
     )
     .default([]),
-  aiInvocationId: z.uuid("Expected the AI invocation identifier."),
+  aiInvocationId: z.uuid("Expected the AI invocation identifier.").nullish(),
 });
 
 export type InsertOpportunityAnalysisRunInput = z.input<typeof insertOpportunityAnalysisRunInputSchema>;

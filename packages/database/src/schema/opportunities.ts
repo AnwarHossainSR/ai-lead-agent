@@ -1,8 +1,8 @@
-import { pgEnum, pgTable, text, timestamp, integer, uuid, jsonb, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { certaintyEnum } from "./enums";
-import { aiInvocationEnum } from "./ai-invocations";
+import { aiInvocations } from "./ai-invocations";
 import { companies } from "./companies";
 import { opportunityAnalysisRuns } from "./opportunity-analysis-runs";
 
@@ -27,7 +27,7 @@ export const opportunities = pgTable(
     citedEvidence: jsonb("cited_evidence").notNull(),
     aiInvocationId: uuid("ai_invocation_id")
       .notNull()
-      .references(() => aiInvocationEnum, { onDelete: "restrict" }),
+      .references(() => aiInvocations.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -35,6 +35,7 @@ export const opportunities = pgTable(
   (table) => [
     sql`length(btrim(${table.title})) > 0 and length(btrim(${table.description})) > 0 and length(btrim(${table.impact})) > 0`,
     sql`${jsonb("cited_evidence")}::text && '[]'::text IS NOT NULL`,
+    sql`${table.certainty} = 'inferred'`,
     index("opportunities_company_idx").on(table.companyId),
     index("opportunities_category_idx").on(table.categoryId),
     index("opportunities_service_idx").on(table.serviceId),

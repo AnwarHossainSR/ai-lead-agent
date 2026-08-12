@@ -9,7 +9,6 @@ import {
   type OpportunityRow,
   opportunities,
 } from "../schema/opportunities";
-import { companies } from "./companies";
 
 /**
  * Returns the opportunities of a company's most recent completed analysis.
@@ -37,7 +36,7 @@ export async function getLatestOpportunities(
   return executor
     .select()
     .from(opportunities)
-    .where(equals(opportunities.runId, analysis.id))
+    .where(eq(opportunities.runId, analysis.id))
     .orderBy(opportunities.createdAt);
 }
 
@@ -51,7 +50,7 @@ export async function getRunHistory(
   return executor
     .select()
     .from(opportunityAnalysisRuns)
-    .where(equals(opportunityAnalysisRuns.companyId, companyId))
+    .where(eq(opportunityAnalysisRuns.companyId, companyId))
     .orderBy(desc(opportunityAnalysisRuns.createdAt));
 }
 

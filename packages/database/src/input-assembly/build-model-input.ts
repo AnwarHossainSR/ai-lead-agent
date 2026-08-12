@@ -1,12 +1,87 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import type { Executor } from "../client";
 import { websiteAnalysis } from "../schema/website-analysis";
 import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
 import { technologyDetections } from "../schema/technology-detections";
-import { CATEGORIES, opportunityThresholdSchema } from "@mela/config";
+import { companies } from "../schema/companies";
+import { CATEGORIES, DEFAULT_THRESHOLD } from "@mela/config";
+import { insertOpportunityAnalysisRun } from "../write/opportunity-analysis-runs";
 
 type ObservationRef = { ref: string; detail: string; url: string };
 type DetectionRef = { ref: string; detail: string; url: string };
+
+/**
+ * Returns the latest completed analysis for a company, or undefined if none exists.
+ */
+async function getLatestAnalysis(
+  executor: Executor,
+  companyId: string,
+) {
+  return executor
+    .select()
+    .from(websiteAnalysis)
+    .where(
+      eq(websiteAnalysis.companyId, companyId) &&
+        eq(websiteAnalysis.outcome, "completed"),
+    )
+    .orderBy(desc(websiteAnalysis.createdAt))
+    .limit(1)
+    .then((rows) => rows[0]);
+}
+
+/**
+ * Returns technology detections for an analysis.
+ */
+async function getDetections(
+  executor: Executor,
+  analysisId: string,
+) {
+  return executor
+    .select()
+    .from(technologyDetections)
+    .where(eq(technologyDetections.analysisId, analysisId));
+}
+
+/**
+ * Returns observations from an analysis as typed objects.
+ */
+function getObservations(analysis: { observations: unknown }) {
+  return analysis.observations as readonly {
+    statement: string;
+    evidence: { detail: string; url: string; observedAt: string };
+    certainty: "observed" | "inferred";
+  }[];
+}
+
+/**
+ * Returns the service catalogue from configuration.
+ */
+function getServiceCatalogue() {
+  return CATEGORIES.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+  }));
+}
+
+/**
+ * Records a below-threshold outcome for a company.
+ */
+async function recordBelowThreshold(
+  executor: Executor,
+  companyId: string,
+  aiInvocationId: string | null,
+): Promise<string> {
+  const run = await insertOpportunityAnalysisRun(executor, {
+    companyId,
+    promptVersion: 1,
+    outcome: "below_threshold",
+    acceptedCount: 0,
+    rejectedCount: 0,
+    rejections: [],
+    aiInvocationId: aiInvocationId ?? undefined,
+  });
+  return run.id;
+}
 
 /**
  * Builds the model input from a company's latest completed analysis.
@@ -19,7 +94,7 @@ type DetectionRef = { ref: string; detail: string; url: string };
 export async function buildModelInput(
   executor: Executor,
   companyId: string,
-  aiInvocationId: string
+  aiInvocationId: string | null,
 ): Promise<{
   outcome: "below_threshold" | "ready_for_analysis";
   input?: {
@@ -31,116 +106,68 @@ export async function buildModelInput(
   };
   runId?: string;
 }> {
-  // Find the latest completed analysis for this company
-  const [latestAnalysis] = await executor
-    .select()
-    .from(websiteAnalysis)
-    .where(
-      eq(websiteAnalysis.companyId, companyId) &&
-        eq(websiteAnalysis.outcome, "completed")
-    )
-    .orderBy(websiteAnalysis.createdAt.desc())
-    .limit(1);
+  const analysis = await getLatestAnalysis(executor, companyId);
 
-  if (latestAnalysis === undefined) {
-    // No analysis exists yet - this would be handled earlier in the pipeline
-    return { outcome: "ready_for_analysis" };
+  if (analysis === undefined) {
+    const runId = await recordBelowThreshold(executor, companyId, aiInvocationId);
+    return { outcome: "below_threshold", runId };
   }
 
-  // Get technology detections for this analysis
-  const detections = await executor
-    .select()
-    .from(technologyDetections)
-    .where(eq(technologyDetections.analysisId, latestAnalysis.id));
+  const [company] = await executor
+    .select({ industryId: companies.industryId, countryId: companies.countryId })
+    .from(companies)
+    .where(eq(companies.id, companyId))
+    .limit(1);
 
-  // Get observations from the analysis (validated against evidence schema)
-  // observations is Observation[] from the evidence schema
-  const rawObservations = latestAnalysis.observations as readonly {
-    statement: string;
-    evidence: { detail: string; url: string; observedAt: string };
-    certainty: "observed" | "inferred";
-  }[];
+  const industry = company?.industryId ?? "";
+  const country = company?.countryId ?? "";
 
-  // Get the service catalogue from configuration
-  const serviceCatalogue = CATEGORIES.map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-  }));
+  const detections = await getDetections(executor, analysis.id);
+  const rawObservations = getObservations(analysis);
+  const serviceCatalogue = getServiceCatalogue();
 
-  // Check evidence threshold
-  const threshold = opportunityThresholdSchema.parse(opportunityThreshold);
+  const threshold = DEFAULT_THRESHOLD;
   const minObservations = threshold.minimumObservations;
   const minDetections = threshold.minimumDetections;
 
-  const observationCount = rawObservations.length;
-  const detectionCount = detections.length;
-
-  if (observationCount < minObservations || detectionCount < minDetections) {
-    // Below threshold - record outcome and make no model call
-    await executor
-      .insert(opportunityAnalysisRuns)
-      .values({
-        id: crypto.randomUUID(),
-        companyId,
-        promptVersion: 1,
-        outcome: "below_threshold",
-        acceptedCount: 0,
-        rejectedCount: 0,
-        rejections: [],
-        aiInvocationId,
-      })
-      .returning();
-
-    const [run] = await executor
-      .select({ id: opportunityAnalysisRuns.id })
-      .from(opportunityAnalysisRuns)
-      .where(eq(opportunityAnalysisRuns.companyId, companyId))
-      .orderBy(opportunityAnalysisRuns.createdAt.desc())
-      .limit(1);
-
-    return {
-      outcome: "below_threshold",
-      runId: run?.id ?? undefined,
-    };
+  if (
+    rawObservations.length < minObservations ||
+    detections.length < minDetections
+  ) {
+    const runId = await recordBelowThreshold(executor, companyId, aiInvocationId);
+    return { outcome: "below_threshold", runId };
   }
 
-  // Build call-local references
-  // Observations get identifiers o1, o2, …
   const observationRefs = rawObservations.map((obs, index) => ({
     ref: `o${index + 1}`,
     detail: obs.evidence.detail,
     url: obs.evidence.url,
   }));
 
-  // Detections get identifiers t1, t2, …
   const detectionRefs = detections.map((det, index) => ({
     ref: `t${index + 1}`,
     detail: det.technologyId,
-    url: det.matchedIn ?? null,
+    url: det.matchedIn ?? "",
   }));
 
-  // Build the model input
   const input = {
-    industry: latestAnalysis.industryId ?? "",
-    country: latestAnalysis.countryId,
+    industry,
+    country,
     observations: observationRefs as readonly ObservationRef[],
     detections: detectionRefs as readonly DetectionRef[],
     serviceCatalogue,
   };
 
-  // Find or create the opportunity analysis run
-  const run = await executor
+  const [latestRun] = await executor
     .select({ id: opportunityAnalysisRuns.id })
     .from(opportunityAnalysisRuns)
     .where(eq(opportunityAnalysisRuns.companyId, companyId))
-    .orderBy(opportunityAnalysisRuns.createdAt.desc())
+    .orderBy(desc(opportunityAnalysisRuns.createdAt))
     .limit(1);
-
-  const runId = run[0]?.id;
 
   return {
     outcome: "ready_for_analysis",
     input,
-    runId: runId ?? undefined,
+    runId: latestRun?.id,
   };
 }

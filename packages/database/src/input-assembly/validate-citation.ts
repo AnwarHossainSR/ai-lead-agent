@@ -1,11 +1,3 @@
-import { eq } from "drizzle-orm";
-import type { Executor } from "../client";
-import { websiteAnalysis } from "../schema/website-analysis";
-import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
-import { technologyDetections } from "../schema/technology-detections";
-import { CATEGORIES } from "../config/product/services";
-import { opportunityThresholdSchema } from "../config/product";
-
 type ObservationRef = { ref: string; detail: string; url: string };
 type DetectionRef = { ref: string; detail: string; url: string };
 type CitedEvidence = readonly string[];
@@ -67,7 +59,7 @@ export function validateCitedEvidence({
     refMap[det.ref] = det;
   }
 
-  const valid: readonly {
+  const valid: {
     categoryId: string;
     title: string;
     description: string;
@@ -75,7 +67,7 @@ export function validateCitedEvidence({
     citedEvidence: CitedEvidence;
     resolvedEvidence: readonly ResolvedEvidence[];
   }[] = [];
-  const rejected: readonly {
+  const rejected: {
     opportunity: {
       categoryId: string;
       title: string;
@@ -117,128 +109,4 @@ export function validateCitedEvidence({
   }
 
   return { valid, rejected };
-}
-
-/**
- * Resolves call-local references in an opportunity analysis output back to
- * real database records (observations and detections) for a company's latest
- * completed analysis.
- *
- * Design D4: Unknown identifiers are rejected, not described as unknown.
- *
- * Returns the opportunities with resolved evidence, or throws if any
- * referenced identifier cannot be found.
- */
-export async function resolveCallLocalReferences(
-  executor: Executor,
-  companyId: string,
-  aiInvocationId: string,
-): Promise<{
-  valid: readonly {
-    categoryId: string;
-    title: string;
-    description: string;
-    impact: string;
-    citedEvidence: CitedEvidence;
-    resolvedEvidence: readonly ResolvedEvidence[];
-  }[];
-  runId: string;
-  outcome: "ready_for_analysis" | "below_threshold" | "insufficient_evidence";
-}> {
-  // Find the latest completed analysis for this company
-  const [latestAnalysis] = await executor
-    .select()
-    .from(websiteAnalysis)
-    .where(
-      eq(websiteAnalysis.companyId, companyId) &&
-        eq(websiteAnalysis.outcome, "completed"),
-    )
-    .orderBy(websiteAnalysis.createdAt.desc())
-    .limit(1);
-
-  if (latestAnalysis === undefined) {
-    return {
-      valid: [],
-      runId: "",
-      outcome: "below_threshold",
-    };
-  }
-
-  // Get technology detections for this analysis
-  const detections = await executor
-    .select()
-    .from(technologyDetections)
-    .where(eq(technologyDetections.analysisId, latestAnalysis.id));
-
-  // Get observations from the analysis
-  // observations is Observation[] from the evidence schema
-  const rawObservations = latestAnalysis.observations as readonly {
-    statement: string;
-    evidence: { detail: string; url: string; observedAt: string };
-    certainty: "observed" | "inferred";
-  }[];
-
-  // Check evidence threshold
-  const threshold = opportunityThresholdSchema.parse(opportunityThreshold);
-  const minObservations = threshold.minimumObservations;
-  const minDetections = threshold.minimumDetections;
-
-  const observationCount = rawObservations.length;
-  const detectionCount = detections.length;
-
-  if (observationCount < minObservations || detectionCount < minDetections) {
-    // Below threshold - record outcome
-    await executor
-      .insert(opportunityAnalysisRuns)
-      .values({
-        id: crypto.randomUUID(),
-        companyId,
-        promptVersion: 1,
-        outcome: "below_threshold",
-        acceptedCount: 0,
-        rejectedCount: 0,
-        rejections: [],
-        aiInvocationId,
-      })
-      .returning();
-
-    const [run] = await executor
-      .select({ id: opportunityAnalysisRuns.id })
-      .from(opportunityAnalysisRuns)
-      .where(eq(opportunityAnalysisRuns.companyId, companyId))
-      .orderBy(opportunityAnalysisRuns.createdAt.desc())
-      .limit(1);
-
-    return {
-      valid: [],
-      runId: run?.id ?? "",
-      outcome: "below_threshold",
-    };
-  }
-
-  // Build ref map for quick lookup
-  const refMap: Record<string, ObservationRef | DetectionRef> = {};
-
-  for (let i = 0; i < rawObservations.length; i++) {
-    const obs = rawObservations[i];
-    refMap[`o${i + 1}`] = {
-      ref: `o${i + 1}`,
-      detail: obs.evidence.detail,
-      url: obs.evidence.url,
-    };
-  }
-  for (let i = 0; i < detections.length; i++) {
-    const det = detections[i];
-    refMap[`t${i + 1}`] = {
-      ref: `t${i + 1}`,
-      detail: det.technologyId,
-      url: det.matchedIn ?? null,
-    };
-  }
-
-  return {
-    valid: [],
-    runId: "",
-    outcome: "ready_for_analysis",
-  };
 }

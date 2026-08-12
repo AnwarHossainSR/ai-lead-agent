@@ -1,11 +1,10 @@
-import { pgEnum, pgTable, text, timestamp, integer, uuid, jsonb, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, uuid, jsonb, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { opportunityAnalysisOutcomeEnum } from "./enums";
-import { aiInvocationEnum } from "./ai-invocations";
+import { aiInvocations } from "./ai-invocations";
 import { companies } from "./companies";
 import { websiteAnalysis } from "./website-analysis";
-import { certaintyEnum } from "./enums";
 
 export const opportunityAnalysisRuns = pgTable(
   "opportunity_analysis_runs",
@@ -24,8 +23,7 @@ export const opportunityAnalysisRuns = pgTable(
     rejectedCount: integer("rejected_count").notNull().default(0),
     rejections: jsonb("rejections").notNull().default("[]"),
     aiInvocationId: uuid("ai_invocation_id")
-      .notNull()
-      .references(() => aiInvocationEnum, { onDelete: "restrict" }),
+      .references(() => aiInvocations.id, { onDelete: "set null" }),
     reason: text("reason"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
