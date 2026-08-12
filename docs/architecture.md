@@ -258,9 +258,70 @@ Pure functions that check page captures for issues:
 - **No score fabrication** — NULL means "not measured", not zero
 - **Staleness window** — companies are re-analyzed after 30 days by default
 
-## Technology Detection
+## Opportunity Analysis
 
-Technology detection identifies the software stack behind a company's website by matching declared fingerprint patterns against what the analysis actually captured. It runs deterministically with no network requests and no language model calls.
+Opportunity analysis identifies business opportunities from a company's website evidence using a structured prompt that produces opportunities citing observed evidence identifiers, or reports insufficient evidence.
+
+### Analysis Pipeline
+
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│   Analysis          │     │   Build Model       │     │   Call AI + Validate│
+│   Capture & Audit   │────▶│   Input (o1, t1…)   │────▶│   (Design D4/D5)    │
+│   (Database)        │     │   Service Catalogue)│     └─────────────────────┘
+└─────────────────────┘     └─────────────────────┘                │
+                                            │                       │
+                                            ▼                       ▼
+                                      ┌─────────────────┐      ┌─────────────────┐
+                                      │ Outcome:        │      │ Record in DB    │
+                                      │ • opportunities │      │ • opportunities │
+                                      │ • insufficient_ │      │ • run history   │
+                                      │   evidence      │      │ • citations     │
+                                      │ • below_threshold│     └─────────────────┘
+                                      └─────────────────┘
+```
+
+### Design Principles
+
+- **D3**: Threshold check happens before the model call — if insufficient observations/detections, records `below_threshold` without making an AI call
+- **D4**: Unknown identifiers are rejected, not described as unknown — opportunities with citations that don't exist in the input are rejected with a reason
+- **D5**: Schema validation on write and read — output validated against Zod schema; `cited_evidence` JSONB enforced to have at least 1 element
+- **D6**: AI invocation recorded — every model call is recorded in `ai_invocations` with outcome and timing
+
+### Outcomes
+
+| Outcome | Meaning |
+|---------|---------|
+| `opportunities` | Business opportunities identified, each citing evidence identifiers |
+| `insufficient_evidence` | Evidence does not support any opportunity; AI returned `insufficient_evidence` |
+| `below_threshold` | Not enough observations/detections to make a model call; recorded before AI invocation |
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `POST /api/companies/:id/opportunity-analysis` | Triggers the opportunity analysis workflow |
+| `GET /api/companies/:id/opportunities` | Gets the opportunity run history for a company |
+
+### Evidence Threshold
+
+Before calling the model, the system checks:
+- `minimumObservations` (default: 1) — at least 1 observation from website analysis
+- `minimumDetections` (default: 1) — at least 1 technology detection
+
+If either check fails, the outcome is `below_threshold` and no model call is made.
+
+### Call-Local Identifiers (Design D4)
+
+Observations get identifiers `o1, o2, …` and detections get `t1, t2, …`. These are used as citations in the AI output. The post-parse `validateCitedEvidence` function ensures all cited identifiers exist in the input — if any are missing, the opportunity is rejected with a reason rather than silently omitted.
+
+### Service Catalogue
+
+Every opportunity must name exactly one of the configured services. The service catalogue provides:
+- `technical_opportunity` — Technical Opportunity
+- `business_opportunity` — Business Opportunity
+
+Each opportunity's `categoryId` must match one of these configured service identifiers.
 
 ### How It Works
 

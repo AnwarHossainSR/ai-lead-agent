@@ -11,7 +11,7 @@
 | [x]  | 3   | `add-company-verification`    | 2          | 43    |
 | [x]  | 4   | `add-website-analysis`        | 3          | 55    |
 | [x]  | 5   | `add-technology-detection`    | 4          | 65    |
-| [ ]  | 6   | `add-opportunity-analysis`    | 1, 5       | 44    |
+| [x]  | 6   | `add-opportunity-analysis`    | 1, 5       | 44    |
 | [x]  | 7   | `add-decision-maker-research` | 3, 4       | 49    |
 | [ ]  | 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
 | [ ]  | 9   | `add-research-summary`        | 8          | 43    |
@@ -163,4 +163,4 @@ Each change also carries deltas against the three existing capabilities where it
 
 ## Next step
 
-Apply a change with `/opsx:apply <change-name>`. `add-opportunity-analysis` (6) and `add-decision-maker-research` (7) are now unblocked.
+Apply a change with `/opsx:apply <change-name>`. `add-lead-scoring-engine` now unblocked.

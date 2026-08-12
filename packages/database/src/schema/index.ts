@@ -16,6 +16,8 @@ export * from "./contact-research-runs";
 export * from "./website-analysis";
 export * from "./technology-detections";
 export * from "./leads";
+export * from "./opportunity-analysis-runs";
+export * from "./opportunities";
 export * from "./outreach";
 export * from "./ai-invocations";
 export * from "./verification-checks";
