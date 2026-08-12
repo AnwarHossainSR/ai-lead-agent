@@ -41,6 +41,17 @@ export {
 } from "./services";
 
 export {
+  CATEGORIES,
+  findCategory,
+  resolveOpportunityCategory,
+  isOpportunityCategoryId,
+  parseCategories,
+  categorySchema,
+  type Category,
+  type CategoryId,
+} from "./services";
+
+export {
   INITIAL_LEAD_STATUS,
   LEAD_STATUSES,
   LIFECYCLE,
@@ -146,6 +157,14 @@ export {
   type ObservationRule,
   type Viewport,
 } from "./analysis";
+
+export {
+  OPPORTUNITY_THRESHOLD,
+  opportunityThresholdSchema,
+  parseThresholdConfig,
+  type OpportunityThreshold,
+  DEFAULT_THRESHOLD,
+} from "./opportunity-threshold";
 
 export {
   DEFAULT_FINGERPRINTS,

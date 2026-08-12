@@ -94,3 +94,21 @@ export {
   type RecordDiscoveryRunSourceInput,
   type StartDiscoveryRunInput,
 } from "./discovery-runs";
+
+export {
+  insertOpportunityAnalysisRun,
+  insertOpportunityAnalysisRunInputSchema,
+  type InsertOpportunityAnalysisRunInput,
+} from "./opportunity-analysis-runs";
+
+export {
+  insertOpportunity,
+  insertOpportunityInputSchema,
+  type InsertOpportunityInput,
+} from "./opportunities";
+
+export {
+  getCurrentOpportunities,
+  getLatestOpportunities,
+  getRunHistory,
+} from "./opportunity-read-helpers";

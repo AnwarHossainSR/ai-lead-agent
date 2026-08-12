@@ -179,11 +179,29 @@ export const WEBSITE_ANALYSIS_OUTCOMES = [
   "failed",
 ] as const;
 
+/**
+ * Outcome of an opportunity analysis run.
+ */
+export const OPPORTUNITY_ANALYSIS_OUTCOMES = [
+  "opportunities",
+  "insufficient_evidence",
+  "below_threshold",
+  "failed",
+] as const;
+
 export type WebsiteAnalysisOutcome = (typeof WEBSITE_ANALYSIS_OUTCOMES)[number];
 
 export const websiteAnalysisOutcomeEnum = pgEnum(
   "website_analysis_outcome",
   WEBSITE_ANALYSIS_OUTCOMES,
+);
+
+/**
+ * Outcome of an opportunity analysis run.
+ */
+export const opportunityAnalysisOutcomeEnum = pgEnum(
+  "opportunity_analysis_outcome",
+  OPPORTUNITY_ANALYSIS_OUTCOMES,
 );
 
 /**

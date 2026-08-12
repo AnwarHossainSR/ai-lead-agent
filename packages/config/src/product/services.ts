@@ -86,3 +86,88 @@ export function isServiceId(id: string): boolean {
 }
 
 export type ServiceId = (typeof SERVICE_DATA)[number]["id"];
+
+export const categorySchema = z.object({
+  id: identifierSchema,
+  name: displayNameSchema,
+  serviceId: z.string().trim().min(1, "Expected a service identifier."),
+});
+
+export type Category = z.infer<typeof categorySchema>;
+
+export const categoryIdSchema = z.string().regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/, "Expected a lower_snake_case identifier, e.g. website_modernization.");
+
+export function parseCategories(raw: unknown): readonly Category[] {
+  const categories = parseOrThrow("Opportunity category configuration", z.array(categorySchema), raw);
+
+  // Check for duplicate identifiers
+  const seen = new Set<string>();
+  for (const category of categories) {
+    if (seen.has(category.id)) {
+      throw new ConfigurationError(
+        "Opportunity category configuration",
+        `Duplicate category identifier "${category.id}".`,
+      );
+    }
+    seen.add(category.id);
+
+    // Check that the category maps to a known service
+    resolveService(category.serviceId);
+  }
+
+  return deepFreeze(categories);
+}
+
+const CATEGORY_DATA = [
+  {
+    id: "website_modernization",
+    name: "Website Modernization",
+    serviceId: "website_modernization",
+  },
+  {
+    id: "web_application_development",
+    name: "Web Application Development",
+    serviceId: "web_application_development",
+  },
+  {
+    id: "custom_business_platform",
+    name: "Custom Business Platform",
+    serviceId: "custom_business_platform",
+  },
+  {
+    id: "backend_and_api_development",
+    name: "Backend and API Development",
+    serviceId: "backend_and_api_development",
+  },
+  {
+    id: "aws_and_cloud_modernization",
+    name: "AWS and Cloud Modernization",
+    serviceId: "aws_and_cloud_modernization",
+  },
+] as const;
+
+export const CATEGORIES = parseCategories(CATEGORY_DATA);
+
+export function findCategory(id: string): Category | undefined {
+  return CATEGORIES.find((category) => category.id === id);
+}
+
+export function resolveOpportunityCategory(id: string): Category {
+  const category = findCategory(id);
+
+  if (category === undefined) {
+    const known = CATEGORIES.map((entry) => entry.id).join(", ");
+    throw new ConfigurationError(
+      "Opportunity category configuration",
+      `Unknown category "${id}". Configured categories: ${known}.`,
+    );
+  }
+
+  return category;
+}
+
+export function isOpportunityCategoryId(id: string): boolean {
+  return findCategory(id) !== undefined;
+}
+
+export type CategoryId = (typeof CATEGORY_DATA)[number]["id"];
