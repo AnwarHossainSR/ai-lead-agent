@@ -1,4 +1,4 @@
-import type { CheckInput, CheckResult, VerificationCheck } from "./types";
+import type { CheckInput, CheckResult, VerificationCheck } from "../types";
 
 /**
  * Tokenize a string by splitting on non-alphanumeric characters and
@@ -64,3 +64,4 @@ export function createDomainNameMatchCheck(): VerificationCheck {
     },
   };
 }
+

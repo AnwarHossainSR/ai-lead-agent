@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { VerificationRule } from "@mela/config/product";
+import type { VerificationRule } from "@mela/config";
 
 import { deriveState } from "./derive-state";
 import type { CheckResult } from "./types";

@@ -1,4 +1,4 @@
-import type { VerificationRule } from "@mela/config/product";
+import type { VerificationRule } from "@mela/config";
 
 import type { CheckResult } from "./types";
 

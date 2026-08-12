@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { startFixtureServer, type FixtureServerHandle } from "../../testing/http-fixture-server";
 import { createHttpCheck, type HttpClient } from "./http";
-import type { CheckInput } from "./types";
+import type { CheckInput } from "../types";
 
 let server: FixtureServerHandle;
 
@@ -99,3 +99,4 @@ describe("http check", () => {
     expect(result.evidenceUrl).toContain("/ok");
   });
 });
+

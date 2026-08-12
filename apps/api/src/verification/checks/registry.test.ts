@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { RegistryConfig } from "@mela/config/product";
+import type { RegistryConfig } from "@mela/config";
 
 import { createRegistryCheck, type RegistryClient } from "./registry";
-import type { CheckInput } from "./types";
+import type { CheckInput } from "../types";
 
 function input(overrides?: Partial<CheckInput>): CheckInput {
   return {
@@ -108,3 +108,4 @@ describe("registry check", () => {
     expect(unknown.failureCode).toBeTruthy();
   });
 });
+

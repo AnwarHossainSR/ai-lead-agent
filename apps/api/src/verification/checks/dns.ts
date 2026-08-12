@@ -1,4 +1,4 @@
-import type { CheckInput, CheckResult, VerificationCheck } from "./types";
+import type { CheckInput, CheckResult, VerificationCheck } from "../types";
 
 /**
  * A resolver that looks up DNS records.
@@ -114,3 +114,4 @@ function isTimeoutError(error: unknown): boolean {
 function isENOTFOUND(error: unknown): boolean {
   return error instanceof Error && "code" in error && (error as { code: string }).code === "ENOTFOUND";
 }
+

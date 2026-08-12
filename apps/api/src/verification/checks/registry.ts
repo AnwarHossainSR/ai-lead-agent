@@ -1,4 +1,4 @@
-import type { RegistryConfig } from "@mela/config/product";
+import type { RegistryConfig } from "@mela/config";
 
 import type { CheckInput, CheckResult, VerificationCheck } from "../types";
 
@@ -95,3 +95,4 @@ export function createRegistryCheck(
     },
   };
 }
+

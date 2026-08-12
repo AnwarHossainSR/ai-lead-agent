@@ -1,5 +1,5 @@
 import { detectBlock } from "../../http/block-detection";
-import type { CheckInput, CheckResult, VerificationCheck } from "./types";
+import type { CheckInput, CheckResult, VerificationCheck } from "../types";
 
 /**
  * An HTTP client that fetches a URL and returns the response.
@@ -105,3 +105,4 @@ function isAbortError(error: unknown): boolean {
 function isTimeoutError(error: unknown): boolean {
   return error instanceof Error && error.message === "timeout";
 }
+

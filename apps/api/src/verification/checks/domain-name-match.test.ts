@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createDomainNameMatchCheck } from "./domain-name-match";
-import type { CheckInput } from "./types";
+import type { CheckInput } from "../types";
 
 function input(overrides?: Partial<CheckInput>): CheckInput {
   return {
@@ -66,3 +66,4 @@ describe("domain-name-match check", () => {
     expect(failed.evidenceUrl.length).toBeGreaterThan(0);
   });
 });
+

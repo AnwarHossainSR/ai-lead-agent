@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createDnsCheck, type Resolver } from "./dns";
-import type { CheckInput } from "./types";
+import type { CheckInput } from "../types";
 
 function input(overrides?: Partial<CheckInput>): CheckInput {
   return {
@@ -100,3 +100,4 @@ describe("dns check", () => {
     expect(result.failureCode).toBe("timeout");
   });
 });
+
