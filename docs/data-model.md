@@ -55,26 +55,47 @@ Stores contact information for company representatives.
 
 ### website_analysis
 
-Stores AI analysis results for company websites.
+Stores analysis results for company websites.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | UUID | Primary key |
 | company_id | UUID | Foreign key to companies |
-| analysis_url | TEXT | URL that was analyzed |
-| observations | JSONB | Business observations |
-| business_opportunities | JSONB | Identified opportunities |
-| technology_evidence | JSONB | Technology stack evidence |
-| overall_score | INTEGER | Overall score (0-100) |
-| confidence_score | INTEGER | Confidence in analysis (0-100) |
+| outcome | website_analysis_outcome | Analysis outcome (completed, partial, blocked, skipped, failed) |
+| failure_reason | TEXT | Reason for non-completed outcome |
+| analyzed_url | TEXT | URL that was analyzed |
+| http_status | INTEGER | HTTP response status code |
+| desktop_screenshot_path | TEXT | Path to desktop screenshot (relative to artifact root) |
+| mobile_screenshot_path | TEXT | Path to mobile screenshot (relative to artifact root) |
+| rendered_html_path | TEXT | Path to rendered HTML (relative to artifact root) |
+| audit_report_path | TEXT | Path to Lighthouse audit report (relative to artifact root) |
+| unverified_override | BOOLEAN | Whether analysis was forced for unverified company |
+| performance_score | INTEGER | Lighthouse performance score (0-100, NULL = not measured) |
+| accessibility_score | INTEGER | Lighthouse accessibility score (0-100, NULL = not measured) |
+| seo_score | INTEGER | Lighthouse SEO score (0-100, NULL = not measured) |
+| mobile_score | INTEGER | Lighthouse mobile score (0-100, NULL = not measured) |
+| ux_score | INTEGER | Lighthouse UX score (0-100, NULL = not measured) |
+| technology_stack | JSONB | Detected technologies |
+| observations | JSONB | Page observations (issues found) |
+| business_opportunities | JSONB | Identified business opportunities |
+| summary | TEXT | Human-readable analysis summary |
+| is_example | BOOLEAN | Whether this is example data |
 | created_at | TIMESTAMP | Creation timestamp |
+| updated_at | TIMESTAMP | Last update timestamp |
 
 **Constraints:**
-- `website_analysis_overall_score_check` - Score must be 0-100
-- `website_analysis_confidence_score_check` - Score must be 0-100
+- `website_analysis_company_id_fk` - Foreign key to companies (CASCADE DELETE)
+- `website_analysis_performance_score_range` - Score must be 0-100 or NULL
+- `website_analysis_accessibility_score_range` - Score must be 0-100 or NULL
+- `website_analysis_seo_score_range` - Score must be 0-100 or NULL
+- `website_analysis_mobile_score_range` - Score must be 0-100 or NULL
+- `website_analysis_ux_score_range` - Score must be 0-100 or NULL
+- `website_analysis_failure_reason_required` - Failure reason required for non-completed outcomes
+- `website_analysis_no_scores_on_failure` - No scores on blocked, skipped, or failed analyses
 
 **Indexes:**
 - `website_analysis_company_created_idx` (on `company_id, created_at DESC`)
+- `website_analysis_company_outcome_idx` (on `company_id, outcome`)
 
 ### leads
 
@@ -246,6 +267,10 @@ Stores individual check results from verification runs.
 ### company_verification_state
 
 `never_checked`, `verified`, `unverified`, `unreachable`
+
+### website_analysis_outcome
+
+`completed`, `partial`, `blocked`, `skipped`, `failed`
 
 ## JSONB Schemas
 

@@ -183,3 +183,77 @@ Verification confirms whether a discovered company's online presence is reachabl
 - **No language model** — all checks are deterministic; no LLM calls in the verification path
 - **Staleness window** — companies are re-verified after 90 days by default
 - **Bounded concurrency** — batch verification runs up to N checks in parallel
+
+## Website Analysis
+
+Website analysis captures a company's web presence using a headless browser, runs quality audits, and records observations. It provides the evidence needed for lead scoring and opportunity identification.
+
+### Analysis Pipeline
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Eligibility │────▶│   Capture   │────▶│    Audit    │────▶│   Record    │
+│    Check     │     │  (Playwright)│     │ (Lighthouse)│     │  (Database) │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+  Skip if:            Capture at          Run Lighthouse       Store:
+  - No website        desktop &           scoring via CDP      - Outcome
+  - Unverified        mobile viewports    for performance,     - Scores
+  - Blocked by        Record console      accessibility,       - Artifacts
+    robots.txt        messages,           SEO, mobile, UX      - Observations
+                      failed requests
+```
+
+### Analysis Outcomes
+
+| Outcome | Meaning |
+|---------|---------|
+| `completed` | Full pipeline ran successfully |
+| `partial` | Capture succeeded but audit failed |
+| `blocked` | Host returned 403, 429 without retry-after, or bot challenge |
+| `skipped` | Blocked by robots.txt or company not eligible |
+| `failed` | Unexpected error during analysis |
+
+### Why We Record Blocked Sites
+
+A blocked site is recorded rather than evaded because:
+1. **Transparency** — the user sees that the analysis couldn't complete
+2. **No evasion** — we don't rotate user agents, solve CAPTCHAs, or disguise requests
+3. **Future retry** — a blocked site can be re-analyzed later if the block is temporary
+4. **Evidence** — the block itself is evidence about the company's web infrastructure
+
+### Artifacts
+
+Analysis artifacts are stored in `ANALYSIS_ARTIFACT_ROOT` (default: `./analysis-artifacts`):
+
+```
+analysis-artifacts/
+├─ {companyId}/
+│  ├─ {analysisId}/
+│  │  ├─ desktop-screenshot.png
+│  │  ├─ mobile-screenshot.png
+│  │  ├─ rendered.html
+│  │  └─ audit-report.json
+```
+
+### Observation Rules
+
+Pure functions that check page captures for issues:
+- No HTTPS
+- Missing viewport meta tag
+- Console errors
+- Failed requests
+- Missing or empty title
+- Missing meta description
+- Missing favicon
+- Excessive page weight (>10MB)
+
+### Design Decisions
+
+- **Playwright for capture** — reliable, maintainable browser automation
+- **Lighthouse for scoring** — industry-standard quality metrics
+- **Two viewports** — desktop (1920×1080) and mobile (375×812)
+- **Polite by default** — respects robots.txt, rate limits, and blocks
+- **No score fabrication** — NULL means "not measured", not zero
+- **Staleness window** — companies are re-analyzed after 30 days by default

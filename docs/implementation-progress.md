@@ -6,6 +6,8 @@
 
 **`add-company-discovery` in progress (40/52 tasks).** Source configuration, database schema, file-import adapter, places adapter, rate limiting, deduplication, run orchestration, and API surface are implemented. Documentation and final verification remain.
 
+**`add-website-analysis` in progress (40/55 tasks).** Configuration, schema, fixture site, browser capture, artifacts, observation rules, politeness, and API endpoints are implemented. Documentation and final verification remain.
+
 **Pipeline: not started.** Fifteen more changes are planned and validated in `openspec/changes/`.
 None has been applied.
 
@@ -104,7 +106,7 @@ Each change also carries deltas against the three existing capabilities where it
 | `@mela/shared`   | 3          | 66    | passing |
 | `@mela/database` | 7          | 132   | passing |
 | `@mela/ai`       | 7          | 76    | passing |
-| `@mela/api`      | 29         | 225   | passing |
+| `@mela/api`      | 31         | 251   | passing |
 | `@mela/web`      | 5          | —     | passing |
 
 ## Next step
