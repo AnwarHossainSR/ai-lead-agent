@@ -94,7 +94,7 @@ async function seedExampleCompanies(tx: Executor): Promise<void> {
 
   await insertWebsiteAnalysis(tx, {
     companyId: modernizationCandidate.id,
-    analyzedUrl: "https://www.example.ae",
+    analysedUrl: "https://www.example.ae",
     performanceScore: 42,
     seoScore: 55,
     mobileScore: 38,

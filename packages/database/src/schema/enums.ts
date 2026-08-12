@@ -166,3 +166,22 @@ export const companyVerificationStateEnum = pgEnum(
   "company_verification_state",
   COMPANY_VERIFICATION_STATES,
 );
+
+/**
+ * Outcome of a website analysis attempt. `completed` means the full pipeline
+ * ran; the rest record specific failure modes.
+ */
+export const WEBSITE_ANALYSIS_OUTCOMES = [
+  "completed",
+  "partial",
+  "blocked",
+  "skipped",
+  "failed",
+] as const;
+
+export type WebsiteAnalysisOutcome = (typeof WEBSITE_ANALYSIS_OUTCOMES)[number];
+
+export const websiteAnalysisOutcomeEnum = pgEnum(
+  "website_analysis_outcome",
+  WEBSITE_ANALYSIS_OUTCOMES,
+);
