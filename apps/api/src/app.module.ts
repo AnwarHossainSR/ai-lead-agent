@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { AIModule } from "./ai/ai.module";
+import { AnalysisModule } from "./analysis/analysis.module";
 import { EnvModule } from "./config/env.module";
 import { DatabaseModule } from "./database/database.module";
 import { DiscoveryModule } from "./discovery/discovery.module";
@@ -23,6 +24,7 @@ import { VerificationModule } from "./verification/verification.module";
     AIModule,
     DiscoveryModule,
     VerificationModule,
+    AnalysisModule,
   ],
 })
 export class AppModule {}
