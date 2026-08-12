@@ -1,9 +1,7 @@
 ## Purpose
 
 Defines the reproducible environment a contributor and the CI system rely on: a single set of workspace commands, containerised backing services, validated environment variables, and a health endpoint that reports whether the API and its dependencies are actually working.
-
 ## Requirements
-
 ### Requirement: A single command set drives the whole workspace
 
 The system SHALL expose the commands `install`, `dev`, `build`, `lint`, `typecheck`, `test` and `format` from the repository root, each operating across every workspace package. Each command SHALL exit non-zero when any workspace fails. `dev` SHALL start the web and API applications together.
@@ -147,3 +145,29 @@ The system SHALL include documentation covering prerequisites, first-time setup,
 
 - **WHEN** the documentation is compared against the repository contents
 - **THEN** every command, file path and capability it describes exists
+
+### Requirement: AI provider configuration is declared and validated
+
+The system SHALL declare every AI provider environment variable in the committed example file with a placeholder and an explanatory comment, and SHALL validate them at startup against a schema that names the variable and its purpose on failure. The provider API key SHALL be treated as a secret: it SHALL NOT appear in any committed file, log line, error message or health response.
+
+#### Scenario: A missing API key aborts startup
+
+- **WHEN** the API starts with the provider API key unset
+- **THEN** startup aborts with an error naming the variable and what it is for
+- **AND** the process exits non-zero
+
+#### Scenario: A malformed spend ceiling is rejected
+
+- **WHEN** the spend ceiling variable is set to a value that is not a positive number
+- **THEN** startup aborts with an error naming the variable and the expected shape
+
+#### Scenario: The example file lists the AI variables
+
+- **WHEN** the set of AI variables the applications read is compared against the committed example file
+- **THEN** every one is present with a placeholder and a comment
+
+#### Scenario: The key never reaches the logs
+
+- **WHEN** startup output and error output are inspected with the API key set to a recognisable value
+- **THEN** that value appears in neither
+
