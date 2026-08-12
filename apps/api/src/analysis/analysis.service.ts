@@ -189,7 +189,7 @@ export class AnalysisService {
           certainty: "observed" as const,
         })),
         unverifiedOverride,
-        detections,
+        detections: [...detections],
       });
 
       return { companyId, outcome: "completed", analysisId };
