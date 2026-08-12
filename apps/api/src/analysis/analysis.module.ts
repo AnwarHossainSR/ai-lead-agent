@@ -6,6 +6,7 @@ import { AnalysisService } from "./analysis.service";
 import { BrowserCaptureService } from "./browser-capture.service";
 import { ArtifactService } from "./artifact.service";
 import { PolitenessService } from "./politeness.service";
+import { MatcherService } from "./matcher.service";
 import { RobotsService } from "../http/robots";
 
 /**
@@ -32,6 +33,7 @@ import { RobotsService } from "../http/robots";
         }),
     },
     PolitenessService,
+    MatcherService,
   ],
   exports: [AnalysisService],
 })

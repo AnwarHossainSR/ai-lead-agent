@@ -1,11 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { companies, websiteAnalysis, type Database, insertWebsiteAnalysis } from "@mela/database";
+import { companies, websiteAnalysis, type Database, insertWebsiteAnalysis, insertTechnologyDetection } from "@mela/database";
 import { eq, desc } from "drizzle-orm";
 
 import { DATABASE } from "../database/database.module";
 import { BrowserCaptureService } from "./browser-capture.service";
 import { ArtifactService } from "./artifact.service";
 import { PolitenessService } from "./politeness.service";
+import { MatcherService, type PageCapture } from "./matcher.service";
 import { runObservationRules } from "./observation-rules";
 import type { WebsiteAnalysisOutcome } from "@mela/database";
 
@@ -18,7 +19,8 @@ import type { WebsiteAnalysisOutcome } from "@mela/database";
  * 3. Browser capture at both viewports
  * 4. Artifact persistence
  * 5. Observation rules
- * 6. Database writes
+ * 6. Technology detection
+ * 7. Database writes
  */
 @Injectable()
 export class AnalysisService {
@@ -27,6 +29,7 @@ export class AnalysisService {
     private readonly browserCapture: BrowserCaptureService,
     private readonly artifactService: ArtifactService,
     private readonly politeness: PolitenessService,
+    private readonly matcher: MatcherService,
   ) {}
 
   /**
@@ -160,6 +163,19 @@ export class AnalysisService {
       // Run observation rules on desktop capture
       const observations = runObservationRules(captures.desktop);
 
+      // Run technology detection
+      const pageCapture: PageCapture = {
+        url: captures.desktop.url,
+        status: captures.desktop.status,
+        headers: captures.desktop.headers,
+        html: captures.desktop.html,
+        scriptUrls: [], // Would be extracted from page
+        stylesheetUrls: [], // Would be extracted from page
+        cookieNames: [], // Would be extracted from page
+        metaGenerator: null, // Would be extracted from page
+      };
+      const detections = this.matcher.detect(pageCapture);
+
       // Record as completed
       const analysisId = await this.recordAnalysis(companyId, url, {
         outcome: "completed",
@@ -173,6 +189,7 @@ export class AnalysisService {
           certainty: "observed" as const,
         })),
         unverifiedOverride,
+        detections,
       });
 
       return { companyId, outcome: "completed", analysisId };
@@ -204,9 +221,19 @@ export class AnalysisService {
         certainty: "observed" | "inferred";
       }>;
       unverifiedOverride?: boolean;
+      detections?: Array<{
+        fingerprintId: string;
+        technologyId: string;
+        category: string;
+        certainty: "observed" | "inferred";
+        matchedIn: string | null;
+        matchedText: string | null;
+        version: string | null;
+        impliedBy: string | null;
+      }>;
     },
   ): Promise<string> {
-    const { outcome, failureReason, observations = [], unverifiedOverride = false } = options;
+    const { outcome, failureReason, observations = [], unverifiedOverride = false, detections = [] } = options;
 
     const row = await insertWebsiteAnalysis(this.database, {
       companyId,
@@ -216,6 +243,21 @@ export class AnalysisService {
       unverifiedOverride,
       observations,
     });
+
+    // Write technology detections
+    for (const detection of detections) {
+      await insertTechnologyDetection(this.database, {
+        analysisId: row.id,
+        fingerprintId: detection.fingerprintId,
+        technologyId: detection.technologyId,
+        category: detection.category,
+        certainty: detection.certainty,
+        matchedIn: detection.matchedIn ?? undefined,
+        matchedText: detection.matchedText ?? undefined,
+        version: detection.version ?? undefined,
+        impliedBy: detection.impliedBy ?? undefined,
+      });
+    }
 
     return row.id;
   }

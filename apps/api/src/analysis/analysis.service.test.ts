@@ -6,6 +6,7 @@ import { AnalysisService } from "./analysis.service";
 import { BrowserCaptureService } from "./browser-capture.service";
 import { ArtifactService } from "./artifact.service";
 import { PolitenessService } from "./politeness.service";
+import { MatcherService } from "./matcher.service";
 import { DATABASE } from "../database/database.module";
 import { RobotsService } from "../http/robots";
 
@@ -44,6 +45,7 @@ beforeEach(async () => {
           }),
       },
       PolitenessService,
+      MatcherService,
     ],
   }).compile();
 
