@@ -19,7 +19,7 @@ function makeCapture(overrides?: Partial<PageCapture>): PageCapture {
 }
 
 describe("MatcherService", () => {
-  const fingerprints = [...DEFAULT_FINGERPRINTS] as Fingerprint[];
+  const fingerprints = Array.from(DEFAULT_FINGERPRINTS) as Fingerprint[];
   const matcher = new MatcherService(fingerprints);
 
   describe("detect", () => {

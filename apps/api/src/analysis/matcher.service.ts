@@ -44,12 +44,12 @@ const DEFAULT_CONFIG: MatcherConfig = {
 /**
  * Extracts the match locations from a PageCapture.
  */
-function extractLocations(capture: PageCapture): Record<MatchLocation, string> {
+function extractLocations(capture: PageCapture, maxHtmlBytes: number): Record<MatchLocation, string> {
   return {
     header: Object.entries(capture.headers)
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n"),
-    html: capture.html.slice(0, DEFAULT_CONFIG.maxHtmlBytes),
+    html: capture.html.slice(0, maxHtmlBytes),
     script: capture.scriptUrls.join("\n"),
     stylesheet: capture.stylesheetUrls.join("\n"),
     cookie: capture.cookieNames.join("\n"),
@@ -107,7 +107,7 @@ export class MatcherService {
     fingerprints: readonly Fingerprint[] = DEFAULT_FINGERPRINTS,
     config: Partial<MatcherConfig> = {},
   ) {
-    this.fingerprints = [...fingerprints];
+    this.fingerprints = Array.from(fingerprints);
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
@@ -118,7 +118,7 @@ export class MatcherService {
    * Respects time budget and HTML byte limits.
    */
   detect(capture: PageCapture): readonly Detection[] {
-    const locations = extractLocations(capture);
+    const locations = extractLocations(capture, this.config.maxHtmlBytes);
     const detections: Detection[] = [];
     const matched = new Map<string, Detection>();
     const startTime = Date.now();
@@ -200,9 +200,9 @@ export class MatcherService {
         continue; // Already inferred
       }
 
-      // Find the fingerprint for this technology
+      // Find the fingerprint for this technology (by ID or technology name)
       const fingerprint = this.fingerprints.find(
-        (f) => f.technology === technologyId,
+        (f) => f.id === technologyId || f.technology === technologyId,
       );
       if (fingerprint === undefined) {
         continue; // Unknown technology

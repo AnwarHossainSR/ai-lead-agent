@@ -146,3 +146,17 @@ export {
   type ObservationRule,
   type Viewport,
 } from "./analysis";
+
+export {
+  DEFAULT_FINGERPRINTS,
+  MATCH_LOCATIONS,
+  TECHNOLOGY_CATEGORIES,
+  fingerprintSchema,
+  parseFingerprints,
+  patternSchema,
+  resolveFingerprint,
+  type Fingerprint,
+  type MatchLocation,
+  type Pattern,
+  type TechnologyCategory,
+} from "./fingerprints";
