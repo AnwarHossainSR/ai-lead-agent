@@ -107,4 +107,43 @@ export class AnalysisController {
       analyses: analysis ? [analysis] : [],
     };
   }
+
+  /**
+   * GET /api/companies/:id/technologies — get the latest completed analysis's detections.
+   */
+  @Get(":id/technologies")
+  async getTechnologies(
+    @Param("id") id: string,
+  ): Promise<{
+    readonly companyId: string;
+    readonly technologies: readonly Record<string, unknown>[];
+  }> {
+    const detections = await this.analysisService.getLatestTechnologies(id);
+
+    return {
+      companyId: id,
+      technologies: detections,
+    };
+  }
+
+  /**
+   * POST /api/analysis/:id/detect — re-run matcher against a stored capture.
+   *
+   * This does not make any network requests or browser calls.
+   */
+  @Post("analysis/:id/detect")
+  @HttpCode(HttpStatus.OK)
+  async redetectTechnologies(
+    @Param("id") id: string,
+  ): Promise<{
+    readonly analysisId: string;
+    readonly detectionsCount: number;
+  }> {
+    const detectionsCount = await this.analysisService.redetectTechnologies(id);
+
+    return {
+      analysisId: id,
+      detectionsCount,
+    };
+  }
 }

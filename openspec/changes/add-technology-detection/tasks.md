@@ -27,28 +27,28 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 3. The matcher
 
-- [ ] 3.1 Derive the six match locations from a stored `PageCapture`: headers, HTML, script URLs, stylesheet URLs, cookie names and meta generator
-- [ ] 3.2 Implement pattern evaluation producing a detection carrying the fingerprint, the location and the matched text
-- [ ] 3.3 Implement version extraction from a declared capture group only, recording no version when none matched
-- [ ] 3.4 Enforce the HTML byte bound and the total matching time budget, retaining partial results with a recorded reason
-- [ ] 3.5 Evaluate fingerprints in a stable declared order so a partial result is deterministic
-- [ ] 3.6 Add unit tests per match location, plus version present and absent, against `PageCapture` fixtures
-- [ ] 3.7 Add a determinism test asserting two runs over one fixture produce identical output
-- [ ] 3.8 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 3.1 Derive the six match locations from a stored `PageCapture`: headers, HTML, script URLs, stylesheet URLs, cookie names and meta generator
+- [x] 3.2 Implement pattern evaluation producing a detection carrying the fingerprint, the location and the matched text
+- [x] 3.3 Implement version extraction from a declared capture group only, recording no version when none matched
+- [x] 3.4 Enforce the HTML byte bound and the total matching time budget, retaining partial results with a recorded reason
+- [x] 3.5 Evaluate fingerprints in a stable declared order so a partial result is deterministic
+- [x] 3.6 Add unit tests per match location, plus version present and absent, against `PageCapture` fixtures
+- [x] 3.7 Add a determinism test asserting two runs over one fixture produce identical output
+- [x] 3.8 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 4. Implications
 
-- [ ] 4.1 Resolve implications transitively from observed detections, recording each implied technology as inferred with the implying detection referenced
-- [ ] 4.2 Implement the upgrade rule: a directly matched technology already recorded as inferred becomes observed with its own evidence
-- [ ] 4.3 Confirm an implication never downgrades an existing observation
-- [ ] 4.4 Add unit tests for chains, upgrades and the no-downgrade rule
-- [ ] 4.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 4.1 Resolve implications transitively from observed detections, recording each implied technology as inferred with the implying detection referenced
+- [x] 4.2 Implement the upgrade rule: a directly matched technology already recorded as inferred becomes observed with its own evidence
+- [x] 4.3 Confirm an implication never downgrades an existing observation
+- [x] 4.4 Add unit tests for chains, upgrades and the no-downgrade rule
+- [x] 4.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 5. Integration with analysis
 
-- [ ] 5.1 Call detection from the analysis service after a completed capture, writing detections in the same transaction as the analysis
-- [ ] 5.2 Write the denormalized `website_analysis.technologies` summary from the same detections
-- [ ] 5.3 Return no detections with a stated reason when an analysis has no usable capture
+- [x] 5.1 Call detection from the analysis service after a completed capture, writing detections in the same transaction as the analysis
+- [x] 5.2 Write the denormalized `website_analysis.technologies` summary from the same detections
+- [x] 5.3 Return no detections with a stated reason when an analysis has no usable capture
 - [ ] 5.4 Add `POST /api/analysis/:id/detect` re-running the matcher against a stored capture, and confirm it makes no network request
 - [ ] 5.5 Add `GET /api/companies/:id/technologies` returning the latest completed analysis's detections
 - [ ] 5.6 Add a test asserting no code path in the module issues a network request or calls a language model

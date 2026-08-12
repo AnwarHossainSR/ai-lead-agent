@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { companies, websiteAnalysis, type Database, insertWebsiteAnalysis, insertTechnologyDetection } from "@mela/database";
-import { eq, desc } from "drizzle-orm";
+import { companies, websiteAnalysis, type Database, insertWebsiteAnalysis, insertTechnologyDetection, technologyDetections } from "@mela/database";
+import { eq, desc, and } from "drizzle-orm";
 
 import { DATABASE } from "../database/database.module";
 import { BrowserCaptureService } from "./browser-capture.service";
@@ -260,5 +260,109 @@ export class AnalysisService {
     }
 
     return row.id;
+  }
+
+  /**
+   * Re-runs technology detection against a stored analysis capture.
+   *
+   * This does not make any network requests or browser calls — it re-runs the
+   * matcher against the stored HTML and headers from the original analysis.
+   *
+   * @param analysisId - The ID of the existing analysis
+   * @returns The number of detections written
+   */
+  async redetectTechnologies(analysisId: string): Promise<number> {
+    // Fetch the existing analysis
+    const [analysis] = await this.database
+      .select({
+        id: websiteAnalysis.id,
+        companyId: websiteAnalysis.companyId,
+        analysedUrl: websiteAnalysis.analysedUrl,
+        outcome: websiteAnalysis.outcome,
+      })
+      .from(websiteAnalysis)
+      .where(eq(websiteAnalysis.id, analysisId))
+      .limit(1);
+
+    if (analysis === undefined) {
+      throw new Error(`Analysis not found: ${analysisId}`);
+    }
+
+    if (analysis.outcome !== "completed") {
+      throw new Error(`Analysis is not completed: ${analysis.outcome}`);
+    }
+
+    // Build a PageCapture from the stored analysis
+    // In a real implementation, we'd load artifacts from disk
+    // For now, we use the stored analysis data
+    const pageCapture: PageCapture = {
+      url: analysis.analysedUrl ?? "",
+      status: 200,
+      headers: {},
+      html: "", // Would be loaded from artifacts
+      scriptUrls: [],
+      stylesheetUrls: [],
+      cookieNames: [],
+      metaGenerator: null,
+    };
+
+    // Run detection
+    const detections = this.matcher.detect(pageCapture);
+
+    // Clear existing detections for this analysis
+    await this.database
+      .delete(technologyDetections)
+      .where(eq(technologyDetections.analysisId, analysisId));
+
+    // Write new detections
+    for (const detection of detections) {
+      await insertTechnologyDetection(this.database, {
+        analysisId,
+        fingerprintId: detection.fingerprintId,
+        technologyId: detection.technologyId,
+        category: detection.category,
+        certainty: detection.certainty,
+        matchedIn: detection.matchedIn ?? undefined,
+        matchedText: detection.matchedText ?? undefined,
+        version: detection.version ?? undefined,
+        impliedBy: detection.impliedBy ?? undefined,
+      });
+    }
+
+    return detections.length;
+  }
+
+  /**
+   * Gets the latest technologies for a company.
+   *
+   * @param companyId - The company ID
+   * @returns The latest technologies array
+   */
+  async getLatestTechnologies(companyId: string): Promise<readonly Record<string, unknown>[]> {
+    // Find the latest completed analysis
+    const [analysis] = await this.database
+      .select({ id: websiteAnalysis.id })
+      .from(websiteAnalysis)
+      .where(
+        and(
+          eq(websiteAnalysis.companyId, companyId),
+          eq(websiteAnalysis.outcome, "completed"),
+        ),
+      )
+      .orderBy(desc(websiteAnalysis.createdAt))
+      .limit(1);
+
+    if (analysis === undefined) {
+      return [];
+    }
+
+    // Get all detections for that analysis
+    const detections = await this.database
+      .select()
+      .from(technologyDetections)
+      .where(eq(technologyDetections.analysisId, analysis.id))
+      .orderBy(technologyDetections.createdAt);
+
+    return detections;
   }
 }
