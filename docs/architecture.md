@@ -35,6 +35,7 @@ MELA (Middle East Lead Agent) is an AI-assisted B2B lead generation platform bui
 NestJS REST API providing:
 - Health check endpoints (`GET /health`)
 - Discovery run endpoints (`POST /api/discovery/runs`, `GET /api/discovery/runs`, `GET /api/discovery/runs/:id`)
+- Verification endpoints (`POST /api/companies/:id/verify`, `POST /api/verification/batch`, `GET /api/companies/:id/verification`)
 - Product configuration APIs
 - Lead management endpoints
 - Outreach management endpoints
@@ -150,3 +151,35 @@ Sources are configured in `packages/config/src/product/discovery-sources.ts` wit
 - **No fabrication** — candidates without a source URL are rejected; optional attributes stay absent when not provided
 - **Deterministic deduplication** — domain first, then name within country, no LLM involvement
 - **Human approval before outreach** — discovery finds companies; outreach requires explicit approval
+
+## Company Verification
+
+Verification confirms whether a discovered company's online presence is reachable and matches expectations. It runs deterministic checks (DNS, HTTP, domain-name-match) and optional registry lookups.
+
+### Verification States
+
+| State | Meaning |
+|-------|---------|
+| `never_checked` | No verification has been run yet |
+| `verified` | All required checks passed |
+| `unverified` | A required check failed |
+| `unreachable` | Required checks returned unknown (timeout, block, no registry) |
+
+**Why `unreachable` is distinct from `unverified`:** A company that times out or is blocked is not necessarily bad — the check infrastructure couldn't reach it. Marking it `unverified` would be incorrect; `unreachable` signals "we don't know yet" without claiming failure.
+
+### Checks
+
+| Check | Required | What it does |
+|-------|----------|--------------|
+| `dns` | Yes | Resolves A/AAAA + MX records for the domain |
+| `http` | Yes | Fetches the website URL, follows redirects, detects blocks |
+| `domain-name-match` | No | Deterministic token overlap between company name and domain |
+| `registry` | No | Looks up the company in a country-specific business registry |
+
+### Design Decisions
+
+- **Evidence required** — a `passed` or `failed` verdict without evidence is downgraded to `unknown`
+- **No anti-bot evasion** — a blocked host is recorded as `unknown` with `blocked` failure code
+- **No language model** — all checks are deterministic; no LLM calls in the verification path
+- **Staleness window** — companies are re-verified after 90 days by default
+- **Bounded concurrency** — batch verification runs up to N checks in parallel

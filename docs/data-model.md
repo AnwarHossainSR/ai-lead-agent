@@ -199,6 +199,28 @@ Tracks which source discovered each company.
 - `company_discovery_sources_company_source_pk` - Composite primary key on (`company_id, source_id`)
 - `company_discovery_sources_source_url_not_blank` - Source URL must not be blank
 
+### verification_checks
+
+Stores individual check results from verification runs.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| company_id | UUID | Foreign key to companies |
+| check_id | TEXT | Check identifier (dns, http, domain-name-match, registry) |
+| verdict | verification_verdict | Check outcome (passed, failed, unknown) |
+| evidence | TEXT | Human-readable description of what was observed |
+| evidence_url | TEXT | URL or identifier where evidence can be inspected |
+| verification_run_id | UUID | Run that produced this check result |
+| ran_at | TIMESTAMP | When the check was executed |
+
+**Constraints:**
+- `verification_checks_company_id_fk` - Foreign key to companies (CASCADE DELETE)
+- `verification_checks_evidence_required` - Evidence is required when verdict is passed or failed
+
+**Indexes:**
+- `verification_checks_company_ran_at_idx` - on (`company_id, ran_at DESC`)
+
 ## Enums
 
 ### lead_status
@@ -216,6 +238,14 @@ Tracks which source discovered each company.
 ### outreach_status
 
 `draft`, `approved`, `sent`, `delivered`, `opened`, `replied`, `bounced`, `failed`
+
+### verification_verdict
+
+`passed`, `failed`, `unknown`
+
+### company_verification_state
+
+`never_checked`, `verified`, `unverified`, `unreachable`
 
 ## JSONB Schemas
 

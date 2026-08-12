@@ -14,10 +14,10 @@ import {
 describe("verification rule", () => {
   it("loads the default rule successfully", () => {
     expect(VERIFICATION_RULE).toBeDefined();
-    expect(VERIFICATION_RULE.checks.dns.required).toBe(true);
-    expect(VERIFICATION_RULE.checks.http.required).toBe(true);
-    expect(VERIFICATION_RULE.checks["domain-name-match"].required).toBe(false);
-    expect(VERIFICATION_RULE.checks.registry.required).toBe(false);
+    expect(VERIFICATION_RULE.checks["dns"]?.required).toBe(true);
+    expect(VERIFICATION_RULE.checks["http"]?.required).toBe(true);
+    expect(VERIFICATION_RULE.checks["domain-name-match"]?.required).toBe(false);
+    expect(VERIFICATION_RULE.checks["registry"]?.required).toBe(false);
     expect(VERIFICATION_RULE.stalenessDays).toBe(90);
   });
 
@@ -75,7 +75,7 @@ describe("verification rule", () => {
       },
       stalenessDays: 30,
     });
-    expect(rule.checks["domain-name-match"].timeoutMs).toBe(0);
+    expect(rule.checks["domain-name-match"]?.timeoutMs).toBe(0);
   });
 });
 

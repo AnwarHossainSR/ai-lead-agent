@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { VERIFICATION_RULE, REGISTRY_CONFIGS } from "@mela/config";
 import { companies } from "@mela/database";
 import { eq } from "drizzle-orm";
@@ -6,6 +6,7 @@ import * as dns from "node:dns";
 import * as http from "node:http";
 import * as https from "node:https";
 
+import { DATABASE } from "../database/database.module";
 import { type Database } from "@mela/database";
 import { deriveState } from "./derive-state";
 import { enforceEvidenceRequirement } from "./guard";
@@ -88,7 +89,7 @@ function createDefaultHttpClient(): import("./checks/http").HttpClient {
 export class VerificationService {
   private readonly checks: readonly VerificationCheck[];
 
-  constructor(private readonly database: Database) {
+  constructor(@Inject(DATABASE) private readonly database: Database) {
     this.checks = [
       createDnsCheck(createDefaultResolver()),
       createHttpCheck(createDefaultHttpClient()),

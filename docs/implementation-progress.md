@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**`add-ai-provider-abstraction` in progress (30/39 tasks).** Provider transport, prompt registry, and the service layer are implemented. API wiring and documentation remain.
+**`add-company-verification` complete (43/43 tasks).** Verification rule configuration, schema, write path, HTTP politeness, checks, registry, verdict derivation, service and API are all implemented and tested.
 
 **`add-company-discovery` in progress (40/52 tasks).** Source configuration, database schema, file-import adapter, places adapter, rate limiting, deduplication, run orchestration, and API surface are implemented. Documentation and final verification remain.
 
@@ -24,6 +24,18 @@ Established the workspace and the three capabilities now live in `openspec/specs
 Delivered: pnpm + Turborepo monorepo; Docker Compose stack; `@mela/config`, `@mela/shared`,
 `@mela/database`; NestJS API with a Terminus health endpoint; Next.js 16 web shell; GitHub
 Actions running lint, typecheck, test and build with no deployment step.
+
+### add-company-verification — completed 2026-08-12
+
+Verification of discovered companies via deterministic checks and registry lookups.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `company-verification`  | verification rule, checks (DNS, HTTP, domain-name-match, registry), verdict derivation, service, API endpoints             |
+| `product-configuration` | verification rule config, politeness settings, registry configs                                                             |
+| `lead-data-model`       | verification_checks table, verification enums, verification columns on companies                                           |
+
+Delivered: Verification rule configuration with frozen validated data; database schema with evidence-required CHECK constraint; four deterministic checks with injected dependencies; pure `deriveState` function; `VerificationService` orchestrating checks and persisting results; three API endpoints for single/batch verification and state retrieval.
 
 ## Planned changes
 
@@ -88,11 +100,11 @@ Each change also carries deltas against the three existing capabilities where it
 
 | Package          | Test files | Tests | Status  |
 | ---------------- | ---------- | ----- | ------- |
-| `@mela/config`   | 9          | 119   | passing |
+| `@mela/config`   | 12         | 169   | passing |
 | `@mela/shared`   | 3          | 66    | passing |
-| `@mela/database` | 7          | 82    | passing |
+| `@mela/database` | 7          | 132   | passing |
 | `@mela/ai`       | 7          | 76    | passing |
-| `@mela/api`      | 8          | 44    | passing |
+| `@mela/api`      | 29         | 225   | passing |
 | `@mela/web`      | 5          | —     | passing |
 
 ## Next step
