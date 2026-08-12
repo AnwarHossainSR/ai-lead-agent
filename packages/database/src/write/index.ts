@@ -31,7 +31,14 @@ export {
   type VerificationCheckResult,
 } from "./companies";
 
-export { insertContact, insertContactInputSchema, type InsertContactInput } from "./contacts";
+export { deleteContactsForCompany, insertContact, insertContactInputSchema, type InsertContactInput } from "./contacts";
+
+export {
+  getLatestContactResearchRuns,
+  insertContactResearchRun,
+  insertContactResearchRunInputSchema,
+  type InsertContactResearchRunInput,
+} from "./contact-research-runs";
 
 export {
   getLatestWebsiteAnalysis,

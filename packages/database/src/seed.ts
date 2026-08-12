@@ -87,6 +87,7 @@ async function seedExampleCompanies(tx: Executor): Promise<void> {
     jobTitle: "Operations Director",
     email: "contact@example.ae",
     certainty: "observed",
+    extractionMethod: "deterministic",
     researchSource: SEED_SOURCE,
     sourceUrl: SEED_SOURCE_URL,
     isExample: true,

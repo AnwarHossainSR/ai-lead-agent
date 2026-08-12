@@ -40,18 +40,51 @@ Stores contact information for company representatives.
 |--------|------|-------------|
 | id | UUID | Primary key |
 | company_id | UUID | Foreign key to companies |
+| name | TEXT | Contact name |
+| job_title | TEXT | Job title |
+| linkedin_url | TEXT | LinkedIn profile URL |
 | email | TEXT | Email address |
 | phone | TEXT | Phone number |
-| name | TEXT | Contact name |
-| title | TEXT | Job title |
-| linkedin_url | TEXT | LinkedIn profile URL |
+| certainty | certainty_enum | observed (deterministic) or inferred (model) |
+| extraction_method | contact_extraction_method_enum | deterministic, model_interpretation, or manual_entry |
+| seniority_id | TEXT | Seniority level ID (c-level, vp, director, etc.) |
+| role_source_url | TEXT | URL where the role was stated |
+| mail_deliverability | mail_deliverability_enum | receivable, not_receivable, or unknown |
+| ai_invocation_id | UUID | Reference to AI invocation (for model_interpretation) |
+| research_source | TEXT | How the contact was obtained |
 | source_url | TEXT | URL where contact was found |
+| is_example | BOOLEAN | Whether this is example data |
 | created_at | TIMESTAMP | Creation timestamp |
 | updated_at | TIMESTAMP | Last update timestamp |
 
 **Constraints:**
 - `contacts_company_id_fk` - Foreign key to companies (CASCADE DELETE)
-- `contacts_source_url_check` - Requires `source_url` when `email` or `phone` is present
+- `contacts_ai_invocation_id_ai_invocations_id_fk` - Foreign key to ai_invocations (SET NULL on delete)
+- `contacts_contact_details_need_a_source` - Requires `source_url` when `email` or `phone` is present
+- `contacts_interpreted_requires_invocation` - model_interpretation requires ai_invocation_id
+- `contacts_seniority_requires_title` - seniority_id requires job_title
+
+### contact_research_runs
+
+Stores records of contact research runs.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| company_id | UUID | Foreign key to companies |
+| fetched_pages | JSONB | List of URLs fetched during research |
+| skipped_pages | JSONB | List of URLs skipped with reasons |
+| outcome | contact_research_outcome_enum | contacts_found, none_found, blocked, skipped, or failed |
+| found_count | INTEGER | Number of contacts found |
+| rejected_count | INTEGER | Number of contacts rejected |
+| rejection_reasons | JSONB | Reasons for rejections |
+| created_at | TIMESTAMP | Creation timestamp |
+
+**Constraints:**
+- `contact_research_runs_company_id_companies_id_fk` - Foreign key to companies (CASCADE DELETE)
+
+**Indexes:**
+- `contact_research_runs_company_id_idx` (on `company_id`)
 
 ### website_analysis
 

@@ -160,3 +160,18 @@ export {
   type Pattern,
   type TechnologyCategory,
 } from "./fingerprints";
+
+export {
+  CONVENTIONAL_PATHS,
+  CONTACT_RESEARCH_CONFIG,
+  ROLE_PATTERNS,
+  SENIORITY_LEVELS,
+  classifyRole,
+  contactResearchConfigSchema,
+  findSeniorityLevel,
+  isSeniorityLevelId,
+  validateContactResearchConfig,
+  type ContactResearchConfig,
+  type RolePattern,
+  type SeniorityLevel,
+} from "./contact-research";

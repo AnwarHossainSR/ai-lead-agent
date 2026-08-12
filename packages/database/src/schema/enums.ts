@@ -185,3 +185,53 @@ export const websiteAnalysisOutcomeEnum = pgEnum(
   "website_analysis_outcome",
   WEBSITE_ANALYSIS_OUTCOMES,
 );
+
+/**
+ * Contact extraction method: how the contact was obtained.
+ */
+export const CONTACT_EXTRACTION_METHODS = [
+  "deterministic",
+  "model_interpretation",
+  "manual_entry",
+] as const;
+
+export type ContactExtractionMethod = (typeof CONTACT_EXTRACTION_METHODS)[number];
+
+export const contactExtractionMethodEnum = pgEnum(
+  "contact_extraction_method",
+  CONTACT_EXTRACTION_METHODS,
+);
+
+/**
+ * Mail deliverability state for an email domain.
+ */
+export const MAIL_DELIVERABILITY_STATES = [
+  "receivable",
+  "not_receivable",
+  "unknown",
+] as const;
+
+export type MailDeliverability = (typeof MAIL_DELIVERABILITY_STATES)[number];
+
+export const mailDeliverabilityEnum = pgEnum(
+  "mail_deliverability",
+  MAIL_DELIVERABILITY_STATES,
+);
+
+/**
+ * Contact research run outcome.
+ */
+export const CONTACT_RESEARCH_OUTCOMES = [
+  "contacts_found",
+  "none_found",
+  "blocked",
+  "skipped",
+  "failed",
+] as const;
+
+export type ContactResearchOutcome = (typeof CONTACT_RESEARCH_OUTCOMES)[number];
+
+export const contactResearchOutcomeEnum = pgEnum(
+  "contact_research_outcome",
+  CONTACT_RESEARCH_OUTCOMES,
+);

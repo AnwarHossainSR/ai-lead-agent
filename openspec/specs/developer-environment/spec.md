@@ -2,7 +2,7 @@
 
 Defines the reproducible environment a contributor and the CI system rely on: a single set of workspace commands, containerised backing services, validated environment variables, and a health endpoint that reports whether the API and its dependencies are actually working.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: A single command set drives the whole workspace
 

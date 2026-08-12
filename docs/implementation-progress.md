@@ -8,7 +8,9 @@
 
 **`add-website-analysis` complete (55/55 tasks).** Configuration, schema, fixture site, browser capture, artifacts, observation rules, politeness, API endpoints, and documentation are all implemented and tested. 275 API tests passing.
 
-**`add-technology-detection` in progress (50/65 tasks).** Fingerprint configuration, database schema, matcher service, implications, and integration with analysis are implemented. Documentation and final verification remain.
+**`add-technology-detection` complete (65/65 tasks).** Fingerprint configuration, database schema, matcher service, implications, and integration with analysis are all implemented and tested.
+
+**`add-decision-maker-research` complete (49/49 tasks).** Contact research configuration, schema, deterministic extraction, model extraction, seniority classification, deliverability checks, service, API endpoints, and documentation are all implemented and tested. 319 API tests passing.
 
 **Pipeline: not started.** Fifteen more changes are planned and validated in `openspec/changes/`.
 None has been applied.
@@ -40,6 +42,42 @@ Verification of discovered companies via deterministic checks and registry looku
 | `lead-data-model`       | verification_checks table, verification enums, verification columns on companies                                           |
 
 Delivered: Verification rule configuration with frozen validated data; database schema with evidence-required CHECK constraint; four deterministic checks with injected dependencies; pure `deriveState` function; `VerificationService` orchestrating checks and persisting results; three API endpoints for single/batch verification and state retrieval.
+
+### add-website-analysis — completed 2026-08-12
+
+Website analysis captures company web presence using headless browsers, runs quality audits, and records observations.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `website-analysis`      | configuration, schema, fixture site, browser capture, artifacts, observation rules, politeness, API endpoints              |
+| `product-configuration` | analysis config, viewport settings, observation rules                                                                      |
+| `lead-data-model`       | website_analysis table, analysis outcomes, score columns                                                                   |
+
+Delivered: Analysis configuration with viewports and observation rules; Playwright capture at desktop and mobile viewports; Lighthouse scoring via CDP; artifact storage; observation rules for issues; politeness with robots.txt; API endpoints for triggering and retrieving analyses.
+
+### add-technology-detection — completed 2026-08-12
+
+Technology detection identifies the software stack behind a company's website.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `technology-detection`  | fingerprint configuration, database schema, matcher service, implications, integration with analysis                        |
+| `product-configuration` | fingerprint patterns, match locations, technology categories                                                               |
+| `lead-data-model`       | technology_detections table, detection outcomes                                                                            |
+
+Delivered: Curated fingerprint patterns; database schema for detections; deterministic matcher service; version extraction from evidence; implication resolution; integration with website analysis; documentation.
+
+### add-decision-maker-research — completed 2026-08-12
+
+Contact research finds people at a companies who could be contacted.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `decision-maker-research`| seniority levels, role patterns, deterministic extraction, model extraction, seniority classification, deliverability checks |
+| `product-configuration` | contact research config, conventional paths                                                                                |
+| `lead-data-model`       | contacts table updates, contact_research_runs table, new enums                                                             |
+
+Delivered: Seniority classification with Arabic/English patterns; deterministic extraction (mailto, tel, structured data); model extraction with grounding check; MX-based deliverability via DNS-over-HTTPS; ResearchService orchestrating extraction and persistence; API endpoints for research, listing, and deletion; documentation.
 
 ## Planned changes
 

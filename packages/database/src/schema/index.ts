@@ -12,6 +12,7 @@ export * from "./enums";
 export * from "./companies";
 export * from "./discovery";
 export * from "./contacts";
+export * from "./contact-research-runs";
 export * from "./website-analysis";
 export * from "./technology-detections";
 export * from "./leads";

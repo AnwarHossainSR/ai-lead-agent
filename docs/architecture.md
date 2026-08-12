@@ -303,3 +303,50 @@ A version is recorded only when it appears verbatim in the matched evidence beca
 - **HTML byte limit** — only the first 2MB of HTML is examined
 - **Stable order** — fingerprints are evaluated in declared order for deterministic results
 - **Evidence required** — observed detections must have matched text; inferred detections must reference an implying detection
+
+## Contact Research
+
+Contact research finds people at a company who could be contacted, taking only what the company itself published on pages the platform actually fetched. It combines deterministic extraction (mailto/tel links, structured data) with model-based extraction (AI interpretation of page text).
+
+### Research Pipeline
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Gather    │────▶│  Extract    │────▶│   Enrich    │────▶│   Persist   │
+│    Pages    │     │  (Deterministic + Model)│     │  (Seniority, │     │  (Contacts + │
+└─────────────┘     └─────────────┘     │  Deliverability)│     │   Run Record)│
+       │                   │                   └─────────────┘     └─────────────┘
+       ▼                   ▼                   ▼                   ▼
+  Reuse pages        - mailto links      - Classify seniority   - Store contacts
+  from analysis      - tel links         - Check MX records     - Record run
+  + fetch paths      - JSON-LD           - Deduplicate          - Track outcomes
+                     - Model extraction
+```
+
+### Design Decisions
+
+- **Never construct contact details** — email/phone are only stored when explicitly present in fetched content
+- **No address generation** — no email patterns, permutation rules, or domain-based guessing
+- **No SMTP probing** — deliverability checks use DNS-over-HTTPS MX lookup only
+- **Deterministic first** — mailto/tel/structured data extraction runs before model interpretation
+- **Grounding check** — model output namingText must appear in the source page
+- **No contact details in model output** — the people-extract prompt has no email/telephone fields
+- **Blocked hosts end research** — no retry, no evasion, no disguise
+- **Observed vs inferred** — deterministic extraction yields `observed`; model interpretation yields `inferred`
+- **Source URL required** — every contact detail must carry the URL it was found at
+
+### Seniority Classification
+
+Contacts are classified by matching their stated role against configured patterns:
+- C-Level, VP, Director, Manager, Lead, Senior, Individual Contributor, Unknown
+- Arabic and English patterns supported
+- No seniority assigned when role is unknown
+
+### Mail Deliverability
+
+MX records are checked via DNS-over-HTTPS (Google DNS) to determine if a domain can receive mail:
+- `receivable` — domain has MX records
+- `not_receivable` — domain has no MX records
+- `unknown` — lookup failed or timed out
+- Per-domain caching prevents repeated lookups
+- Addresses are never filtered out based on deliverability
