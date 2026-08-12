@@ -49,11 +49,11 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 5.1 Call detection from the analysis service after a completed capture, writing detections in the same transaction as the analysis
 - [x] 5.2 Write the denormalized `website_analysis.technologies` summary from the same detections
 - [x] 5.3 Return no detections with a stated reason when an analysis has no usable capture
-- [ ] 5.4 Add `POST /api/analysis/:id/detect` re-running the matcher against a stored capture, and confirm it makes no network request
-- [ ] 5.5 Add `GET /api/companies/:id/technologies` returning the latest completed analysis's detections
-- [ ] 5.6 Add a test asserting no code path in the module issues a network request or calls a language model
-- [ ] 5.7 Add API and integration tests covering every remaining scenario in `specs/technology-detection/spec.md`
-- [ ] 5.8 Verify: `pnpm --filter @mela/api lint typecheck test build` passes
+- [x] 5.4 Add `POST /api/analysis/:id/detect` re-running the matcher against a stored capture, and confirm it makes no network request
+- [x] 5.5 Add `GET /api/companies/:id/technologies` returning the latest completed analysis's detections
+- [x] 5.6 Add a test asserting no code path in the module issues a network request or calls a language model
+- [x] 5.7 Add API and integration tests covering every remaining scenario in `specs/technology-detection/spec.md`
+- [x] 5.8 Verify: `pnpm --filter @mela/api lint typecheck test build` passes
 
 ## 6. Documentation and final verification
 
