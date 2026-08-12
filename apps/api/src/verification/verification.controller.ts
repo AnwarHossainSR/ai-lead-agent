@@ -83,9 +83,7 @@ export class VerificationController {
    * Returns the verification state and timestamps for a company, or 404.
    */
   @Get(":id/verification")
-  async getVerification(
-    @Param("id") id: string,
-  ): Promise<{
+  async getVerification(@Param("id") id: string): Promise<{
     readonly companyId: string;
     readonly verificationState: string | null;
     readonly verifiedAt: string | null;

@@ -42,11 +42,7 @@ export function renderPrompt(
     { role: "system", content: instructions },
     {
       role: "user",
-      content: [
-        INPUT_OPEN,
-        input,
-        INPUT_CLOSE,
-      ].join("\n"),
+      content: [INPUT_OPEN, input, INPUT_CLOSE].join("\n"),
     },
   ];
 
@@ -65,16 +61,11 @@ export function renderPrompt(
  * block separate from instructions. Used by tests to verify the injection
  * containment property.
  */
-export function isInputConfinedToBlock(
-  messages: readonly AIMessage[],
-): boolean {
+export function isInputConfinedToBlock(messages: readonly AIMessage[]): boolean {
   if (messages.length < 2) return false;
 
   const userMessage = messages.find((m) => m.role === "user");
   if (userMessage === undefined) return false;
 
-  return (
-    userMessage.content.includes(INPUT_OPEN) &&
-    userMessage.content.includes(INPUT_CLOSE)
-  );
+  return userMessage.content.includes(INPUT_OPEN) && userMessage.content.includes(INPUT_CLOSE);
 }

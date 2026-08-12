@@ -1,29 +1,29 @@
 import {
-  startDiscoveryRun,
-  recordDiscoveryRunSource,
-  finishDiscoveryRun,
-  type Executor,
-  type DiscoveryRunRow,
-} from "@mela/database";
-import {
   ACTIVE_DISCOVERY_SOURCES,
-  COUNTRIES,
-  INDUSTRIES,
   CITIES,
+  COUNTRIES,
+  type DiscoverySourceId,
+  INDUSTRIES,
   findCity,
   isCountryId,
   isIndustryId,
-  type DiscoverySourceId,
 } from "@mela/config";
+import {
+  type DiscoveryRunRow,
+  type Executor,
+  finishDiscoveryRun,
+  recordDiscoveryRunSource,
+  startDiscoveryRun,
+} from "@mela/database";
 
-import { DedupService, type DedupInput } from "./dedup.service";
+import { TokenBucket, effectiveRequestIntervalMs } from "../http/rate-limiter";
+import { type DedupInput, DedupService } from "./dedup.service";
 import {
   type DiscoveryRequest,
   type DiscoverySource,
   type DiscoverySourceResult,
   validateCandidate,
 } from "./sources/source";
-import { TokenBucket, effectiveRequestIntervalMs } from "../http/rate-limiter";
 
 /**
  * The input to start a discovery run (design D6).
@@ -173,7 +173,11 @@ export class RunService {
       if (sourceConfig) {
         buckets.set(
           sourceId,
-          new TokenBucket(1, effectiveRequestIntervalMs(sourceConfig.maxRequestRatePerMinute, null), this.now),
+          new TokenBucket(
+            1,
+            effectiveRequestIntervalMs(sourceConfig.maxRequestRatePerMinute, null),
+            this.now,
+          ),
         );
       }
     }
@@ -336,7 +340,14 @@ export class RunService {
     hitTimeLimit: boolean;
   }> {
     if (result.outcome !== "succeeded") {
-      return { stored: 0, duplicate: 0, rejected: 0, rejections: [], hitCandidateLimit: false, hitTimeLimit: false };
+      return {
+        stored: 0,
+        duplicate: 0,
+        rejected: 0,
+        rejections: [],
+        hitCandidateLimit: false,
+        hitTimeLimit: false,
+      };
     }
 
     let stored = 0;

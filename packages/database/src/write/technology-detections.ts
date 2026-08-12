@@ -1,12 +1,9 @@
-import { eq, desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import type { Executor } from "../client";
-import {
-  type TechnologyDetectionRow,
-  technologyDetections,
-} from "../schema/technology-detections";
+import { type TechnologyDetectionRow, technologyDetections } from "../schema/technology-detections";
 import { websiteAnalysis } from "../schema/website-analysis";
 import { parseInput } from "./errors";
 
@@ -29,9 +26,7 @@ export const insertTechnologyDetectionInputSchema = z.object({
   impliedBy: z.uuid().nullish(),
 });
 
-export type InsertTechnologyDetectionInput = z.input<
-  typeof insertTechnologyDetectionInputSchema
->;
+export type InsertTechnologyDetectionInput = z.input<typeof insertTechnologyDetectionInputSchema>;
 
 /**
  * Inserts a technology detection, deriving company_id from the analysis.
@@ -40,11 +35,7 @@ export async function insertTechnologyDetection(
   executor: Executor,
   input: InsertTechnologyDetectionInput,
 ): Promise<TechnologyDetectionRow> {
-  const value = parseInput(
-    "The technology detection",
-    insertTechnologyDetectionInputSchema,
-    input,
-  );
+  const value = parseInput("The technology detection", insertTechnologyDetectionInputSchema, input);
 
   // Derive company_id from the analysis
   const [analysis] = await executor
@@ -125,10 +116,7 @@ export async function getLatestDetections(
   const [analysis] = await executor
     .select({ id: websiteAnalysis.id })
     .from(websiteAnalysis)
-    .where(
-      eq(websiteAnalysis.companyId, companyId) &&
-        eq(websiteAnalysis.outcome, "completed"),
-    )
+    .where(eq(websiteAnalysis.companyId, companyId) && eq(websiteAnalysis.outcome, "completed"))
     .orderBy(desc(websiteAnalysis.createdAt))
     .limit(1);
 

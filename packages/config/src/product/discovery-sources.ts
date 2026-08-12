@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { assertUniqueIdentifiers, ConfigurationError, parseOrThrow } from "../internal/errors";
+import { ConfigurationError, assertUniqueIdentifiers, parseOrThrow } from "../internal/errors";
 import { deepFreeze } from "../internal/freeze";
 import { displayNameSchema, identifierSchema } from "../internal/identifier";
 import { isCountryId } from "./markets";
@@ -46,7 +46,11 @@ export type DiscoverySource = z.infer<typeof discoverySourceSchema>;
  * both the source and the country.
  */
 export function parseDiscoverySources(raw: unknown): readonly DiscoverySource[] {
-  const sources = parseOrThrow("Discovery source configuration", z.array(discoverySourceSchema), raw);
+  const sources = parseOrThrow(
+    "Discovery source configuration",
+    z.array(discoverySourceSchema),
+    raw,
+  );
 
   assertUniqueIdentifiers(
     "Discovery source configuration",

@@ -62,9 +62,7 @@ const FIXTURES = {
   },
 } as const;
 
-function createConfig(
-  overrides: Partial<PlacesSourceConfig> = {},
-): PlacesSourceConfig {
+function createConfig(overrides: Partial<PlacesSourceConfig> = {}): PlacesSourceConfig {
   return {
     apiKey: "test-api-key",
     baseUrl: "https://api.places.example.com/v1",
@@ -73,12 +71,10 @@ function createConfig(
   };
 }
 
-function createMockFetch(
-  response: {
-    status: number;
-    body: unknown;
-  },
-): typeof globalThis.fetch {
+function createMockFetch(response: {
+  status: number;
+  body: unknown;
+}): typeof globalThis.fetch {
   return async () =>
     new Response(JSON.stringify(response.body), {
       status: response.status,
@@ -116,17 +112,13 @@ describe("PlacesSource", () => {
         expect(result.candidates[0]?.sourceUrl).toBe(
           "https://api.places.example.com/places/place-001",
         );
-        expect(result.candidates[0]?.website).toBe(
-          "https://techsolutions-dubai.example.com",
-        );
+        expect(result.candidates[0]?.website).toBe("https://techsolutions-dubai.example.com");
         expect(result.candidates[0]?.city).toBe("Dubai");
         expect(result.candidates[0]?.companySize).toBe("50");
         expect(result.candidates[0]?.linkedinUrl).toBe(
           "https://linkedin.com/company/tech-solutions-dubai",
         );
-        expect(result.candidates[0]?.description).toBe(
-          "Enterprise software solutions provider",
-        );
+        expect(result.candidates[0]?.description).toBe("Enterprise software solutions provider");
         expect(result.candidates[2]?.name).toBe("Minimal Info Corp");
         expect(result.candidates[2]?.website).toBeUndefined();
         expect(result.candidates[2]?.city).toBeUndefined();
@@ -204,9 +196,7 @@ describe("PlacesSource", () => {
           headers: { "Content-Type": "application/json" },
         });
       };
-      const source = new PlacesSource(
-        createConfig({ apiKey: "my-secret-key", fetch }),
-      );
+      const source = new PlacesSource(createConfig({ apiKey: "my-secret-key", fetch }));
 
       await source.fetch({
         countryId: "uae",

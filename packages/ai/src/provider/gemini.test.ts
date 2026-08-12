@@ -44,7 +44,10 @@ function request(overrides: Partial<AIProviderRequest> = {}): AIProviderRequest 
   };
 }
 
-function contentResponse(args: Record<string, unknown>, usage = { promptTokenCount: 10, candidatesTokenCount: 5 }) {
+function contentResponse(
+  args: Record<string, unknown>,
+  usage = { promptTokenCount: 10, candidatesTokenCount: 5 },
+) {
   return { functionCalls: [{ name: "classify", args }], usageMetadata: usage };
 }
 
@@ -102,7 +105,9 @@ describe("an authentication failure", () => {
   it("is not retried", async () => {
     generateContent.mockRejectedValue(new MockApiError(401, "invalid key"));
 
-    await expect(settle(new GeminiProvider("k").request(request()))).rejects.toThrow(AIProviderError);
+    await expect(settle(new GeminiProvider("k").request(request()))).rejects.toThrow(
+      AIProviderError,
+    );
     expect(generateContent).toHaveBeenCalledTimes(1);
   });
 });

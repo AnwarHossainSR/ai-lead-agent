@@ -15,14 +15,11 @@
       "default": "./dist/testing/index.js"
     }
   },
-  "files": [
-    "dist",
-    "drizzle"
-  ],
+  "files": ["dist", "drizzle"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",
-    "lint": "eslint .",
+    "lint": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
@@ -40,11 +37,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@mela/eslint-config": "workspace:*",
+    "@biomejs/biome": "catalog:",
     "@mela/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "drizzle-kit": "catalog:",
-    "eslint": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

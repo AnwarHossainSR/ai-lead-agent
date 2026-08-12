@@ -78,24 +78,34 @@ export class BrowserCaptureService {
 
       // Track failed requests
       const failedRequests: Array<{ url: string; error: string }> = [];
-      page.on("requestfailed", (request: { url: () => string; failure: () => { errorText: string } | null }) => {
-        failedRequests.push({
-          url: request.url(),
-          error: request.failure()?.errorText ?? "unknown",
-        });
-      });
+      page.on(
+        "requestfailed",
+        (request: { url: () => string; failure: () => { errorText: string } | null }) => {
+          failedRequests.push({
+            url: request.url(),
+            error: request.failure()?.errorText ?? "unknown",
+          });
+        },
+      );
 
       // Track redirect chain
       const _redirectChain: string[] = [];
-      page.on("response", (response: { url: () => string; request: () => { isNavigationRequest: () => boolean }; headers: () => Record<string, string> }) => {
-        const request = response.request();
-        if (request.isNavigationRequest()) {
-          const headers = response.headers();
-          if (headers.location) {
-            _redirectChain.push(response.url());
+      page.on(
+        "response",
+        (response: {
+          url: () => string;
+          request: () => { isNavigationRequest: () => boolean };
+          headers: () => Record<string, string>;
+        }) => {
+          const request = response.request();
+          if (request.isNavigationRequest()) {
+            const headers = response.headers();
+            if (headers.location) {
+              _redirectChain.push(response.url());
+            }
           }
-        }
-      });
+        },
+      );
 
       // Navigate to the page
       const response = await page.goto(url, {
@@ -154,17 +164,9 @@ export class BrowserCaptureService {
     desktop: PageCapture;
     mobile: PageCapture;
   }> {
-    const desktop = await this.capturePage(
-      url,
-      { width: 1920, height: 1080 },
-      options,
-    );
+    const desktop = await this.capturePage(url, { width: 1920, height: 1080 }, options);
 
-    const mobile = await this.capturePage(
-      url,
-      { width: 375, height: 812 },
-      options,
-    );
+    const mobile = await this.capturePage(url, { width: 375, height: 812 }, options);
 
     return { desktop, mobile };
   }

@@ -1,14 +1,11 @@
-import { eq, desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import type { Executor } from "../client";
+import { type OpportunityRow, opportunities } from "../schema/opportunities";
 import {
   type OpportunityAnalysisRunRow,
   opportunityAnalysisRuns,
 } from "../schema/opportunity-analysis-runs";
-import {
-  type OpportunityRow,
-  opportunities,
-} from "../schema/opportunities";
 
 /**
  * Returns the opportunities of a company's most recent completed analysis.
@@ -68,9 +65,7 @@ export async function getCurrentOpportunities(
   }
 
   // Find the first successful run (outcome = "opportunities")
-  const successfulRun = runs.find(
-    (run) => run.outcome === "opportunities",
-  );
+  const successfulRun = runs.find((run) => run.outcome === "opportunities");
 
   if (successfulRun === undefined) {
     return [];

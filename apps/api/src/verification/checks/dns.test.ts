@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createDnsCheck, type Resolver } from "./dns";
 import type { CheckInput } from "../types";
+import { type Resolver, createDnsCheck } from "./dns";
 
 function input(overrides?: Partial<CheckInput>): CheckInput {
   return {
@@ -91,7 +91,8 @@ describe("dns check", () => {
   it("returns unknown on timeout", async () => {
     const check = createDnsCheck(
       fakeResolver({
-        resolve4: async () => new Promise<string[]>((resolve) => setTimeout(() => resolve(["1.2.3.4"]), 10_000)),
+        resolve4: async () =>
+          new Promise<string[]>((resolve) => setTimeout(() => resolve(["1.2.3.4"]), 10_000)),
         resolveMx: async () => [],
       }),
     );
@@ -100,4 +101,3 @@ describe("dns check", () => {
     expect(result.failureCode).toBe("timeout");
   });
 });
-

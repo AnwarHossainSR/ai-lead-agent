@@ -1,5 +1,5 @@
-import { index, integer, jsonb, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { index, integer, jsonb, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { companies } from "./companies";
 import { contactResearchOutcomeEnum } from "./enums";
@@ -38,9 +38,7 @@ export const contactResearchRuns = pgTable(
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [
-    index("contact_research_runs_company_id_idx").on(table.companyId),
-  ],
+  (table) => [index("contact_research_runs_company_id_idx").on(table.companyId)],
 );
 
 export type ContactResearchRunRow = typeof contactResearchRuns.$inferSelect;

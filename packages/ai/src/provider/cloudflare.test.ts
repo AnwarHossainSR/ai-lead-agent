@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AIProviderError, AIProviderTimeoutError } from "./errors";
 import { CloudflareProvider } from "./cloudflare";
+import { AIProviderError, AIProviderTimeoutError } from "./errors";
 import type { AIProviderRequest } from "./provider";
 
 const fetchMock = vi.fn();
@@ -20,7 +20,11 @@ function request(overrides: Partial<AIProviderRequest> = {}): AIProviderRequest 
   };
 }
 
-function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}): Response {
+function jsonResponse(
+  status: number,
+  body: unknown,
+  headers: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), { status, headers });
 }
 
@@ -81,7 +85,10 @@ describe("a successful call", () => {
 
     const body = JSON.parse(init.body as string) as { tools: unknown[] };
     expect(body.tools).toEqual([
-      { type: "function", function: { name: "classify", description: "Classify.", parameters: { type: "object" } } },
+      {
+        type: "function",
+        function: { name: "classify", description: "Classify.", parameters: { type: "object" } },
+      },
     ]);
   });
 });
@@ -91,7 +98,10 @@ describe("a rate limit", () => {
     fetchMock
       .mockResolvedValueOnce(jsonResponse(429, { success: false }, { "retry-after": "3" }))
       .mockResolvedValueOnce(
-        jsonResponse(200, { success: true, result: { tool_calls: [{ name: "classify", arguments: {} }] } }),
+        jsonResponse(200, {
+          success: true,
+          result: { tool_calls: [{ name: "classify", arguments: {} }] },
+        }),
       );
 
     const promise = provider().request(request());
@@ -125,11 +135,12 @@ describe("an invalid request", () => {
 
 describe("a connection failure below the HTTP layer", () => {
   it("is classified as transient and retried", async () => {
-    fetchMock
-      .mockRejectedValueOnce(new TypeError("fetch failed"))
-      .mockResolvedValueOnce(
-        jsonResponse(200, { success: true, result: { tool_calls: [{ name: "classify", arguments: {} }] } }),
-      );
+    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed")).mockResolvedValueOnce(
+      jsonResponse(200, {
+        success: true,
+        result: { tool_calls: [{ name: "classify", arguments: {} }] },
+      }),
+    );
 
     const response = await settle(provider().request(request()));
 
@@ -140,11 +151,12 @@ describe("a connection failure below the HTTP layer", () => {
 
 describe("a server error", () => {
   it("is retried as transient", async () => {
-    fetchMock
-      .mockResolvedValueOnce(jsonResponse(503, { success: false }))
-      .mockResolvedValueOnce(
-        jsonResponse(200, { success: true, result: { tool_calls: [{ name: "classify", arguments: {} }] } }),
-      );
+    fetchMock.mockResolvedValueOnce(jsonResponse(503, { success: false })).mockResolvedValueOnce(
+      jsonResponse(200, {
+        success: true,
+        result: { tool_calls: [{ name: "classify", arguments: {} }] },
+      }),
+    );
 
     const response = await settle(provider().request(request()));
     expect(response.content).toEqual({});
@@ -188,7 +200,9 @@ describe("credential safety", () => {
 
     let thrown: unknown;
     try {
-      await settle(new CloudflareProvider({ accountId: "acct-1", apiToken: token }).request(request()));
+      await settle(
+        new CloudflareProvider({ accountId: "acct-1", apiToken: token }).request(request()),
+      );
     } catch (error) {
       thrown = error;
     }

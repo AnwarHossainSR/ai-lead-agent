@@ -1,5 +1,5 @@
-import { readFile, rm } from "fs/promises";
 import { join } from "path";
+import { readFile, rm } from "fs/promises";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ArtifactService } from "./artifact.service";
@@ -30,11 +30,7 @@ describe("ArtifactService", () => {
 
     it("rejects paths that escape the root", () => {
       expect(() =>
-        artifactService.buildArtifactPath(
-          "company-123",
-          "analysis-456",
-          "../../../etc/passwd",
-        ),
+        artifactService.buildArtifactPath("company-123", "analysis-456", "../../../etc/passwd"),
       ).toThrow("escapes the configured root");
     });
   });
@@ -50,10 +46,7 @@ describe("ArtifactService", () => {
 
       expect(path).toBe("company-123/analysis-456/test.txt");
 
-      const content = await readFile(
-        join(TEST_ARTIFACT_ROOT, path),
-        "utf-8",
-      );
+      const content = await readFile(join(TEST_ARTIFACT_ROOT, path), "utf-8");
       expect(content).toBe("hello world");
     });
   });
@@ -68,9 +61,7 @@ describe("ArtifactService", () => {
         screenshot,
       );
 
-      expect(path).toBe(
-        "company-123/analysis-456/desktop-screenshot.png",
-      );
+      expect(path).toBe("company-123/analysis-456/desktop-screenshot.png");
 
       const content = await readFile(join(TEST_ARTIFACT_ROOT, path));
       expect(content).toEqual(screenshot);
@@ -80,11 +71,7 @@ describe("ArtifactService", () => {
   describe("writeRenderedHtml", () => {
     it("writes rendered HTML", async () => {
       const html = "<html><body>Test</body></html>";
-      const path = await artifactService.writeRenderedHtml(
-        "company-123",
-        "analysis-456",
-        html,
-      );
+      const path = await artifactService.writeRenderedHtml("company-123", "analysis-456", html);
 
       expect(path).toBe("company-123/analysis-456/rendered.html");
 
@@ -96,11 +83,7 @@ describe("ArtifactService", () => {
   describe("writeAuditReport", () => {
     it("writes audit report as JSON", async () => {
       const report = JSON.stringify({ score: 85 });
-      const path = await artifactService.writeAuditReport(
-        "company-123",
-        "analysis-456",
-        report,
-      );
+      const path = await artifactService.writeAuditReport("company-123", "analysis-456", report);
 
       expect(path).toBe("company-123/analysis-456/audit-report.json");
 

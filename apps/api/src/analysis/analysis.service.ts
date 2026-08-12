@@ -1,14 +1,21 @@
+import {
+  type Database,
+  companies,
+  insertTechnologyDetection,
+  insertWebsiteAnalysis,
+  technologyDetections,
+  websiteAnalysis,
+} from "@mela/database";
 import { Inject, Injectable } from "@nestjs/common";
-import { companies, websiteAnalysis, type Database, insertWebsiteAnalysis, insertTechnologyDetection, technologyDetections } from "@mela/database";
-import { eq, desc, and } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
+import type { WebsiteAnalysisOutcome } from "@mela/database";
 import { DATABASE } from "../database/database.module";
-import { BrowserCaptureService } from "./browser-capture.service";
 import { ArtifactService } from "./artifact.service";
-import { PolitenessService } from "./politeness.service";
+import { BrowserCaptureService } from "./browser-capture.service";
 import { MatcherService, type PageCapture } from "./matcher.service";
 import { runObservationRules } from "./observation-rules";
-import type { WebsiteAnalysisOutcome } from "@mela/database";
+import { PolitenessService } from "./politeness.service";
 
 /**
  * The analysis service orchestrates website analysis for companies.
@@ -197,8 +204,7 @@ export class AnalysisService {
       // Record as failed
       const analysisId = await this.recordAnalysis(companyId, url, {
         outcome: "failed",
-        failureReason:
-          error instanceof Error ? error.message : "Unknown error",
+        failureReason: error instanceof Error ? error.message : "Unknown error",
         unverifiedOverride,
       });
 
@@ -233,7 +239,13 @@ export class AnalysisService {
       }>;
     },
   ): Promise<string> {
-    const { outcome, failureReason, observations = [], unverifiedOverride = false, detections = [] } = options;
+    const {
+      outcome,
+      failureReason,
+      observations = [],
+      unverifiedOverride = false,
+      detections = [],
+    } = options;
 
     const row = await insertWebsiteAnalysis(this.database, {
       companyId,
@@ -344,10 +356,7 @@ export class AnalysisService {
       .select({ id: websiteAnalysis.id })
       .from(websiteAnalysis)
       .where(
-        and(
-          eq(websiteAnalysis.companyId, companyId),
-          eq(websiteAnalysis.outcome, "completed"),
-        ),
+        and(eq(websiteAnalysis.companyId, companyId), eq(websiteAnalysis.outcome, "completed")),
       )
       .orderBy(desc(websiteAnalysis.createdAt))
       .limit(1);

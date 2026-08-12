@@ -1,9 +1,9 @@
 import {
   LEAD_PRIORITIES,
   LEAD_STATUSES,
-  OUTREACH_CHANNELS,
   type LeadPriority,
   type LeadStatus,
+  OUTREACH_CHANNELS,
   type OutreachChannelId,
 } from "@mela/config";
 import { pgEnum } from "drizzle-orm/pg-core";
@@ -124,12 +124,7 @@ export const discoveryRunOutcomeEnum = pgEnum("discovery_run_outcome", DISCOVERY
  * for the run and a path that `robots.txt` disallows; `blocked` means the
  * source stopped answering and we stopped asking — never evaded.
  */
-export const DISCOVERY_SOURCE_OUTCOMES = [
-  "succeeded",
-  "skipped",
-  "blocked",
-  "failed",
-] as const;
+export const DISCOVERY_SOURCE_OUTCOMES = ["succeeded", "skipped", "blocked", "failed"] as const;
 
 export type DiscoverySourceOutcome = (typeof DISCOVERY_SOURCE_OUTCOMES)[number];
 
@@ -223,18 +218,11 @@ export const contactExtractionMethodEnum = pgEnum(
 /**
  * Mail deliverability state for an email domain.
  */
-export const MAIL_DELIVERABILITY_STATES = [
-  "receivable",
-  "not_receivable",
-  "unknown",
-] as const;
+export const MAIL_DELIVERABILITY_STATES = ["receivable", "not_receivable", "unknown"] as const;
 
 export type MailDeliverability = (typeof MAIL_DELIVERABILITY_STATES)[number];
 
-export const mailDeliverabilityEnum = pgEnum(
-  "mail_deliverability",
-  MAIL_DELIVERABILITY_STATES,
-);
+export const mailDeliverabilityEnum = pgEnum("mail_deliverability", MAIL_DELIVERABILITY_STATES);
 
 /**
  * Contact research run outcome.

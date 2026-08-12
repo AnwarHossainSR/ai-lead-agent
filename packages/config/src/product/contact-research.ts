@@ -127,16 +127,12 @@ export const CONTACT_RESEARCH_CONFIG: ContactResearchConfig = {
  * - Duplicate ranks
  * - Role patterns mapping to unknown levels
  */
-export function validateContactResearchConfig(
-  config: ContactResearchConfig,
-): void {
+export function validateContactResearchConfig(config: ContactResearchConfig): void {
   // Check for duplicate seniority identifiers
   const ids = config.seniorityLevels.map((l) => l.id);
   const duplicateIds = ids.filter((id, i) => ids.indexOf(id) !== i);
   if (duplicateIds.length > 0) {
-    throw new Error(
-      `Duplicate seniority identifiers: ${duplicateIds.join(", ")}`,
-    );
+    throw new Error(`Duplicate seniority identifiers: ${duplicateIds.join(", ")}`);
   }
 
   // Check for duplicate ranks
@@ -146,9 +142,7 @@ export function validateContactResearchConfig(
     const levelNames = config.seniorityLevels
       .filter((l) => duplicateRanks.includes(l.rank))
       .map((l) => l.displayName);
-    throw new Error(
-      `Duplicate ranks: ${levelNames.join(", ")}`,
-    );
+    throw new Error(`Duplicate ranks: ${levelNames.join(", ")}`);
   }
 
   // Check for role patterns mapping to unknown levels
@@ -167,9 +161,7 @@ export function validateContactResearchConfig(
  *
  * Returns the level if found, undefined otherwise.
  */
-export function findSeniorityLevel(
-  id: string,
-): SeniorityLevel | undefined {
+export function findSeniorityLevel(id: string): SeniorityLevel | undefined {
   return SENIORITY_LEVELS.find((l) => l.id === id);
 }
 

@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   extractMailtoLinks,
-  extractTelLinks,
   extractStructuredData,
+  extractTelLinks,
   extractVisibleAddresses,
 } from "./extraction";
 
@@ -14,8 +14,8 @@ describe("extraction", () => {
       const results = extractMailtoLinks(html, "https://example.com");
 
       expect(results).toHaveLength(1);
-      expect(results[0].value).toBe("john@example.com");
-      expect(results[0].sourceUrl).toBe("https://example.com");
+      expect(results[0]!.value).toBe("john@example.com");
+      expect(results[0]!.sourceUrl).toBe("https://example.com");
     });
 
     it("extracts multiple mailto links", () => {
@@ -55,8 +55,8 @@ describe("extraction", () => {
       const results = extractTelLinks(html, "https://example.com");
 
       expect(results).toHaveLength(1);
-      expect(results[0].value).toBe("+97140000000");
-      expect(results[0].sourceUrl).toBe("https://example.com");
+      expect(results[0]!.value).toBe("+97140000000");
+      expect(results[0]!.sourceUrl).toBe("https://example.com");
     });
 
     it("extracts multiple tel links", () => {
@@ -91,8 +91,8 @@ describe("extraction", () => {
       const results = extractStructuredData(html, "https://example.com");
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe("John Doe");
-      expect(results[0].jobTitle).toBe("CEO");
+      expect(results[0]!.name).toBe("John Doe");
+      expect(results[0]!.jobTitle).toBe("CEO");
     });
 
     it("extracts email from Person contactPoint", () => {
@@ -110,7 +110,7 @@ describe("extraction", () => {
       const results = extractStructuredData(html, "https://example.com");
 
       expect(results).toHaveLength(1);
-      expect(results[0].email).toBe("john@example.com");
+      expect(results[0]!.email).toBe("john@example.com");
     });
 
     it("extracts Organization members", () => {
@@ -131,7 +131,7 @@ describe("extraction", () => {
       const results = extractStructuredData(html, "https://example.com");
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe("John Doe");
+      expect(results[0]!.name).toBe("John Doe");
     });
 
     it("returns empty array when no structured data", () => {
@@ -148,8 +148,8 @@ describe("extraction", () => {
       const results = extractVisibleAddresses(text, "https://example.com");
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results[0].value).toContain("123 Main Street");
-      expect(results[0].sourceUrl).toBe("https://example.com");
+      expect(results[0]!.value).toContain("123 Main Street");
+      expect(results[0]!.sourceUrl).toBe("https://example.com");
     });
 
     it("extracts PO Box address", () => {
@@ -157,7 +157,7 @@ describe("extraction", () => {
       const results = extractVisibleAddresses(text, "https://example.com");
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results[0].value).toContain("PO Box 12345");
+      expect(results[0]!.value).toContain("PO Box 12345");
     });
 
     it("returns empty array when no addresses", () => {
@@ -174,22 +174,19 @@ describe("source-scan test", () => {
     // This test verifies that no extraction function takes a name and domain
     // and produces an email address. The functions only extract what's
     // explicitly present in the HTML/text.
-    
-    const html = '<p>John Doe is the CEO</p>';
-    const text = "John Doe is the CEO";
-    
+
+    const html = "<p>John Doe is the CEO</p>";
+
     // None of these should produce an email from just the name/domain
     const mailtoResults = extractMailtoLinks(html, "https://example.com");
-    const telResults = extractTelLinks(html, "https://example.com");
     const structuredResults = extractStructuredData(html, "https://example.com");
-    const visibleResults = extractVisibleAddresses(text, "https://example.com");
-    
+
     // No email should be derived from "John Doe" + "example.com"
     const allEmails = [
       ...mailtoResults.map((r) => r.value),
       ...structuredResults.filter((p) => p.email !== undefined).map((p) => p.email),
     ];
-    
+
     for (const email of allEmails) {
       expect(email).not.toBe("john@example.com");
       expect(email).not.toBe("j.doe@example.com");

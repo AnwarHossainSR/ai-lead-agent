@@ -40,10 +40,7 @@ describe("deriveState", () => {
   });
 
   it("returns verified even when optional checks are missing", () => {
-    const { state } = deriveState(
-      [result("dns", "passed"), result("http", "passed")],
-      RULE,
-    );
+    const { state } = deriveState([result("dns", "passed"), result("http", "passed")], RULE);
     expect(state).toBe("verified");
   });
 
@@ -76,18 +73,12 @@ describe("deriveState", () => {
   });
 
   it("returns unreachable when some required checks are unknown and none failed", () => {
-    const { state } = deriveState(
-      [result("dns", "passed"), result("http", "unknown")],
-      RULE,
-    );
+    const { state } = deriveState([result("dns", "passed"), result("http", "unknown")], RULE);
     expect(state).toBe("unreachable");
   });
 
   it("returns unreachable when only optional checks are present", () => {
-    const { state } = deriveState(
-      [result("domain-name-match", "passed")],
-      RULE,
-    );
+    const { state } = deriveState([result("domain-name-match", "passed")], RULE);
     expect(state).toBe("unreachable");
   });
 

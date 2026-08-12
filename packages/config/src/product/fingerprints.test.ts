@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  type Fingerprint,
+  TECHNOLOGY_CATEGORIES,
   parseFingerprints,
   resolveFingerprint,
-  TECHNOLOGY_CATEGORIES,
-  type Fingerprint,
 } from "./fingerprints";
 
 describe("technology fingerprints", () => {
@@ -26,9 +26,7 @@ describe("technology fingerprints", () => {
           id: "wordpress",
           technology: "WordPress",
           category: "cms",
-          patterns: [
-            { in: "html", match: "wp-content" },
-          ],
+          patterns: [{ in: "html", match: "wp-content" }],
           implies: [],
         },
       ];
@@ -56,7 +54,9 @@ describe("technology fingerprints", () => {
         },
       ];
 
-      expect(() => parseFingerprints(fingerprints)).toThrow("Duplicate fingerprint identifier: wordpress");
+      expect(() => parseFingerprints(fingerprints)).toThrow(
+        "Duplicate fingerprint identifier: wordpress",
+      );
     });
 
     it("rejects fingerprints with no patterns", () => {
@@ -79,9 +79,7 @@ describe("technology fingerprints", () => {
           id: "invalid-regex",
           technology: "Invalid Regex",
           category: "cms",
-          patterns: [
-            { in: "html", match: "[invalid" },
-          ],
+          patterns: [{ in: "html", match: "[invalid" }],
           implies: [],
         },
       ];
@@ -130,14 +128,14 @@ describe("technology fingerprints", () => {
           id: "backtrack",
           technology: "Backtrack",
           category: "cms",
-          patterns: [
-            { in: "html", match: "(a+)+b" },
-          ],
+          patterns: [{ in: "html", match: "(a+)+b" }],
           implies: [],
         },
       ];
 
-      expect(() => parseFingerprints(fingerprints)).toThrow("Fingerprint 'backtrack' has pattern with potential catastrophic backtracking");
+      expect(() => parseFingerprints(fingerprints)).toThrow(
+        "Fingerprint 'backtrack' has pattern with potential catastrophic backtracking",
+      );
     });
 
     it("accepts fingerprints with version capture groups", () => {
@@ -146,9 +144,7 @@ describe("technology fingerprints", () => {
           id: "with-version",
           technology: "With Version",
           category: "cms",
-          patterns: [
-            { in: "html", match: "version ([\\d.]+)", version: 1 },
-          ],
+          patterns: [{ in: "html", match: "version ([\\d.]+)", version: 1 }],
           implies: [],
         },
       ];

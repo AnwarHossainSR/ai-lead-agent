@@ -4,8 +4,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { aiInvocations } from "../schema/ai-invocations";
 import { aiInvocationInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
-import { WriteValidationError } from "./errors";
 import { insertAIInvocation, spendInWindow } from "./ai-invocations";
+import { WriteValidationError } from "./errors";
 
 let harness: TestDatabase;
 

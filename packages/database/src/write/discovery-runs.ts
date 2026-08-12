@@ -135,10 +135,9 @@ export async function recordDiscoveryRunSource(
 }
 
 export const finishDiscoveryRunInputSchema = z.object({
-  outcome: z.enum(DISCOVERY_RUN_OUTCOMES).refine(
-    (outcome) => outcome !== "running",
-    "Expected a terminal outcome, not 'running'.",
-  ),
+  outcome: z
+    .enum(DISCOVERY_RUN_OUTCOMES)
+    .refine((outcome) => outcome !== "running", "Expected a terminal outcome, not 'running'."),
   failureReason: z
     .string()
     .trim()

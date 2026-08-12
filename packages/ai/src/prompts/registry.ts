@@ -38,10 +38,7 @@ export function registerPrompt(def: PromptDefinition): void {
   const key = promptRegistryKey(def.name, def.version);
 
   if (definitions.has(key)) {
-    throw new ConfigurationError(
-      SUBJECT,
-      `Duplicate prompt "${def.name}" version ${def.version}.`,
-    );
+    throw new ConfigurationError(SUBJECT, `Duplicate prompt "${def.name}" version ${def.version}.`);
   }
 
   definitions.set(key, def);
@@ -162,10 +159,7 @@ function ensureRegistry(): ReadonlyMap<string, PromptDefinition> {
  * Looks up a prompt by name and version. Throws `ConfigurationError`
  * naming the requested prompt and the registered ones if not found.
  */
-export function resolvePrompt(
-  name: string,
-  version: number,
-): PromptDefinition {
+export function resolvePrompt(name: string, version: number): PromptDefinition {
   const registry = ensureRegistry();
   const key = promptRegistryKey(name, version);
   const def = registry.get(key);

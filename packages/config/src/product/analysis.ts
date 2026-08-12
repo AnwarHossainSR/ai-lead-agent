@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { deepFreeze } from "../internal/freeze";
 import { parseOrThrow } from "../internal/errors";
+import { deepFreeze } from "../internal/freeze";
 
 /**
  * A viewport configuration for browser capture.
@@ -41,10 +41,7 @@ export const analysisConfigSchema = z.object({
       .refine((p) => p.startsWith("/"), "Extra paths must be relative and start with /."),
   ),
   observationRules: z.array(observationRuleSchema),
-  stalenessDays: z
-    .number()
-    .int()
-    .positive("Expected a positive staleness window."),
+  stalenessDays: z.number().int().positive("Expected a positive staleness window."),
 });
 
 export type AnalysisConfig = z.infer<typeof analysisConfigSchema>;

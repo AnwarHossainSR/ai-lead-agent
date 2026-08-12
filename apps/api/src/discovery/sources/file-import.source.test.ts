@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { CANDIDATE_REJECTION_REASONS } from "./source";
 import {
   FILE_IMPORT_REJECTION_REASONS,
   FileImportSource,
   parseCsvLine,
   parseRows,
 } from "./file-import.source";
+import { CANDIDATE_REJECTION_REASONS } from "./source";
 
 function sourceWith(content: string): FileImportSource {
   return new FileImportSource("companies.csv", async () => content);
@@ -48,7 +48,7 @@ describe("the file-import source reads a CSV list", () => {
   });
 
   it("is decided by content, not by the file name", () => {
-    expect(parseRows("[{ \"name\": \"x\" }]")).toEqual([{ name: "x" }]);
+    expect(parseRows('[{ "name": "x" }]')).toEqual([{ name: "x" }]);
     expect(parseRows("name,sourceUrl\nX,https://a.example/1")).toHaveLength(1);
   });
 });
@@ -79,11 +79,9 @@ describe("the file-import source reads a JSON list", () => {
 describe("the file-import source rejects invalid rows by reason", () => {
   it("counts candidates missing a source URL separately", async () => {
     const source = sourceWith(
-      [
-        "name,sourceUrl",
-        "With A Source,https://import.example/row/1",
-        "Without A Source,",
-      ].join("\n"),
+      ["name,sourceUrl", "With A Source,https://import.example/row/1", "Without A Source,"].join(
+        "\n",
+      ),
     );
 
     const result = await source.fetch({ countryId: "uae", industryId: "logistics" });

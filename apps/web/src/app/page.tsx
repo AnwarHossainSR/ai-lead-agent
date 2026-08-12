@@ -1,4 +1,4 @@
-import { getHealthStatus, type HealthStatus } from "@/lib/health";
+import { type HealthStatus, getHealthStatus } from "@/lib/health";
 
 function StatusBadge({ status }: { status: HealthStatus["status"] }) {
   const colors = {
@@ -8,7 +8,9 @@ function StatusBadge({ status }: { status: HealthStatus["status"] }) {
   };
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colors[status]}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colors[status]}`}
+    >
       {status === "healthy" && "Healthy"}
       {status === "degraded" && "Degraded"}
       {status === "unreachable" && "Unreachable"}
@@ -20,7 +22,9 @@ function DependencyStatus({ name, status }: { name: string; status?: "up" | "dow
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-muted-foreground">{name}</span>
-      <span className={`text-sm font-medium ${status === "up" ? "text-green-600" : "text-red-600"}`}>
+      <span
+        className={`text-sm font-medium ${status === "up" ? "text-green-600" : "text-red-600"}`}
+      >
         {status === "up" ? "Up" : "Down"}
       </span>
     </div>
@@ -34,9 +38,7 @@ export default async function Home() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome to MELA — AI-assisted B2B lead generation
-        </p>
+        <p className="text-muted-foreground">Welcome to MELA — AI-assisted B2B lead generation</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -51,9 +53,7 @@ export default async function Home() {
           <h2 className="text-lg font-semibold">API Status</h2>
           <StatusBadge status={health.status} />
         </div>
-        {health.error && (
-          <p className="mt-2 text-sm text-muted-foreground">{health.error}</p>
-        )}
+        {health.error && <p className="mt-2 text-sm text-muted-foreground">{health.error}</p>}
         {(health.postgres || health.redis) && (
           <div className="mt-4 space-y-2">
             <DependencyStatus name="PostgreSQL" status={health.postgres} />

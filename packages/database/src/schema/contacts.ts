@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
 import { boolean, check, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
+import { aiInvocations } from "./ai-invocations";
 import { companies } from "./companies";
 import { certaintyEnum, contactExtractionMethodEnum, mailDeliverabilityEnum } from "./enums";
-import { aiInvocations } from "./ai-invocations";
 
 /**
  * A person at a company.
@@ -46,7 +46,9 @@ export const contacts = pgTable(
     mailDeliverability: mailDeliverabilityEnum("mail_deliverability"),
 
     // Reference to the model invocation when extraction method is model_interpretation
-    aiInvocationId: uuid("ai_invocation_id").references(() => aiInvocations.id, { onDelete: "set null" }),
+    aiInvocationId: uuid("ai_invocation_id").references(() => aiInvocations.id, {
+      onDelete: "set null",
+    }),
 
     researchSource: text("research_source").notNull(),
     sourceUrl: text("source_url"),

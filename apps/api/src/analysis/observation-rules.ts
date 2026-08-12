@@ -114,7 +114,10 @@ export const missingTitleRule: ObservationRule = (capture) => {
  * Missing meta description check
  */
 export const missingMetaDescriptionRule: ObservationRule = (capture) => {
-  if (!capture.html.includes('name="description"') && !capture.html.includes("name='description'")) {
+  if (
+    !capture.html.includes('name="description"') &&
+    !capture.html.includes("name='description'")
+  ) {
     return [
       {
         description: "Page is missing meta description",

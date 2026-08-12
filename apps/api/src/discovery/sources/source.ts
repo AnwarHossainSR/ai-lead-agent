@@ -78,18 +78,19 @@ export type CandidateRejectionReason =
  * "no company size known" and "no company size field in the file" are the same
  * fact. Stored as absent, never as an empty string.
  */
-const optionalFact = z.preprocess(
-  (value) => {
-    if (typeof value === "string" && value.trim().length === 0) {
-      return undefined;
-    }
-    if (value === null) {
-      return undefined;
-    }
-    return value;
-  },
-  z.string().trim().min(1, "Expected a value or nothing at all; a blank string is not a fact.").optional(),
-);
+const optionalFact = z.preprocess((value) => {
+  if (typeof value === "string" && value.trim().length === 0) {
+    return undefined;
+  }
+  if (value === null) {
+    return undefined;
+  }
+  return value;
+}, z
+  .string()
+  .trim()
+  .min(1, "Expected a value or nothing at all; a blank string is not a fact.")
+  .optional());
 
 /**
  * A candidate as it arrives from an adapter — the boundary schema (design D2).

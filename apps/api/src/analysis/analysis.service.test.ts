@@ -1,14 +1,14 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { Test } from "@nestjs/testing";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { AnalysisService } from "./analysis.service";
-import { BrowserCaptureService } from "./browser-capture.service";
-import { ArtifactService } from "./artifact.service";
-import { PolitenessService } from "./politeness.service";
-import { MatcherService } from "./matcher.service";
 import { DATABASE } from "../database/database.module";
 import { RobotsService } from "../http/robots";
+import { AnalysisService } from "./analysis.service";
+import { ArtifactService } from "./artifact.service";
+import { BrowserCaptureService } from "./browser-capture.service";
+import { MatcherService } from "./matcher.service";
+import { PolitenessService } from "./politeness.service";
 
 /**
  * Unit tests for the AnalysisService.
@@ -59,9 +59,7 @@ afterEach(async () => {
 describe("AnalysisService", () => {
   describe("checkEligibility", () => {
     it("returns ineligible for non-existent company", async () => {
-      const result = await service.checkEligibility(
-        "00000000-0000-0000-0000-000000000000",
-      );
+      const result = await service.checkEligibility("00000000-0000-0000-0000-000000000000");
 
       expect(result.eligible).toBe(false);
       expect(result.reason).toBe("Company not found");
@@ -70,9 +68,7 @@ describe("AnalysisService", () => {
 
   describe("getLatestAnalysis", () => {
     it("returns null for company with no analyses", async () => {
-      const result = await service.getLatestAnalysis(
-        "00000000-0000-0000-0000-000000000000",
-      );
+      const result = await service.getLatestAnalysis("00000000-0000-0000-0000-000000000000");
 
       expect(result).toBeNull();
     });

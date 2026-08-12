@@ -15,25 +15,19 @@ describe("AI module isolation", () => {
     app = await createTestApp();
 
     // No controller is registered — every AI route should 404
-    await request(app.getHttpServer())
-      .get("/api/ai")
-      .expect(404);
+    await request(app.getHttpServer()).get("/api/ai").expect(404);
   });
 
   it("exposes no HTTP routes under /api/prompts", async () => {
     app = await createTestApp();
 
-    await request(app.getHttpServer())
-      .get("/api/prompts")
-      .expect(404);
+    await request(app.getHttpServer()).get("/api/prompts").expect(404);
   });
 
   it("startup logs contain no API key", async () => {
     app = await createTestApp();
 
-    const response = await request(app.getHttpServer())
-      .get("/health")
-      .expect(200);
+    const response = await request(app.getHttpServer()).get("/health").expect(200);
 
     // The health response should not contain any key material
     const body = JSON.stringify(response.body);

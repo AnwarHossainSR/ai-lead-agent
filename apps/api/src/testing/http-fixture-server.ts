@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createServer, type Server } from "node:http";
+import { type Server, createServer } from "node:http";
 import { Socket } from "node:net";
 import { URL } from "node:url";
 

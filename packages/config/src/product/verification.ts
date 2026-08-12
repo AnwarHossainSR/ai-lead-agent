@@ -21,10 +21,7 @@ export function isVerificationCheckId(id: string): boolean {
 export const verificationCheckConfigSchema = z.object({
   required: z.boolean(),
   sufficient: z.boolean(),
-  timeoutMs: z
-    .number()
-    .int()
-    .min(0, "Expected a non-negative timeout."),
+  timeoutMs: z.number().int().min(0, "Expected a non-negative timeout."),
 });
 
 export type VerificationCheckConfig = z.infer<typeof verificationCheckConfigSchema>;
@@ -36,16 +33,11 @@ export type VerificationCheckConfig = z.infer<typeof verificationCheckConfigSche
 export const verificationRuleSchema = z
   .object({
     checks: z.record(z.string(), verificationCheckConfigSchema),
-    stalenessDays: z
-      .number()
-      .int()
-      .positive("Expected a positive staleness window."),
+    stalenessDays: z.number().int().positive("Expected a positive staleness window."),
   })
   .superRefine((data, ctx) => {
     // All check identifiers must be known
-    const unknownChecks = Object.keys(data.checks).filter(
-      (id) => !isVerificationCheckId(id),
-    );
+    const unknownChecks = Object.keys(data.checks).filter((id) => !isVerificationCheckId(id));
     if (unknownChecks.length > 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -72,20 +64,11 @@ export type VerificationRule = z.infer<typeof verificationRuleSchema>;
  */
 export const verificationPolitenessSchema = z.object({
   /** Minimum interval between requests to the same host, in milliseconds. */
-  minRequestIntervalMs: z
-    .number()
-    .int()
-    .positive("Expected a positive request interval."),
+  minRequestIntervalMs: z.number().int().positive("Expected a positive request interval."),
   /** Maximum requests per company verification pass. */
-  maxRequestsPerCompany: z
-    .number()
-    .int()
-    .positive("Expected a positive request limit."),
+  maxRequestsPerCompany: z.number().int().positive("Expected a positive request limit."),
   /** Maximum concurrent requests to a single host. */
-  batchConcurrency: z
-    .number()
-    .int()
-    .positive("Expected a positive concurrency limit."),
+  batchConcurrency: z.number().int().positive("Expected a positive concurrency limit."),
 });
 
 export type VerificationPoliteness = z.infer<typeof verificationPolitenessSchema>;
@@ -149,7 +132,9 @@ const VERIFICATION_POLITENESS_DATA = {
 } as const;
 
 export const VERIFICATION_RULE = deepFreeze(parseVerificationRule(VERIFICATION_RULE_DATA));
-export const VERIFICATION_POLITENESS = deepFreeze(parseVerificationPoliteness(VERIFICATION_POLITENESS_DATA));
+export const VERIFICATION_POLITENESS = deepFreeze(
+  parseVerificationPoliteness(VERIFICATION_POLITENESS_DATA),
+);
 
 /**
  * Per-country registry configuration for the registry check.

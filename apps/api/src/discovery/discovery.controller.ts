@@ -9,23 +9,16 @@ import {
   Param,
   Post,
 } from "@nestjs/common";
-import { eq, desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { DATABASE } from "../database/database.module";
 import { type Database } from "@mela/database";
-import { discoveryRuns, discoveryRunSources } from "@mela/database";
+import { discoveryRunSources, discoveryRuns } from "@mela/database";
+import { DATABASE } from "../database/database.module";
 
-import { RunService, type RunRequest, type RunResult } from "./run.service";
-import {
-  isCountryId,
-  isIndustryId,
-  COUNTRIES,
-  INDUSTRIES,
-  CITIES,
-  findCity,
-} from "@mela/config";
+import { CITIES, COUNTRIES, INDUSTRIES, findCity, isCountryId, isIndustryId } from "@mela/config";
 import { createZodDto } from "../validation/zod-dto";
+import { type RunRequest, type RunResult, RunService } from "./run.service";
 
 /**
  * Zod schema for the POST /api/discovery/runs request body (task 8.1).
@@ -119,17 +112,13 @@ export class DiscoveryController {
     // a run without source implementations.
     const sources = new Map();
 
-    const result: RunResult = await this.runService.executeRun(
-      this.database,
-      sources,
-      {
-        countryId: parsed.countryId,
-        cityId: parsed.cityId,
-        industryId: parsed.industryId,
-        candidateLimit: parsed.candidateLimit,
-        durationLimitSeconds: parsed.durationLimitSeconds,
-      } satisfies RunRequest,
-    );
+    const result: RunResult = await this.runService.executeRun(this.database, sources, {
+      countryId: parsed.countryId,
+      cityId: parsed.cityId,
+      industryId: parsed.industryId,
+      candidateLimit: parsed.candidateLimit,
+      durationLimitSeconds: parsed.durationLimitSeconds,
+    } satisfies RunRequest);
 
     // Query the created run and its sources
     const [run] = await this.database
@@ -198,9 +187,7 @@ export class DiscoveryController {
    * Returns the run with per-source counts and outcomes, or 404 if not found.
    */
   @Get(":id")
-  async getRun(
-    @Param("id") id: string,
-  ): Promise<{
+  async getRun(@Param("id") id: string): Promise<{
     readonly run: Record<string, unknown>;
     readonly sources: readonly Record<string, unknown>[];
   }> {

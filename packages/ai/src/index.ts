@@ -8,7 +8,12 @@
  * defaulted. See docs/architecture.md.
  */
 
-export { AIService, SpendCeilingError, type AIResult, type AIServiceConfig } from "./service/ai.service";
+export {
+  AIService,
+  SpendCeilingError,
+  type AIResult,
+  type AIServiceConfig,
+} from "./service/ai.service";
 export { OutputValidationError } from "./service/validate";
 export { estimateCost, modelForTier, type CostEstimate } from "./service/spend";
 

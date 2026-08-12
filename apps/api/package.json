@@ -9,7 +9,7 @@
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",
-    "lint": "eslint .",
+    "lint": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -29,14 +29,13 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@mela/eslint-config": "workspace:*",
+    "@biomejs/biome": "catalog:",
     "@mela/tsconfig": "workspace:*",
     "@nestjs/testing": "catalog:",
     "@swc-node/register": "catalog:",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "@types/supertest": "catalog:",
-    "eslint": "catalog:",
     "playwright": "^1.62.1",
     "supertest": "catalog:",
     "typescript": "catalog:",

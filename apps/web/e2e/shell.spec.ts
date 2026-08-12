@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("Shell renders", () => {
   test("shows MELA branding in header", async ({ page }) => {

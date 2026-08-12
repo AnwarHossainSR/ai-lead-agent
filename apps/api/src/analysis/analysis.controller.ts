@@ -62,9 +62,7 @@ export class AnalysisController {
    * GET /api/companies/:id/analysis/latest — get the latest analysis.
    */
   @Get(":id/analysis/latest")
-  async getLatestAnalysis(
-    @Param("id") id: string,
-  ): Promise<{
+  async getLatestAnalysis(@Param("id") id: string): Promise<{
     readonly companyId: string;
     readonly outcome: string | null;
     readonly analysedUrl: string | null;
@@ -94,9 +92,7 @@ export class AnalysisController {
    * GET /api/companies/:id/analysis — list all analyses for a company.
    */
   @Get(":id/analysis")
-  async listAnalyses(
-    @Param("id") id: string,
-  ): Promise<{
+  async listAnalyses(@Param("id") id: string): Promise<{
     readonly companyId: string;
     readonly analyses: readonly Record<string, unknown>[];
   }> {
@@ -112,9 +108,7 @@ export class AnalysisController {
    * GET /api/companies/:id/technologies — get the latest completed analysis's detections.
    */
   @Get(":id/technologies")
-  async getTechnologies(
-    @Param("id") id: string,
-  ): Promise<{
+  async getTechnologies(@Param("id") id: string): Promise<{
     readonly companyId: string;
     readonly technologies: readonly Record<string, unknown>[];
   }> {
@@ -133,9 +127,7 @@ export class AnalysisController {
    */
   @Post("analysis/:id/detect")
   @HttpCode(HttpStatus.OK)
-  async redetectTechnologies(
-    @Param("id") id: string,
-  ): Promise<{
+  async redetectTechnologies(@Param("id") id: string): Promise<{
     readonly analysisId: string;
     readonly detectionsCount: number;
   }> {

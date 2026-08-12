@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseRobotsTxt, RobotsPolicy, RobotsService } from "./robots";
+import { RobotsPolicy, RobotsService, parseRobotsTxt } from "./robots";
 
 describe("parseRobotsTxt", () => {
   it("treats an empty file as permitting everything", () => {
@@ -79,7 +79,9 @@ describe("parseRobotsTxt", () => {
   });
 
   it("combines crawl delays from multiple matching groups by taking the longest", () => {
-    const policy = parseRobotsTxt("User-agent: mela\nCrawl-delay: 3\nUser-agent: *\nCrawl-delay: 7");
+    const policy = parseRobotsTxt(
+      "User-agent: mela\nCrawl-delay: 3\nUser-agent: *\nCrawl-delay: 7",
+    );
 
     expect(policy.crawlDelaySeconds("mela-bot/1.0")).toBe(7);
   });

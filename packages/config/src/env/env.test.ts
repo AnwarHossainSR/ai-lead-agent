@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { apiEnvSchema, loadApiEnv } from "./api";
 import { databaseEnvSchema, loadDatabaseEnv } from "./database";
 import { EnvironmentValidationError } from "./load";
-import { webEnvSchema, loadWebEnv } from "./web";
+import { loadWebEnv, webEnvSchema } from "./web";
 
 /**
  * Vitest runs with the package directory as its working directory, so the

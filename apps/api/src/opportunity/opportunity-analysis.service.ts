@@ -1,11 +1,11 @@
+import { type AIResult, AIService } from "@mela/ai";
 import { type Executor } from "@mela/database";
 import {
   buildModelInput,
-  validateCitedEvidence,
   insertOpportunity,
   insertOpportunityAnalysisRun,
+  validateCitedEvidence,
 } from "@mela/database";
-import { AIService, type AIResult } from "@mela/ai";
 
 /**
  * Input for an opportunity analysis run.
@@ -58,11 +58,7 @@ export class OpportunityAnalysisService {
     request: OpportunityAnalysisRequest,
   ): Promise<OpportunityAnalysisResult> {
     // Step 1: Build model input (records below_threshold if needed)
-    const modelInputResult = await buildModelInput(
-      executor,
-      request.companyId,
-      null,
-    );
+    const modelInputResult = await buildModelInput(executor, request.companyId, null);
 
     if (modelInputResult.outcome === "below_threshold") {
       return {
@@ -95,11 +91,7 @@ export class OpportunityAnalysisService {
         citedEvidence: readonly string[];
       }[];
       reason?: string;
-    }> = await this.aiService.run(
-      "opportunity-analysis",
-      1,
-      modelInputResult.input,
-    );
+    }> = await this.aiService.run("opportunity-analysis", 1, modelInputResult.input);
 
     // Step 3: Validate the output
     const validation = validateCitedEvidence({

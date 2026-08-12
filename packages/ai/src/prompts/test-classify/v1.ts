@@ -27,14 +27,8 @@ export const testClassifyOutputSchema = z.object({
   classification: z
     .enum(["needs_website", "no_need", "insufficient_evidence"])
     .describe("The classification result"),
-  confidence: z
-    .number()
-    .min(0)
-    .max(1)
-    .describe("Confidence score between 0 and 1"),
-  reasoning: z
-    .string()
-    .describe("Brief explanation of the classification"),
+  confidence: z.number().min(0).max(1).describe("Confidence score between 0 and 1"),
+  reasoning: z.string().describe("Brief explanation of the classification"),
 });
 
 export type TestClassifyOutput = z.infer<typeof testClassifyOutputSchema>;

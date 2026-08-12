@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
-  classifySeniority,
   checkDeliverability,
+  classifySeniority,
   clearDeliverabilityCache,
 } from "./seniority-deliverability";
 
@@ -86,10 +86,10 @@ describe("no SMTP connection", () => {
     // This test verifies that the deliverability check uses DNS-over-HTTPS
     // and does NOT open any SMTP connections. The implementation uses
     // fetch to dns.google, not any SMTP library.
-    
+
     // If someone accidentally adds SMTP code, this test would need to be
     // updated to mock the SMTP connection and verify it's not called.
-    
+
     const result = await checkDeliverability("gmail.com");
     expect(result.status).toBe("receivable");
     // The fact that this completes without opening an SMTP connection

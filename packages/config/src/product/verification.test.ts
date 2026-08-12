@@ -196,9 +196,7 @@ describe("configuration is frozen", () => {
 
 describe("validateRegistryRequirement", () => {
   it("passes when registry is not required", () => {
-    expect(() =>
-      validateRegistryRequirement(VERIFICATION_RULE, []),
-    ).not.toThrow();
+    expect(() => validateRegistryRequirement(VERIFICATION_RULE, [])).not.toThrow();
   });
 
   it("passes when registry is required and configs exist", () => {

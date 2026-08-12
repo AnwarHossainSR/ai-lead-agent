@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { FakeDiscoverySource, fakeBlockedSource, fakeFailedSource, fakeSucceededSource } from "./fake-source";
+import {
+  FakeDiscoverySource,
+  fakeBlockedSource,
+  fakeFailedSource,
+  fakeSucceededSource,
+} from "./fake-source";
 
 describe("the fake discovery source", () => {
   it("returns the candidates it was given", async () => {
@@ -12,9 +17,7 @@ describe("the fake discovery source", () => {
 
     expect(result).toEqual({
       outcome: "succeeded",
-      candidates: [
-        { name: "Example Trading L.L.C.", sourceUrl: "https://import.example/row/1" },
-      ],
+      candidates: [{ name: "Example Trading L.L.C.", sourceUrl: "https://import.example/row/1" }],
       rejections: [],
     });
   });
@@ -60,9 +63,9 @@ describe("the fake discovery source", () => {
 
     await source.fetch({ countryId: "uae", industryId: "logistics" });
 
-    await expect(
-      source.fetch({ countryId: "uae", industryId: "logistics" }),
-    ).rejects.toThrow(/no result left for call 2/);
+    await expect(source.fetch({ countryId: "uae", industryId: "logistics" })).rejects.toThrow(
+      /no result left for call 2/,
+    );
   });
 
   it("can play a sequence of results in order", async () => {

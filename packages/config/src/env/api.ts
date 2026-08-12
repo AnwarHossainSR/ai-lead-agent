@@ -89,7 +89,9 @@ export const apiEnvSchema = z.object({
 
   AI_SPEND_CEILING_USD: positiveAmount
     .default(20)
-    .describe("Maximum estimated spend permitted within AI_SPEND_WINDOW_HOURS before calls are refused."),
+    .describe(
+      "Maximum estimated spend permitted within AI_SPEND_WINDOW_HOURS before calls are refused.",
+    ),
 
   AI_SPEND_WINDOW_HOURS: positiveInteger
     .default(24)

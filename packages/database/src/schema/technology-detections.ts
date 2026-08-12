@@ -1,16 +1,8 @@
 import { sql } from "drizzle-orm";
-import {
-  check,
-  index,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { check, index, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
-import { certaintyEnum } from "./enums";
 import { companies } from "./companies";
+import { certaintyEnum } from "./enums";
 import { websiteAnalysis } from "./website-analysis";
 
 /**

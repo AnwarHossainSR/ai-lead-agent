@@ -1,15 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import { estimateCost, modelForTier } from "./spend";
-import { parseOutput, failingFields, OutputValidationError } from "./validate";
-import {
-  AIService,
-  SpendCeilingError,
-  type AIServiceConfig,
-} from "./ai.service";
-import { FakeAIProvider } from "../testing/fake-provider";
 import { testClassifyOutputSchema } from "../prompts/test-classify/v1";
+import { FakeAIProvider } from "../testing/fake-provider";
+import { AIService, type AIServiceConfig, SpendCeilingError } from "./ai.service";
+import { estimateCost, modelForTier } from "./spend";
+import { OutputValidationError, failingFields, parseOutput } from "./validate";
 
 // Import to register the test prompt
 import "../prompts/test-classify/v1";
@@ -27,17 +23,13 @@ function createMockExecutor() {
       values: vi.fn((value: Record<string, unknown>) => {
         invocations.push(value);
         return {
-          returning: vi.fn(() =>
-            Promise.resolve([{ id: `inv-${invocations.length}` }]),
-          ),
+          returning: vi.fn(() => Promise.resolve([{ id: `inv-${invocations.length}` }])),
         };
       }),
     })),
     select: vi.fn(() => ({
       from: vi.fn(() => ({
-        where: vi.fn(() =>
-          Promise.resolve([{ total: String(spendResult) }]),
-        ),
+        where: vi.fn(() => Promise.resolve([{ total: String(spendResult) }])),
       })),
     })),
   };
@@ -83,9 +75,7 @@ describe("cost estimation", () => {
   });
 
   it("returns the model identifier for a tier", () => {
-    expect(modelForTier("fast")).toBe(
-      "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-    );
+    expect(modelForTier("fast")).toBe("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
     expect(modelForTier("default")).toBe("gemini-2.5-pro");
   });
 });
@@ -146,12 +136,7 @@ describe("output validation", () => {
       },
     ]);
 
-    const outputError = new OutputValidationError(
-      "test-classify",
-      1,
-      ["reasoning"],
-      error,
-    );
+    const outputError = new OutputValidationError("test-classify", 1, ["reasoning"], error);
 
     expect(outputError.promptName).toBe("test-classify");
     expect(outputError.promptVersion).toBe(1);
@@ -204,24 +189,20 @@ describe("AIService", () => {
 
   describe("invalid output — repair then succeed", () => {
     it("repairs once and succeeds on second attempt", async () => {
-      fakeProvider
-        .enqueue({ kind: "invalid_output", content: { classification: "bad" } })
-        .enqueue({
-          kind: "valid",
-          content: {
-            classification: "no_need",
-            confidence: 0.7,
-            reasoning: "Already has a modern site",
-          },
-        });
+      fakeProvider.enqueue({ kind: "invalid_output", content: { classification: "bad" } }).enqueue({
+        kind: "valid",
+        content: {
+          classification: "no_need",
+          confidence: 0.7,
+          reasoning: "Already has a modern site",
+        },
+      });
 
       const result = await service.run("test-classify", 1, {
         input: "Example Corp, Abu Dhabi — consulting",
       });
 
-      expect((result.value as { classification: string }).classification).toBe(
-        "no_need",
-      );
+      expect((result.value as { classification: string }).classification).toBe("no_need");
       expect(mock.invocations).toHaveLength(1);
       expect(mock.invocations[0]!.outcome).toBe("succeeded");
       expect(mock.invocations[0]!.attempts).toBe(2);
@@ -234,9 +215,9 @@ describe("AIService", () => {
         .enqueue({ kind: "invalid_output", content: { bad: true } })
         .enqueue({ kind: "invalid_output", content: { still: "bad" } });
 
-      await expect(
-        service.run("test-classify", 1, { input: "test" }),
-      ).rejects.toThrow(OutputValidationError);
+      await expect(service.run("test-classify", 1, { input: "test" })).rejects.toThrow(
+        OutputValidationError,
+      );
 
       expect(mock.invocations).toHaveLength(1);
       expect(mock.invocations[0]!.outcome).toBe("invalid_output");
@@ -247,9 +228,7 @@ describe("AIService", () => {
     it("records provider_error and rethrows", async () => {
       fakeProvider.enqueue({ kind: "authentication_failed" });
 
-      await expect(
-        service.run("test-classify", 1, { input: "test" }),
-      ).rejects.toThrow();
+      await expect(service.run("test-classify", 1, { input: "test" })).rejects.toThrow();
 
       expect(mock.invocations).toHaveLength(1);
       expect(mock.invocations[0]!.outcome).toBe("provider_error");
@@ -261,9 +240,9 @@ describe("AIService", () => {
     it("refuses when ceiling is reached", async () => {
       mock.setSpendResult(25); // above the $20 ceiling
 
-      await expect(
-        service.run("test-classify", 1, { input: "test" }),
-      ).rejects.toThrow(SpendCeilingError);
+      await expect(service.run("test-classify", 1, { input: "test" })).rejects.toThrow(
+        SpendCeilingError,
+      );
 
       // The refusal is recorded
       expect(mock.invocations).toHaveLength(1);
@@ -289,9 +268,9 @@ describe("AIService", () => {
         input: "Mystery Corp",
       });
 
-      expect(
-        (result.value as { classification: string }).classification,
-      ).toBe("insufficient_evidence");
+      expect((result.value as { classification: string }).classification).toBe(
+        "insufficient_evidence",
+      );
       expect(fakeProvider.calls).toHaveLength(1);
     });
   });
@@ -311,18 +290,16 @@ describe("AIService", () => {
         input: "???",
       });
 
-      expect(
-        (result.value as { classification: string }).classification,
-      ).toBe("insufficient_evidence");
+      expect((result.value as { classification: string }).classification).toBe(
+        "insufficient_evidence",
+      );
       expect(mock.invocations[0]!.outcome).toBe("succeeded");
     });
   });
 
   describe("unregistered prompt", () => {
     it("throws before calling the provider", async () => {
-      await expect(
-        service.run("nonexistent", 1, { input: "test" }),
-      ).rejects.toThrow(/nonexistent/);
+      await expect(service.run("nonexistent", 1, { input: "test" })).rejects.toThrow(/nonexistent/);
 
       expect(fakeProvider.calls).toHaveLength(0);
       expect(mock.invocations).toHaveLength(0);
@@ -331,9 +308,9 @@ describe("AIService", () => {
 
   describe("unregistered version", () => {
     it("throws naming existing versions", async () => {
-      await expect(
-        service.run("test-classify", 99, { input: "test" }),
-      ).rejects.toThrow(/version 99/);
+      await expect(service.run("test-classify", 99, { input: "test" })).rejects.toThrow(
+        /version 99/,
+      );
 
       expect(fakeProvider.calls).toHaveLength(0);
     });
@@ -357,9 +334,7 @@ describe("AIService", () => {
         input: "Tech Corp, Riyadh",
       });
 
-      expect(
-        (result.value as { classification: string }).classification,
-      ).toBe("no_need");
+      expect((result.value as { classification: string }).classification).toBe("no_need");
       // The rate limit is retried by withRetry — only one invocation record
       expect(mock.invocations).toHaveLength(1);
       expect(mock.invocations[0]!.outcome).toBe("succeeded");

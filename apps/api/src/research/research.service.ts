@@ -1,21 +1,17 @@
-import { Inject, Injectable, Optional } from "@nestjs/common";
-import {
-  type Database,
-  insertContact,
-  insertContactResearchRun,
-} from "@mela/database";
 import type { AIService } from "@mela/ai";
+import { type Database, insertContact, insertContactResearchRun } from "@mela/database";
+import { Inject, Injectable, Optional } from "@nestjs/common";
 
 import { DATABASE } from "../database/database.module";
 import {
-  extractMailtoLinks,
-  extractTelLinks,
-  extractStructuredData,
   type ExtractedDetail,
   type StructuredDataPerson,
+  extractMailtoLinks,
+  extractStructuredData,
+  extractTelLinks,
 } from "./extraction";
-import { classifySeniority, checkDeliverability } from "./seniority-deliverability";
 import { extractPeopleWithModel } from "./model-extraction";
+import { checkDeliverability, classifySeniority } from "./seniority-deliverability";
 
 /**
  * A person extracted from page content.
@@ -93,10 +89,7 @@ export class ResearchService {
         .map((p) => ({ url: p.url, text: p.text! }));
 
       if (pagesWithText.length > 0) {
-        const modelResult = await extractPeopleWithModel(
-          this.aiService,
-          pagesWithText,
-        );
+        const modelResult = await extractPeopleWithModel(this.aiService, pagesWithText);
 
         // Convert model results to ExtractedPerson format
         for (const person of modelResult.people) {
@@ -113,9 +106,7 @@ export class ResearchService {
 
         // Track rejection reasons
         if (modelResult.groundingFailures > 0) {
-          rejectionReasons.push(
-            `${modelResult.groundingFailures} people failed grounding check`,
-          );
+          rejectionReasons.push(`${modelResult.groundingFailures} people failed grounding check`);
         }
         if (modelResult.addressDiscards > 0) {
           rejectionReasons.push(
@@ -154,9 +145,7 @@ export class ResearchService {
         contactsFound++;
       } catch (error) {
         contactsRejected++;
-        rejectionReasons.push(
-          error instanceof Error ? error.message : "Unknown error",
-        );
+        rejectionReasons.push(error instanceof Error ? error.message : "Unknown error");
       }
     }
 
@@ -271,9 +260,7 @@ export class ResearchService {
   /**
    * Enriches contacts with seniority and deliverability.
    */
-  private async enrichContacts(
-    contacts: ExtractedPerson[],
-  ): Promise<
+  private async enrichContacts(contacts: ExtractedPerson[]): Promise<
     Array<
       ExtractedPerson & {
         seniorityId: string;

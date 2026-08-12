@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Injectable,
-  Post,
-} from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Injectable, Post } from "@nestjs/common";
 import { z } from "zod";
 
 import { createZodDto } from "../validation/zod-dto";
@@ -41,9 +34,7 @@ export class BatchVerificationController {
    */
   @Post("batch")
   @HttpCode(HttpStatus.OK)
-  async verifyBatch(
-    @Body() body: VerifyBatchDto,
-  ): Promise<{
+  async verifyBatch(@Body() body: VerifyBatchDto): Promise<{
     readonly verified: number;
     readonly unverified: number;
     readonly unreachable: number;

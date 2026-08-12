@@ -1,4 +1,4 @@
-import { resolveAIModelTier, type AIModelTier } from "@mela/config";
+import { type AIModelTier, resolveAIModelTier } from "@mela/config";
 
 import type { AITokenUsage } from "../provider/provider";
 
@@ -18,15 +18,10 @@ export interface CostEstimate {
  * Estimates the cost of a call from its token counts and the tier's
  * configured per-million-token prices.
  */
-export function estimateCost(
-  tierId: string,
-  usage: AITokenUsage,
-): CostEstimate {
+export function estimateCost(tierId: string, usage: AITokenUsage): CostEstimate {
   const tier = resolveAIModelTier(tierId);
-  const inputCost =
-    (usage.inputTokens / 1_000_000) * tier.inputPricePerMillionTokensUsd;
-  const outputCost =
-    (usage.outputTokens / 1_000_000) * tier.outputPricePerMillionTokensUsd;
+  const inputCost = (usage.inputTokens / 1_000_000) * tier.inputPricePerMillionTokensUsd;
+  const outputCost = (usage.outputTokens / 1_000_000) * tier.outputPricePerMillionTokensUsd;
 
   return {
     estimatedCostUsd: inputCost + outputCost,

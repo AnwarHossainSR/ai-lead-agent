@@ -1,10 +1,10 @@
 import { type INestApplication } from "@nestjs/common";
 import request from "supertest";
-import { afterEach, beforeAll, afterAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
+import { insertCompany } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
-import { insertCompany } from "@mela/database";
 
 describe("POST /api/opportunity/analysis/:companyId", () => {
   let harness: TestDatabase;

@@ -1,4 +1,4 @@
-import { validateCandidate, type DiscoveredCandidate } from "./source";
+import { type DiscoveredCandidate, validateCandidate } from "./source";
 import type { DiscoveryRequest, DiscoverySource, DiscoverySourceResult } from "./source";
 
 /**
@@ -113,9 +113,7 @@ export class PlacesSource implements DiscoverySource {
           website: listing.website,
           city: listing.city,
           companySize:
-            listing.employee_count !== undefined
-              ? String(listing.employee_count)
-              : undefined,
+            listing.employee_count !== undefined ? String(listing.employee_count) : undefined,
           linkedinUrl: listing.linkedin_url,
           description: listing.description,
         };
@@ -138,8 +136,7 @@ export class PlacesSource implements DiscoverySource {
         })),
       };
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const message = error instanceof Error ? error.message : "Unknown error occurred";
       return {
         outcome: "failed",
         reason: `places API request failed: ${message}`,

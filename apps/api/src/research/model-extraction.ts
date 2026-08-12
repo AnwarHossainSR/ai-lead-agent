@@ -78,14 +78,10 @@ export async function extractPeopleWithModel(
 
   for (const page of pages) {
     try {
-      const result = await aiService.run<PeopleExtractOutput>(
-        "people-extract",
-        1,
-        {
-          input: page.text,
-          pageUrl: page.url,
-        },
-      );
+      const result = await aiService.run<PeopleExtractOutput>("people-extract", 1, {
+        input: page.text,
+        pageUrl: page.url,
+      });
 
       for (const person of result.value.people) {
         // Grounding check: namingText must appear in the page

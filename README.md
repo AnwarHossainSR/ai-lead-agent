@@ -49,10 +49,11 @@ pnpm --filter @mela/web dev      # Web on port 3000
 |---------|-------------|
 | `pnpm dev` | Start all applications in development mode |
 | `pnpm build` | Build all applications for production |
-| `pnpm lint` | Run ESLint across the monorepo |
+| `pnpm lint` | Run Biome across the monorepo |
 | `pnpm typecheck` | Run TypeScript type checking |
 | `pnpm test` | Run all test suites |
-| `pnpm format` | Format code with Prettier |
+| `pnpm biome` | Format and fix lint issues with Biome |
+| `pnpm biome:check` | Check formatting and lint without writing |
 
 ### Database
 
@@ -97,8 +98,7 @@ ai-lead-agent/
 │   ├── config/       # Environment and product configuration
 │   ├── database/     # Drizzle ORM schemas and migrations
 │   ├── shared/       # Shared utilities
-│   ├── tsconfig/     # Shared TypeScript configs
-│   └── eslint-config/ # Shared ESLint configs
+│   └── tsconfig/     # Shared TypeScript configs
 ├── docker-compose.yml
 └── pnpm-workspace.yaml
 ```

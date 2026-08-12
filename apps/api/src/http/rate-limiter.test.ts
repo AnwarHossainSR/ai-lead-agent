@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { effectiveRequestIntervalMs, TokenBucket } from "./rate-limiter";
+import { TokenBucket, effectiveRequestIntervalMs } from "./rate-limiter";
 
 describe("effectiveRequestIntervalMs", () => {
   it("derives the interval from the configured rate alone when no crawl delay is declared", () => {

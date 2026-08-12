@@ -80,7 +80,9 @@ describe("enforceEvidenceRequirement", () => {
   });
 
   it("preserves the checkId through downgrade", () => {
-    const result = enforceEvidenceRequirement(passed({ checkId: "http", evidence: "", evidenceUrl: "" }));
+    const result = enforceEvidenceRequirement(
+      passed({ checkId: "http", evidence: "", evidenceUrl: "" }),
+    );
     expect(result.checkId).toBe("http");
   });
 });

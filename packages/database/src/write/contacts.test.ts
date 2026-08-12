@@ -2,11 +2,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { contacts } from "../schema/contacts";
 import { expectConstraintViolation } from "../testing/constraints";
-import { companyInput, contactInput, aiInvocationInput } from "../testing/fixtures";
+import { aiInvocationInput, companyInput, contactInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
-import { insertCompany } from "./companies";
-import { insertContact, deleteContactsForCompany } from "./contacts";
 import { insertAIInvocation } from "./ai-invocations";
+import { insertCompany } from "./companies";
+import { deleteContactsForCompany, insertContact } from "./contacts";
 import { WriteValidationError } from "./errors";
 
 let harness: TestDatabase;
@@ -95,10 +95,7 @@ describe("interpreted contacts require invocation", () => {
 
   it("accepts model_interpretation with ai_invocation_id", async () => {
     // First create an AI invocation to reference
-    const invocation = await insertAIInvocation(
-      harness.database,
-      aiInvocationInput(),
-    );
+    const invocation = await insertAIInvocation(harness.database, aiInvocationInput());
 
     const row = await insertContact(
       harness.database,
@@ -223,10 +220,7 @@ describe("deleteContactsForCompany", () => {
   it("deletes all contacts for a company", async () => {
     // Create some contacts
     await insertContact(harness.database, contactInput(companyId));
-    await insertContact(
-      harness.database,
-      contactInput(companyId, { name: "Second Contact" }),
-    );
+    await insertContact(harness.database, contactInput(companyId, { name: "Second Contact" }));
 
     // Verify they exist
     const before = await harness.database.select().from(contacts);
@@ -254,6 +248,6 @@ describe("deleteContactsForCompany", () => {
     // Verify only first company's contacts are gone
     const remaining = await harness.database.select().from(contacts);
     expect(remaining).toHaveLength(1);
-    expect(remaining[0].companyId).toBe(otherCompany.id);
+    expect(remaining[0]!.companyId).toBe(otherCompany.id);
   });
 });

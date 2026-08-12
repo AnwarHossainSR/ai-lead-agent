@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 
-import { VerificationController } from "./verification.controller";
 import { BatchVerificationController } from "./batch-verification.controller";
+import { VerificationController } from "./verification.controller";
 import { VerificationService } from "./verification.service";
 
 /**

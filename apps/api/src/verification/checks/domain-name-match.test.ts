@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { createDomainNameMatchCheck } from "./domain-name-match";
 import type { CheckInput } from "../types";
+import { createDomainNameMatchCheck } from "./domain-name-match";
 
 function input(overrides?: Partial<CheckInput>): CheckInput {
   return {
@@ -32,27 +32,21 @@ describe("domain-name-match check", () => {
 
   it("returns failed when no tokens overlap", async () => {
     const check = createDomainNameMatchCheck();
-    const result = await check.run(
-      input({ companyName: "Acme Corp", domain: "widgets.com" }),
-    );
+    const result = await check.run(input({ companyName: "Acme Corp", domain: "widgets.com" }));
     expect(result.verdict).toBe("failed");
     expect(result.evidence).toContain("No overlapping tokens");
   });
 
   it("ignores tokens shorter than 2 characters", async () => {
     const check = createDomainNameMatchCheck();
-    const result = await check.run(
-      input({ companyName: "A B C", domain: "abc.com" }),
-    );
+    const result = await check.run(input({ companyName: "A B C", domain: "abc.com" }));
     // "a", "b", "c" are all < 2 chars, so no overlap
     expect(result.verdict).toBe("failed");
   });
 
   it("is case-insensitive", async () => {
     const check = createDomainNameMatchCheck();
-    const result = await check.run(
-      input({ companyName: "EXAMPLE Corp", domain: "EXAMPLE.com" }),
-    );
+    const result = await check.run(input({ companyName: "EXAMPLE Corp", domain: "EXAMPLE.com" }));
     expect(result.verdict).toBe("passed");
   });
 
@@ -66,4 +60,3 @@ describe("domain-name-match check", () => {
     expect(failed.evidenceUrl.length).toBeGreaterThan(0);
   });
 });
-

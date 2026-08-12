@@ -1,12 +1,9 @@
+import { desc, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
 
 import type { Executor } from "../client";
-import {
-  type ContactResearchRunRow,
-  contactResearchRuns,
-} from "../schema/contact-research-runs";
+import { type ContactResearchRunRow, contactResearchRuns } from "../schema/contact-research-runs";
 import { CONTACT_RESEARCH_OUTCOMES } from "../schema/enums";
 import { parseInput } from "./errors";
 
@@ -34,19 +31,13 @@ export const insertContactResearchRunInputSchema = z.object({
   rejectionReasons: z.array(z.string()).default([]),
 });
 
-export type InsertContactResearchRunInput = z.input<
-  typeof insertContactResearchRunInputSchema
->;
+export type InsertContactResearchRunInput = z.input<typeof insertContactResearchRunInputSchema>;
 
 export async function insertContactResearchRun(
   executor: Executor,
   input: InsertContactResearchRunInput,
 ): Promise<ContactResearchRunRow> {
-  const value = parseInput(
-    "The contact research run",
-    insertContactResearchRunInputSchema,
-    input,
-  );
+  const value = parseInput("The contact research run", insertContactResearchRunInputSchema, input);
 
   const [row] = await executor
     .insert(contactResearchRuns)

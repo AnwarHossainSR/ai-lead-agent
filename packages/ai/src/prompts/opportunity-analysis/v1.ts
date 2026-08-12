@@ -74,14 +74,8 @@ export const opportunityAnalysisOutputSchema = z.discriminatedUnion("outcome", [
         z.object({
           categoryId: z.string().describe("Resolved against configured taxonomy"),
           title: z.string().trim().min(1, "Expected an opportunity title"),
-          description: z
-            .string()
-            .trim()
-            .min(1, "Expected an opportunity description"),
-          impact: z
-            .string()
-            .trim()
-            .min(1, "Expected a prose description of business impact"),
+          description: z.string().trim().min(1, "Expected an opportunity description"),
+          impact: z.string().trim().min(1, "Expected a prose description of business impact"),
           citedEvidence: z
             .array(z.string().trim().min(1))
             .min(1, "At least one cited evidence identifier is required"),

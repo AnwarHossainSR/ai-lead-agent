@@ -1,6 +1,6 @@
 import { type INestApplication } from "@nestjs/common";
 import request from "supertest";
-import { afterEach, beforeAll, afterAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
@@ -94,9 +94,7 @@ describe("POST /api/discovery/runs", () => {
 
     expect(response.body.message).toBe("Request validation failed.");
     expect(response.body.details).toBeDefined();
-    const cityError = response.body.details.find(
-      (d: { field: string }) => d.field === "cityId",
-    );
+    const cityError = response.body.details.find((d: { field: string }) => d.field === "cityId");
     expect(cityError).toBeDefined();
     expect(cityError.problem).toContain("nonexistent_city");
     expect(cityError.problem).toContain("Configured cities");
@@ -118,9 +116,7 @@ describe("POST /api/discovery/runs", () => {
 
     expect(response.body.message).toBe("Request validation failed.");
     expect(response.body.details).toBeDefined();
-    const cityError = response.body.details.find(
-      (d: { field: string }) => d.field === "cityId",
-    );
+    const cityError = response.body.details.find((d: { field: string }) => d.field === "cityId");
     expect(cityError).toBeDefined();
     expect(cityError.problem).toContain("riyadh");
     expect(cityError.problem).toContain("saudi_arabia");

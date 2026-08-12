@@ -1,9 +1,9 @@
-import { pgTable, text, timestamp, uuid, jsonb, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-import { certaintyEnum } from "./enums";
 import { aiInvocations } from "./ai-invocations";
 import { companies } from "./companies";
+import { certaintyEnum } from "./enums";
 import { opportunityAnalysisRuns } from "./opportunity-analysis-runs";
 
 export const opportunities = pgTable(
@@ -21,16 +21,12 @@ export const opportunities = pgTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     impact: text("impact").notNull(),
-    certainty: certaintyEnum("certainty")
-      .notNull()
-      .default("inferred"),
+    certainty: certaintyEnum("certainty").notNull().default("inferred"),
     citedEvidence: jsonb("cited_evidence").notNull(),
     aiInvocationId: uuid("ai_invocation_id")
       .notNull()
       .references(() => aiInvocations.id, { onDelete: "restrict" }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     sql`length(btrim(${table.title})) > 0 and length(btrim(${table.description})) > 0 and length(btrim(${table.impact})) > 0`,

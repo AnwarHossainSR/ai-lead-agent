@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import type { Executor } from "../client";
 import { type CompanyRow, companies } from "../schema/companies";
-import { type VerificationVerdict } from "../schema/enums";
+import type { VerificationVerdict } from "../schema/enums";
 import { verificationChecks } from "../schema/verification-checks";
 import { type Assignments, databaseNow } from "./clock";
 import {
@@ -242,9 +242,10 @@ export type VerificationCheckResult = {
   required: boolean;
 };
 
-export function deriveVerificationState(
-  checks: readonly VerificationCheckResult[],
-): { state: "verified" | "unverified" | "unreachable" | "never_checked"; verdict: VerificationVerdict } {
+export function deriveVerificationState(checks: readonly VerificationCheckResult[]): {
+  state: "verified" | "unverified" | "unreachable" | "never_checked";
+  verdict: VerificationVerdict;
+} {
   if (checks.length === 0) {
     return { state: "never_checked", verdict: "unknown" };
   }
@@ -350,16 +351,16 @@ export async function applyVerificationResult(
   };
 
   const [row] = await executor
-      .update(companies)
-      .set(changes)
-      .where(eq(companies.id, value.companyId))
-      .returning();
+    .update(companies)
+    .set(changes)
+    .where(eq(companies.id, value.companyId))
+    .returning();
 
-    if (row === undefined) {
-      throw new RecordNotFoundError("company", value.companyId);
-    }
+  if (row === undefined) {
+    throw new RecordNotFoundError("company", value.companyId);
+  }
 
-    return row;
+  return row;
 }
 
 /**

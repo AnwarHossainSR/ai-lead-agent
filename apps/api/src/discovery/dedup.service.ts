@@ -1,11 +1,11 @@
 import {
+  type CompanyRow,
   DuplicateCompanyError,
-  findCompanyByNormalizedName,
+  type Executor,
   findCompanyByNormalizedDomain,
+  findCompanyByNormalizedName,
   insertCompany,
   recordCompanyDiscoverySource,
-  type CompanyRow,
-  type Executor,
 } from "@mela/database";
 import { normalizeCompanyName, normalizeDomain } from "@mela/shared";
 
@@ -133,10 +133,7 @@ export class DedupService {
    * normalize to a registrable domain has no usable domain key and falls
    * through to the name-within-country comparison.
    */
-  private async findMatch(
-    executor: Executor,
-    input: DedupInput,
-  ): Promise<CompanyRow | undefined> {
+  private async findMatch(executor: Executor, input: DedupInput): Promise<CompanyRow | undefined> {
     const normalizedDomain = normalizeDomain(input.candidate.website);
 
     if (normalizedDomain !== null) {
