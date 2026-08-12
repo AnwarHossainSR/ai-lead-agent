@@ -13,6 +13,7 @@ export * from "./companies";
 export * from "./discovery";
 export * from "./contacts";
 export * from "./website-analysis";
+export * from "./technology-detections";
 export * from "./leads";
 export * from "./outreach";
 export * from "./ai-invocations";

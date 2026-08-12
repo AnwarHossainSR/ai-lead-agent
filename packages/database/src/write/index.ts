@@ -41,6 +41,14 @@ export {
 } from "./website-analysis";
 
 export {
+  countCompaniesByTechnology,
+  getLatestDetections,
+  insertTechnologyDetection,
+  insertTechnologyDetectionInputSchema,
+  type InsertTechnologyDetectionInput,
+} from "./technology-detections";
+
+export {
   applyLeadStatusChange,
   insertLead,
   insertLeadInputSchema,
