@@ -61,5 +61,5 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 6.2 Add `docs/technology-fingerprints.md`: how to add a fingerprint, what each match location sees, and how to re-run detection over existing captures
 - [x] 6.3 Update `docs/data-model.md` and `docs/implementation-progress.md`
 - [x] 6.4 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
-- [ ] 6.5 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
-- [ ] 6.6 Run `openspec validate add-technology-detection --strict` and resolve anything it reports
+- [x] 6.5 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
+- [x] 6.6 Run `openspec validate add-technology-detection --strict` and resolve anything it reports
