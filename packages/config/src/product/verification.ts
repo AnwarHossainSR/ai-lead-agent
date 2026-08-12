@@ -98,6 +98,24 @@ export function parseVerificationRule(raw: unknown): VerificationRule {
 }
 
 /**
+ * Validates that the rule doesn't require `registry` when no registries
+ * are configured.  Call this after loading both the rule and the registry
+ * configs.
+ */
+export function validateRegistryRequirement(
+  rule: VerificationRule,
+  registryConfigs: readonly RegistryConfig[],
+): void {
+  const registryCheck = rule.checks.registry;
+  if (registryCheck?.required && registryConfigs.length === 0) {
+    throw new Error(
+      "Cannot make the 'registry' check required: no registries are configured. " +
+        "Either configure at least one country registry or set registry.required to false.",
+    );
+  }
+}
+
+/**
  * Validates the verification politeness configuration.
  */
 export function parseVerificationPoliteness(raw: unknown): VerificationPoliteness {

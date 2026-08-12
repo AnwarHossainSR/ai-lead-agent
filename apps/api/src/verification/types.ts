@@ -51,5 +51,5 @@ export interface VerificationCheck {
   /** Unique identifier matching the rule's check key (e.g. "dns", "http"). */
   readonly id: string;
   /** Run the check and return a result. */
-  run(input: CheckInput): Promise<CheckResult>;
+  run(input: CheckInput, countryId?: string): Promise<CheckResult>;
 }

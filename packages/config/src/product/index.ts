@@ -125,6 +125,7 @@ export {
   parseVerificationPoliteness,
   parseVerificationRule,
   registryConfigSchema,
+  validateRegistryRequirement,
   verificationCheckConfigSchema,
   verificationPolitenessSchema,
   verificationRuleSchema,

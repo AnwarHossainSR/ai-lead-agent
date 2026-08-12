@@ -8,6 +8,7 @@ import {
   parseRegistryConfigs,
   parseVerificationPoliteness,
   parseVerificationRule,
+  validateRegistryRequirement,
 } from "./verification";
 
 describe("verification rule", () => {
@@ -190,5 +191,44 @@ describe("configuration is frozen", () => {
 
   it("makes registry configs immutable", () => {
     expect(Object.isFrozen(REGISTRY_CONFIGS)).toBe(true);
+  });
+});
+
+describe("validateRegistryRequirement", () => {
+  it("passes when registry is not required", () => {
+    expect(() =>
+      validateRegistryRequirement(VERIFICATION_RULE, []),
+    ).not.toThrow();
+  });
+
+  it("passes when registry is required and configs exist", () => {
+    const rule = parseVerificationRule({
+      checks: {
+        dns: { required: true, sufficient: false, timeoutMs: 5_000 },
+        http: { required: true, sufficient: false, timeoutMs: 10_000 },
+        "domain-name-match": { required: false, sufficient: false, timeoutMs: 0 },
+        registry: { required: true, sufficient: false, timeoutMs: 15_000 },
+      },
+      stalenessDays: 90,
+    });
+    const configs = parseRegistryConfigs([
+      { countryId: "uae", baseUrl: "https://r.example.ae", searchPath: "/?q={query}" },
+    ]);
+    expect(() => validateRegistryRequirement(rule, configs)).not.toThrow();
+  });
+
+  it("throws when registry is required but no configs exist", () => {
+    const rule = parseVerificationRule({
+      checks: {
+        dns: { required: true, sufficient: false, timeoutMs: 5_000 },
+        http: { required: true, sufficient: false, timeoutMs: 10_000 },
+        "domain-name-match": { required: false, sufficient: false, timeoutMs: 0 },
+        registry: { required: true, sufficient: false, timeoutMs: 15_000 },
+      },
+      stalenessDays: 90,
+    });
+    expect(() => validateRegistryRequirement(rule, [])).toThrow(
+      "Cannot make the 'registry' check required",
+    );
   });
 });
