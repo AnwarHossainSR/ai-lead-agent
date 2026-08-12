@@ -916,7 +916,7 @@
         },
         "website_analysis_no_scores_on_failure": {
           "name": "website_analysis_no_scores_on_failure",
-          "value": "(\"website_analysis\".\"outcome\" IN ('blocked', 'skipped', 'failed')) => (\n        \"website_analysis\".\"performance_score\" IS NULL AND\n        \"website_analysis\".\"accessibility_score\" IS NULL AND\n        \"website_analysis\".\"seo_score\" IS NULL AND\n        \"website_analysis\".\"mobile_score\" IS NULL AND\n        \"website_analysis\".\"ux_score\" IS NULL\n      )"
+          "value": "NOT (\"website_analysis\".\"outcome\" IN ('blocked', 'skipped', 'failed')) OR (\n        \"website_analysis\".\"performance_score\" IS NULL AND\n        \"website_analysis\".\"accessibility_score\" IS NULL AND\n        \"website_analysis\".\"seo_score\" IS NULL AND\n        \"website_analysis\".\"mobile_score\" IS NULL AND\n        \"website_analysis\".\"ux_score\" IS NULL\n      )"
         }
       },
       "isRLSEnabled": false

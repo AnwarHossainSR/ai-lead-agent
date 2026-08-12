@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   ANALYSIS_CONFIG,
   parseAnalysisConfig,
-  type AnalysisConfig,
 } from "./analysis";
 
 describe("analysis configuration", () => {
