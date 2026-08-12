@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { deepFreeze } from "../internal/freeze";
-import { parseOrThrow } from "../internal/errors";
 
 /**
  * Technology categories supported by the detection system.

@@ -4,26 +4,26 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Fingerprint configuration
 
-- [ ] 1.1 Add technology category configuration to `packages/config` with unique-identifier validation
-- [ ] 1.2 Add the fingerprint type and schema: identifier, technology, category, patterns with their match location and optional version capture group, and implications
-- [ ] 1.3 Add load-time validation for duplicate identifiers, empty pattern lists, invalid expressions and unknown categories
-- [ ] 1.4 Add the catastrophic-backtracking screen rejecting nested unbounded repetition, naming the offending fingerprint
-- [ ] 1.5 Add implication cycle detection over the fingerprint graph, naming the fingerprints in the cycle
-- [ ] 1.6 Add `resolveFingerprint` refusing an unknown identifier with a message listing the configured ones
-- [ ] 1.7 Add the initial fingerprint set covering CMSes, e-commerce platforms, front-end frameworks, page builders, analytics, CDNs, payment providers and hosting
-- [ ] 1.8 Add unit tests covering every scenario in `specs/product-configuration/spec.md`
-- [ ] 1.9 Verify: `pnpm --filter @mela/config lint typecheck test` passes
+- [x] 1.1 Add technology category configuration to `packages/config` with unique-identifier validation
+- [x] 1.2 Add the fingerprint type and schema: identifier, technology, category, patterns with their match location and optional version capture group, and implications
+- [x] 1.3 Add load-time validation for duplicate identifiers, empty pattern lists, invalid expressions and unknown categories
+- [x] 1.4 Add the catastrophic-backtracking screen rejecting nested unbounded repetition, naming the offending fingerprint
+- [x] 1.5 Add implication cycle detection over the fingerprint graph, naming the fingerprints in the cycle
+- [x] 1.6 Add `resolveFingerprint` refusing an unknown identifier with a message listing the configured ones
+- [x] 1.7 Add the initial fingerprint set covering CMSes, e-commerce platforms, front-end frameworks, page builders, analytics, CDNs, payment providers and hosting
+- [x] 1.8 Add unit tests covering every scenario in `specs/product-configuration/spec.md`
+- [x] 1.9 Verify: `pnpm --filter @mela/config lint typecheck test` passes
 
 ## 2. Schema
 
-- [ ] 2.1 Add the `technology_detections` table with its columns, the per-analysis uniqueness constraint, and both `CHECK` constraints for observed and inferred
-- [ ] 2.2 Add the `technology_id` and `(company_id, created_at DESC)` indexes
-- [ ] 2.3 Add write helpers deriving `company_id` from the analysis rather than accepting it, and refusing a caller-supplied value
-- [ ] 2.4 Add the upgrade path replacing an inferred detection with an observed one, and refusing the reverse
-- [ ] 2.5 Add a read helper returning the detections of a company's most recent completed analysis, and a portfolio count by technology
-- [ ] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including raw `INSERT`s that bypass the helpers
-- [ ] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the `technology_detections` table with its columns, the per-analysis uniqueness constraint, and both `CHECK` constraints for observed and inferred
+- [x] 2.2 Add the `technology_id` and `(company_id, created_at DESC)` indexes
+- [x] 2.3 Add write helpers deriving `company_id` from the analysis rather than accepting it, and refusing a caller-supplied value
+- [x] 2.4 Add the upgrade path replacing an inferred detection with an observed one, and refusing the reverse
+- [x] 2.5 Add a read helper returning the detections of a company's most recent completed analysis, and a portfolio count by technology
+- [x] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
+- [x] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including raw `INSERT`s that bypass the helpers
+- [x] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
 
 ## 3. The matcher
 
