@@ -84,5 +84,5 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 10.3 Document the browser install command and the artifact directory in `docs/development.md`
 - [x] 10.4 Update `docs/data-model.md` and `docs/implementation-progress.md`
 - [x] 10.5 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
-- [ ] 10.6 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
-- [ ] 10.7 Run `openspec validate add-website-analysis --strict` and resolve anything it reports
+- [x] 10.6 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
+- [x] 10.7 Run `openspec validate add-website-analysis --strict` and resolve anything it reports
