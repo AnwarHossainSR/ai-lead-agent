@@ -25,10 +25,7 @@ allowBuilds:
 # happens here once instead of drifting across six package.json files.
 catalog:
   # Toolchain
-  # TypeScript is held at 5.9.x on purpose: typescript-eslint declares
-  # "typescript >=4.8.4 <6.1.0", so TypeScript 7 (the native port) breaks
-  # linting. Revisit when typescript-eslint ships TypeScript 7 support.
-  typescript: 5.9.3
+  typescript: 7.0.2
   turbo: 2.10.9
   "@biomejs/biome": 1.9.4
   "@types/node": 24.13.3

@@ -248,6 +248,6 @@ describe("deleteContactsForCompany", () => {
     // Verify only first company's contacts are gone
     const remaining = await harness.database.select().from(contacts);
     expect(remaining).toHaveLength(1);
-    expect(remaining[0].companyId).toBe(otherCompany.id);
+    expect(remaining[0]!.companyId).toBe(otherCompany.id);
   });
 });

@@ -6,7 +6,6 @@ import {
   type ContactResearchConfig,
   ROLE_PATTERNS,
   SENIORITY_LEVELS,
-  type SeniorityLevel,
   classifyRole,
   findSeniorityLevel,
   isSeniorityLevelId,

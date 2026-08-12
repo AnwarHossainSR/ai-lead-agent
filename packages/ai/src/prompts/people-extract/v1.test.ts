@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 // Import to trigger registration
 import "./v1";
 
+import type { z } from "zod";
 import { resolvePrompt } from "../registry";
+import type { peopleExtractOutputSchema } from "./v1";
 
 const NAME = "people-extract";
 const VERSION = 1;
@@ -127,15 +129,17 @@ describe("people-extract prompt", () => {
             namingText: "John Doe is the CEO",
           },
         ],
-      });
+      }) as z.infer<typeof peopleExtractOutputSchema>;
 
       expect(result.people).toHaveLength(1);
-      expect(result.people[0].name).toBe("John Doe");
+      expect(result.people[0]!.name).toBe("John Doe");
     });
 
     it("accepts empty people array", () => {
       const def = resolvePrompt(NAME, VERSION);
-      const result = def.outputSchema.parse({ people: [] });
+      const result = def.outputSchema.parse({ people: [] }) as z.infer<
+        typeof peopleExtractOutputSchema
+      >;
       expect(result.people).toHaveLength(0);
     });
 
@@ -148,9 +152,9 @@ describe("people-extract prompt", () => {
             namingText: "Jane Smith works here",
           },
         ],
-      });
+      }) as z.infer<typeof peopleExtractOutputSchema>;
 
-      expect(result.people[0].role).toBeUndefined();
+      expect(result.people[0]!.role).toBeUndefined();
     });
   });
 });

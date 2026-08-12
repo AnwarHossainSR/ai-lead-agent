@@ -7,7 +7,7 @@ describe("research service", () => {
     const matches = [...html.matchAll(regex)];
 
     expect(matches.length).toBe(1);
-    expect(matches[0][1]).toBe("john@example.com");
+    expect(matches[0]![1]).toBe("john@example.com");
   });
 
   it("extracts phone numbers from tel links in HTML", () => {
@@ -16,7 +16,7 @@ describe("research service", () => {
     const matches = [...html.matchAll(regex)];
 
     expect(matches.length).toBe(1);
-    expect(matches[0][1]).toBe("+97140000000");
+    expect(matches[0]![1]).toBe("+97140000000");
   });
 });
 

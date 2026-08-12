@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { AIService } from "@mela/ai";
 import { extractPeopleWithModel } from "./model-extraction";
@@ -48,8 +48,8 @@ describe("model-extraction", () => {
       const result = await extractPeopleWithModel(mockAI, pages);
 
       expect(result.people).toHaveLength(1);
-      expect(result.people[0].name).toBe("John Doe");
-      expect(result.people[0].role).toBe("CEO");
+      expect(result.people[0]!.name).toBe("John Doe");
+      expect(result.people[0]!.role).toBe("CEO");
       expect(result.groundingFailures).toBe(0);
       expect(result.addressDiscards).toBe(0);
     });
@@ -185,8 +185,8 @@ describe("model-extraction", () => {
       const result = await extractPeopleWithModel(mockAI, pages);
 
       expect(result.people).toHaveLength(2);
-      expect(result.people[0].name).toBe("John Doe");
-      expect(result.people[1].name).toBe("Jane Smith");
+      expect(result.people[0]!.name).toBe("John Doe");
+      expect(result.people[1]!.name).toBe("Jane Smith");
     });
 
     it("continues when AI service throws an error", async () => {

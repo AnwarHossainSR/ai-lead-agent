@@ -315,10 +315,7 @@ describe("deleting a company removes its runs and opportunities", () => {
 describe("the stored shape carries no quantified impact", () => {
   it("the opportunity has text impact, not numeric", async () => {
     const run = await insertOpportunityAnalysisRun(harness.database, opportunityRunInput({}));
-    const opp = await insertOpportunity(
-      harness.database,
-      opportunityInput({ analysisRunId: run.id }),
-    );
+    await insertOpportunity(harness.database, opportunityInput({ analysisRunId: run.id }));
 
     const columnInfo = await harness.database.execute(
       `SELECT data_type FROM information_schema.columns WHERE table_name = 'opportunities' AND column_name = 'impact'`,
