@@ -31,7 +31,12 @@ export {
   type VerificationCheckResult,
 } from "./companies";
 
-export { deleteContactsForCompany, insertContact, insertContactInputSchema, type InsertContactInput } from "./contacts";
+export {
+  deleteContactsForCompany,
+  insertContact,
+  insertContactInputSchema,
+  type InsertContactInput,
+} from "./contacts";
 
 export {
   getLatestContactResearchRuns,

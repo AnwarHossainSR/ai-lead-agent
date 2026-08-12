@@ -1,10 +1,10 @@
-import { eq, desc } from "drizzle-orm";
+import { CATEGORIES, DEFAULT_THRESHOLD } from "@mela/config";
+import { desc, eq } from "drizzle-orm";
 import type { Executor } from "../client";
-import { websiteAnalysis } from "../schema/website-analysis";
+import { companies } from "../schema/companies";
 import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
 import { technologyDetections } from "../schema/technology-detections";
-import { companies } from "../schema/companies";
-import { CATEGORIES, DEFAULT_THRESHOLD } from "@mela/config";
+import { websiteAnalysis } from "../schema/website-analysis";
 import { insertOpportunityAnalysisRun } from "../write/opportunity-analysis-runs";
 
 type ObservationRef = { ref: string; detail: string; url: string };
@@ -13,17 +13,11 @@ type DetectionRef = { ref: string; detail: string; url: string };
 /**
  * Returns the latest completed analysis for a company, or undefined if none exists.
  */
-async function getLatestAnalysis(
-  executor: Executor,
-  companyId: string,
-) {
+async function getLatestAnalysis(executor: Executor, companyId: string) {
   return executor
     .select()
     .from(websiteAnalysis)
-    .where(
-      eq(websiteAnalysis.companyId, companyId) &&
-        eq(websiteAnalysis.outcome, "completed"),
-    )
+    .where(eq(websiteAnalysis.companyId, companyId) && eq(websiteAnalysis.outcome, "completed"))
     .orderBy(desc(websiteAnalysis.createdAt))
     .limit(1)
     .then((rows) => rows[0]);
@@ -32,10 +26,7 @@ async function getLatestAnalysis(
 /**
  * Returns technology detections for an analysis.
  */
-async function getDetections(
-  executor: Executor,
-  analysisId: string,
-) {
+async function getDetections(executor: Executor, analysisId: string) {
   return executor
     .select()
     .from(technologyDetections)
@@ -130,10 +121,7 @@ export async function buildModelInput(
   const minObservations = threshold.minimumObservations;
   const minDetections = threshold.minimumDetections;
 
-  if (
-    rawObservations.length < minObservations ||
-    detections.length < minDetections
-  ) {
+  if (rawObservations.length < minObservations || detections.length < minDetections) {
     const runId = await recordBelowThreshold(executor, companyId, aiInvocationId);
     return { outcome: "below_threshold", runId };
   }

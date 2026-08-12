@@ -9,7 +9,11 @@ import type { AIProvider, AIProviderRequest, AIProviderResponse } from "../provi
  * `AIService`'s Zod parse is what actually tells them apart.
  */
 export type FakeProviderScenario =
-  | { readonly kind: "valid"; readonly content: unknown; readonly usage?: Partial<AIProviderResponse["usage"]> }
+  | {
+      readonly kind: "valid";
+      readonly content: unknown;
+      readonly usage?: Partial<AIProviderResponse["usage"]>;
+    }
   | { readonly kind: "invalid_output"; readonly content: unknown }
   | { readonly kind: "rate_limited"; readonly retryAfterMs?: number }
   | { readonly kind: "authentication_failed" }
@@ -43,16 +47,14 @@ export class FakeAIProvider implements AIProvider {
       try {
         return await work();
       } catch (error) {
-        const retryable =
-          error instanceof AIProviderError && error.retryable;
+        const retryable = error instanceof AIProviderError && error.retryable;
         const isLastAttempt = attempt === 3;
 
         if (!retryable || isLastAttempt) {
           throw error;
         }
 
-        const retryAfterMs =
-          error instanceof AIProviderError ? error.retryAfterMs : null;
+        const retryAfterMs = error instanceof AIProviderError ? error.retryAfterMs : null;
         await sleep(retryAfterMs ?? 10);
       }
     }
@@ -71,7 +73,10 @@ export class FakeAIProvider implements AIProvider {
 
     switch (scenario.kind) {
       case "valid":
-        return { content: scenario.content, usage: { inputTokens: 10, outputTokens: 5, ...scenario.usage } };
+        return {
+          content: scenario.content,
+          usage: { inputTokens: 10, outputTokens: 5, ...scenario.usage },
+        };
       case "invalid_output":
         return { content: scenario.content, usage: { inputTokens: 10, outputTokens: 5 } };
       case "rate_limited":
@@ -82,7 +87,10 @@ export class FakeAIProvider implements AIProvider {
         // Mirrors what a real provider does: never settles on its own, but
         // is bounded by the request's own timeout — usable with fake timers.
         return new Promise<AIProviderResponse>((_resolve, reject) => {
-          setTimeout(() => reject(new AIProviderTimeoutError(request.timeoutMs)), request.timeoutMs);
+          setTimeout(
+            () => reject(new AIProviderTimeoutError(request.timeoutMs)),
+            request.timeoutMs,
+          );
         });
     }
   }

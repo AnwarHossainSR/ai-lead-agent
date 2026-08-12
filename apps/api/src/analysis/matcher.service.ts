@@ -44,7 +44,10 @@ const DEFAULT_CONFIG: MatcherConfig = {
 /**
  * Extracts the match locations from a PageCapture.
  */
-function extractLocations(capture: PageCapture, maxHtmlBytes: number): Record<MatchLocation, string> {
+function extractLocations(
+  capture: PageCapture,
+  maxHtmlBytes: number,
+): Record<MatchLocation, string> {
   return {
     header: Object.entries(capture.headers)
       .map(([k, v]) => `${k}: ${v}`)
@@ -154,9 +157,7 @@ export class MatcherService {
 
     // Resolve implications
     for (const detection of matched.values()) {
-      const fingerprint = this.fingerprints.find(
-        (f) => f.id === detection.fingerprintId,
-      );
+      const fingerprint = this.fingerprints.find((f) => f.id === detection.fingerprintId);
 
       if (fingerprint === undefined) {
         continue;
@@ -166,12 +167,7 @@ export class MatcherService {
       detections.push(detection);
 
       // Process implications
-      this.resolveImplications(
-        fingerprint.implies,
-        matched,
-        detections,
-        detection.fingerprintId,
-      );
+      this.resolveImplications(fingerprint.implies, matched, detections, detection.fingerprintId);
     }
 
     return detections;
@@ -223,12 +219,7 @@ export class MatcherService {
       detections.push(detection);
 
       // Recursively resolve implications
-      this.resolveImplications(
-        fingerprint.implies,
-        matched,
-        detections,
-        fingerprint.id,
-      );
+      this.resolveImplications(fingerprint.implies, matched, detections, fingerprint.id);
     }
   }
 }

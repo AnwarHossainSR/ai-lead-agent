@@ -37,9 +37,7 @@ export const peopleExtractOutputSchema = z.object({
           .describe("The person's job title or role as stated on the page"),
         namingText: z
           .string()
-          .describe(
-            "The exact text fragment from the page that names this person",
-          ),
+          .describe("The exact text fragment from the page that names this person"),
       }),
     )
     .describe("List of people found on the page"),

@@ -2,11 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { companies } from "../schema/companies";
-import {
-  companyDiscoverySources,
-  discoveryRunSources,
-  discoveryRuns,
-} from "../schema/discovery";
+import { companyDiscoverySources, discoveryRunSources, discoveryRuns } from "../schema/discovery";
 import { companyInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
 import { insertCompany } from "./companies";
@@ -258,20 +254,14 @@ describe("per-source results are persisted separately from the run", () => {
 describe("a company records the run that first found it", () => {
   it("references its run when created by discovery", async () => {
     const run = await startDiscoveryRun(harness.database, runInput);
-    const company = await insertCompany(
-      harness.database,
-      companyInput({ discoveryRunId: run.id }),
-    );
+    const company = await insertCompany(harness.database, companyInput({ discoveryRunId: run.id }));
 
     expect(company.discoveryRunId).toBe(run.id);
   });
 
   it("survives its run's deletion, with the run reference cleared", async () => {
     const run = await startDiscoveryRun(harness.database, runInput);
-    const company = await insertCompany(
-      harness.database,
-      companyInput({ discoveryRunId: run.id }),
-    );
+    const company = await insertCompany(harness.database, companyInput({ discoveryRunId: run.id }));
 
     await harness.database.delete(discoveryRuns).where(eq(discoveryRuns.id, run.id));
 

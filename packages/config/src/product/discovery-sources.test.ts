@@ -102,8 +102,7 @@ describe("invalid declarations", () => {
   });
 
   it("refuses a source covering an unconfigured country, naming both", () => {
-    const load = (): unknown =>
-      parseDiscoverySources([{ ...source, coveredCountries: ["qatar"] }]);
+    const load = (): unknown => parseDiscoverySources([{ ...source, coveredCountries: ["qatar"] }]);
 
     expect(load).toThrow(/Source "places" covers unknown country "qatar"/);
   });
@@ -122,8 +121,7 @@ describe("invalid declarations", () => {
   });
 
   it("refuses a source with no covered countries", () => {
-    const load = (): unknown =>
-      parseDiscoverySources([{ ...source, coveredCountries: [] }]);
+    const load = (): unknown => parseDiscoverySources([{ ...source, coveredCountries: [] }]);
 
     expect(load).toThrow(/Expected at least one covered country/);
   });

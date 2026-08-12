@@ -1,5 +1,5 @@
+import { AIService, type AIServiceConfig, GeminiProvider } from "@mela/ai";
 import { type ApiEnv } from "@mela/config/env";
-import { GeminiProvider, AIService, type AIServiceConfig } from "@mela/ai";
 import { type Database, type Executor } from "@mela/database";
 import { Global, Module } from "@nestjs/common";
 

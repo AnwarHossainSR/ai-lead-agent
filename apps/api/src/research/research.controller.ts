@@ -1,25 +1,13 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from "@nestjs/common";
 import { z } from "zod";
 
+import { type Database, deleteContactsForCompany } from "@mela/database";
+import { contacts } from "@mela/database";
+import { Inject } from "@nestjs/common";
+import { eq } from "drizzle-orm";
+import { DATABASE } from "../database/database.module";
 import { createZodDto } from "../validation/zod-dto";
 import { ResearchService } from "./research.service";
-import {
-  deleteContactsForCompany,
-  type Database,
-} from "@mela/database";
-import { Inject } from "@nestjs/common";
-import { DATABASE } from "../database/database.module";
-import { eq } from "drizzle-orm";
-import { contacts } from "@mela/database";
 
 /**
  * Zod schema for the POST /api/companies/:id/contacts/research request body.
@@ -36,9 +24,7 @@ const researchContactsBodySchema = z.object({
 /**
  * DTO for the research contacts request body.
  */
-export class ResearchContactsDto extends createZodDto(
-  researchContactsBodySchema,
-) {}
+export class ResearchContactsDto extends createZodDto(researchContactsBodySchema) {}
 
 /**
  * The research controller owns the API surface for contact research.
@@ -76,16 +62,11 @@ export class ResearchController {
    * GET /api/companies/:id/contacts — list contacts for a company.
    */
   @Get(":id/contacts")
-  async listContacts(
-    @Param("id") id: string,
-  ): Promise<{
+  async listContacts(@Param("id") id: string): Promise<{
     readonly companyId: string;
     readonly contacts: readonly Record<string, unknown>[];
   }> {
-    const result = await this.database
-      .select()
-      .from(contacts)
-      .where(eq(contacts.companyId, id));
+    const result = await this.database.select().from(contacts).where(eq(contacts.companyId, id));
 
     return {
       companyId: id,

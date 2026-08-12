@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { extractPeopleWithModel } from "./model-extraction";
 import type { AIService } from "@mela/ai";
+import { extractPeopleWithModel } from "./model-extraction";
 
 /**
  * Creates a mock AI service for testing.

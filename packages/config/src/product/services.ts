@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { assertUniqueIdentifiers, ConfigurationError, parseOrThrow } from "../internal/errors";
+import { ConfigurationError, assertUniqueIdentifiers, parseOrThrow } from "../internal/errors";
 import { deepFreeze } from "../internal/freeze";
 import { displayNameSchema, identifierSchema } from "../internal/identifier";
 
@@ -95,10 +95,19 @@ export const categorySchema = z.object({
 
 export type Category = z.infer<typeof categorySchema>;
 
-export const categoryIdSchema = z.string().regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/, "Expected a lower_snake_case identifier, e.g. website_modernization.");
+export const categoryIdSchema = z
+  .string()
+  .regex(
+    /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
+    "Expected a lower_snake_case identifier, e.g. website_modernization.",
+  );
 
 export function parseCategories(raw: unknown): readonly Category[] {
-  const categories = parseOrThrow("Opportunity category configuration", z.array(categorySchema), raw);
+  const categories = parseOrThrow(
+    "Opportunity category configuration",
+    z.array(categorySchema),
+    raw,
+  );
 
   // Check for duplicate identifiers
   const seen = new Set<string>();

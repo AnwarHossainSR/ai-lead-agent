@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { RobotsService, detectBlock, type BlockVerdict } from "../http";
+import { type BlockVerdict, RobotsService, detectBlock } from "../http";
 
 /**
  * The politeness service integrates robots.txt checking and block detection
@@ -44,11 +44,7 @@ export class PolitenessService {
   /**
    * Detects if a response indicates the host is blocking us.
    */
-  detectBlock(
-    status: number,
-    headers: Record<string, string>,
-    body: string,
-  ): BlockVerdict {
+  detectBlock(status: number, headers: Record<string, string>, body: string): BlockVerdict {
     return detectBlock(status, headers, body);
   }
 }

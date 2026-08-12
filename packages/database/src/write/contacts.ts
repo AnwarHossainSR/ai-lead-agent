@@ -1,10 +1,14 @@
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 
 import type { Executor } from "../client";
 import { type ContactRow, contacts } from "../schema/contacts";
-import { CERTAINTIES, CONTACT_EXTRACTION_METHODS, MAIL_DELIVERABILITY_STATES } from "../schema/enums";
+import {
+  CERTAINTIES,
+  CONTACT_EXTRACTION_METHODS,
+  MAIL_DELIVERABILITY_STATES,
+} from "../schema/enums";
 import { parseInput } from "./errors";
 
 /**
@@ -61,7 +65,10 @@ export const insertContactInputSchema = z
     }
 
     // Model interpretation requires an invocation reference
-    if (value.extractionMethod === "model_interpretation" && (value.aiInvocationId === undefined || value.aiInvocationId === null)) {
+    if (
+      value.extractionMethod === "model_interpretation" &&
+      (value.aiInvocationId === undefined || value.aiInvocationId === null)
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["aiInvocationId"],
@@ -71,12 +78,15 @@ export const insertContactInputSchema = z
     }
 
     // Seniority requires a job title
-    if (value.seniorityId !== undefined && value.seniorityId !== null && (value.jobTitle === undefined || value.jobTitle === null)) {
+    if (
+      value.seniorityId !== undefined &&
+      value.seniorityId !== null &&
+      (value.jobTitle === undefined || value.jobTitle === null)
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["seniorityId"],
-        message:
-          "A seniority level can only be assigned to a contact with a job title.",
+        message: "A seniority level can only be assigned to a contact with a job title.",
       });
     }
   });
@@ -125,7 +135,5 @@ export async function deleteContactsForCompany(
   executor: Executor,
   companyId: string,
 ): Promise<void> {
-  await executor
-    .delete(contacts)
-    .where(eq(contacts.companyId, companyId));
+  await executor.delete(contacts).where(eq(contacts.companyId, companyId));
 }

@@ -36,7 +36,9 @@ export class RobotsPolicy {
   }
 
   static disallowAll(): RobotsPolicy {
-    return new RobotsPolicy([{ userAgents: ["*"], rules: [{ kind: "disallow", path: "/" }], crawlDelaySeconds: null }]);
+    return new RobotsPolicy([
+      { userAgents: ["*"], rules: [{ kind: "disallow", path: "/" }], crawlDelaySeconds: null },
+    ]);
   }
 
   static fromGroups(groups: readonly RobotsGroup[]): RobotsPolicy {

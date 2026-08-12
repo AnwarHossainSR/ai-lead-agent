@@ -15,8 +15,7 @@ export function enforceEvidenceRequirement(result: CheckResult): CheckResult {
     return result;
   }
 
-  const hasEvidence =
-    result.evidence.trim().length > 0 && result.evidenceUrl.trim().length > 0;
+  const hasEvidence = result.evidence.trim().length > 0 && result.evidenceUrl.trim().length > 0;
 
   if (!hasEvidence) {
     return {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { assertUniqueIdentifiers, ConfigurationError, parseOrThrow } from "../internal/errors";
+import { ConfigurationError, assertUniqueIdentifiers, parseOrThrow } from "../internal/errors";
 import { deepFreeze } from "../internal/freeze";
 import { identifierSchema } from "../internal/identifier";
 

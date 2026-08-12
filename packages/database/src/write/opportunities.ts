@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import type { Executor } from "../client";
 import { uuidv7 } from "uuidv7";
+import type { Executor } from "../client";
 import { type OpportunityRow, opportunities } from "../schema/opportunities";
 import { parseInput } from "./errors";
 

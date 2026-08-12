@@ -1,15 +1,15 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
-import { opportunities } from "../schema/opportunities";
-import { companies } from "../schema/companies";
-import { insertOpportunityAnalysisRun } from "./opportunity-analysis-runs";
-import { insertOpportunity } from "./opportunities";
-import { insertCompany } from "./companies";
-import { insertAIInvocation } from "./ai-invocations";
-import { type TestDatabase, setupTestDatabase } from "../testing/harness";
-import { expectConstraintViolation } from "../testing/constraints";
 import { eq } from "drizzle-orm";
+import { companies } from "../schema/companies";
+import { opportunities } from "../schema/opportunities";
+import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
+import { expectConstraintViolation } from "../testing/constraints";
+import { type TestDatabase, setupTestDatabase } from "../testing/harness";
+import { insertAIInvocation } from "./ai-invocations";
+import { insertCompany } from "./companies";
+import { insertOpportunity } from "./opportunities";
+import { insertOpportunityAnalysisRun } from "./opportunity-analysis-runs";
 
 let harness: TestDatabase;
 let companyId: string;
@@ -50,13 +50,15 @@ afterAll(async () => {
   await harness.close();
 });
 
-const opportunityRunInput = (overrides: Partial<{
-  outcome: "opportunities" | "insufficient_evidence" | "below_threshold" | "failed";
-  acceptedCount: number;
-  rejectedCount: number;
-  reason?: string;
-  rejections?: Array<{ reason: string; count: number }>;
-}> = {}): Parameters<typeof insertOpportunityAnalysisRun>[1] => ({
+const opportunityRunInput = (
+  overrides: Partial<{
+    outcome: "opportunities" | "insufficient_evidence" | "below_threshold" | "failed";
+    acceptedCount: number;
+    rejectedCount: number;
+    reason?: string;
+    rejections?: Array<{ reason: string; count: number }>;
+  }> = {},
+): Parameters<typeof insertOpportunityAnalysisRun>[1] => ({
   companyId,
   promptVersion: 1,
   outcome: overrides.outcome ?? "opportunities",
@@ -67,16 +69,18 @@ const opportunityRunInput = (overrides: Partial<{
   ...overrides,
 });
 
-const opportunityInput = (overrides: Partial<{
-  analysisRunId: string;
-  categoryId: string;
-  serviceId: string;
-  title: string;
-  description: string;
-  impact: string;
-  citedEvidence: string[];
-  aiInvocationId?: string;
-}> = {}): Parameters<typeof insertOpportunity>[1] => ({
+const opportunityInput = (
+  overrides: Partial<{
+    analysisRunId: string;
+    categoryId: string;
+    serviceId: string;
+    title: string;
+    description: string;
+    impact: string;
+    citedEvidence: string[];
+    aiInvocationId?: string;
+  }> = {},
+): Parameters<typeof insertOpportunity>[1] => ({
   analysisRunId: overrides.analysisRunId ?? "00000000-0000-0000-0000-000000000001",
   companyId,
   categoryId: overrides.categoryId ?? "website_modernization",
@@ -91,7 +95,10 @@ const opportunityInput = (overrides: Partial<{
 describe("an opportunity stored with citations and invocation", () => {
   it("stores the opportunity with all required fields", async () => {
     const run = await insertOpportunityAnalysisRun(harness.database, opportunityRunInput({}));
-    const opp = await insertOpportunity(harness.database, opportunityInput({ analysisRunId: run.id }));
+    const opp = await insertOpportunity(
+      harness.database,
+      opportunityInput({ analysisRunId: run.id }),
+    );
 
     expect(opp.id).toBeDefined();
     expect(opp.runId).toBe(run.id);
@@ -132,19 +139,22 @@ describe("an opportunity with no citations is refused", () => {
 describe("an opportunity without an invocation is refused", () => {
   it("refuses opportunity without ai_invocation_id", async () => {
     const run = await insertOpportunityAnalysisRun(harness.database, opportunityRunInput({}));
-    const error = await harness.database.insert(opportunities).values({
-      id: crypto.randomUUID(),
-      runId: run.id,
-      companyId,
-      categoryId: "website_modernization",
-      serviceId: "website_modernization",
-      title: "Test Opportunity",
-      description: "Test description",
-      impact: "Test impact",
-      certainty: "inferred",
-      citedEvidence: ["o1"],
-      aiInvocationId: undefined as any,
-    }).catch((e: any) => e);
+    const error = await harness.database
+      .insert(opportunities)
+      .values({
+        id: crypto.randomUUID(),
+        runId: run.id,
+        companyId,
+        categoryId: "website_modernization",
+        serviceId: "website_modernization",
+        title: "Test Opportunity",
+        description: "Test description",
+        impact: "Test impact",
+        certainty: "inferred",
+        citedEvidence: ["o1"],
+        aiInvocationId: undefined as any,
+      })
+      .catch((e: any) => e);
     expect(error).toBeDefined();
   });
 });
@@ -235,11 +245,14 @@ describe("a blank description is refused", () => {
 
 describe("a run records its outcome and counts", () => {
   it("stores the run with outcome and counts", async () => {
-    const run = await insertOpportunityAnalysisRun(harness.database, opportunityRunInput({
-      outcome: "opportunities",
-      acceptedCount: 2,
-      rejectedCount: 1,
-    }));
+    const run = await insertOpportunityAnalysisRun(
+      harness.database,
+      opportunityRunInput({
+        outcome: "opportunities",
+        acceptedCount: 2,
+        rejectedCount: 1,
+      }),
+    );
 
     expect(run.outcome).toBe("opportunities");
     expect(run.acceptedCount).toBe(2);
@@ -249,16 +262,19 @@ describe("a run records its outcome and counts", () => {
 
 describe("an unrecognised outcome is refused", () => {
   it("refuses outcome outside the defined set", async () => {
-    const error = await harness.database.insert(opportunityAnalysisRuns).values({
-      id: crypto.randomUUID(),
-      companyId,
-      promptVersion: 1,
-      outcome: "invalid_outcome" as any,
-      acceptedCount: 1,
-      rejectedCount: 0,
-      rejections: [],
-      aiInvocationId,
-    }).catch((e: any) => e);
+    const error = await harness.database
+      .insert(opportunityAnalysisRuns)
+      .values({
+        id: crypto.randomUUID(),
+        companyId,
+        promptVersion: 1,
+        outcome: "invalid_outcome" as any,
+        acceptedCount: 1,
+        rejectedCount: 0,
+        rejections: [],
+        aiInvocationId,
+      })
+      .catch((e: any) => e);
     expect(error).toBeDefined();
   });
 });
@@ -266,9 +282,12 @@ describe("an unrecognised outcome is refused", () => {
 describe("a produced-opportunities outcome requires at least one opportunity", () => {
   it("refuses run with outcome opportunities but accepted_count of zero", async () => {
     await expectConstraintViolation(
-      insertOpportunityAnalysisRun(harness.database, opportunityRunInput({
-        acceptedCount: 0,
-      })),
+      insertOpportunityAnalysisRun(
+        harness.database,
+        opportunityRunInput({
+          acceptedCount: 0,
+        }),
+      ),
       "opportunity_analysis_runs_check",
     );
   });
@@ -296,7 +315,10 @@ describe("deleting a company removes its runs and opportunities", () => {
 describe("the stored shape carries no quantified impact", () => {
   it("the opportunity has text impact, not numeric", async () => {
     const run = await insertOpportunityAnalysisRun(harness.database, opportunityRunInput({}));
-    const opp = await insertOpportunity(harness.database, opportunityInput({ analysisRunId: run.id }));
+    const opp = await insertOpportunity(
+      harness.database,
+      opportunityInput({ analysisRunId: run.id }),
+    );
 
     const columnInfo = await harness.database.execute(
       `SELECT data_type FROM information_schema.columns WHERE table_name = 'opportunities' AND column_name = 'impact'`,

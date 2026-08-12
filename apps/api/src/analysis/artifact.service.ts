@@ -1,6 +1,6 @@
+import { resolve } from "path";
 import { Injectable, Logger } from "@nestjs/common";
 import { mkdir, writeFile } from "fs/promises";
-import { resolve } from "path";
 
 /**
  * The artifact service manages storage of analysis artifacts
@@ -11,7 +11,7 @@ export class ArtifactService {
   private readonly logger = new Logger(ArtifactService.name);
   private readonly artifactRoot: string;
 
-  constructor(artifactRoot: string = "./analysis-artifacts") {
+  constructor(artifactRoot = "./analysis-artifacts") {
     this.artifactRoot = resolve(artifactRoot);
   }
 
@@ -25,11 +25,7 @@ export class ArtifactService {
   /**
    * Builds the path for an artifact, ensuring it's within the root.
    */
-  buildArtifactPath(
-    companyId: string,
-    analysisId: string,
-    filename: string,
-  ): string {
+  buildArtifactPath(companyId: string, analysisId: string, filename: string): string {
     const relativePath = `${companyId}/${analysisId}/${filename}`;
     const absolutePath = resolve(this.artifactRoot, relativePath);
 
@@ -75,43 +71,20 @@ export class ArtifactService {
     viewport: string,
     screenshot: Buffer,
   ): Promise<string> {
-    return this.writeArtifact(
-      companyId,
-      analysisId,
-      `${viewport}-screenshot.png`,
-      screenshot,
-    );
+    return this.writeArtifact(companyId, analysisId, `${viewport}-screenshot.png`, screenshot);
   }
 
   /**
    * Writes the rendered HTML artifact.
    */
-  async writeRenderedHtml(
-    companyId: string,
-    analysisId: string,
-    html: string,
-  ): Promise<string> {
-    return this.writeArtifact(
-      companyId,
-      analysisId,
-      "rendered.html",
-      html,
-    );
+  async writeRenderedHtml(companyId: string, analysisId: string, html: string): Promise<string> {
+    return this.writeArtifact(companyId, analysisId, "rendered.html", html);
   }
 
   /**
    * Writes an audit report artifact.
    */
-  async writeAuditReport(
-    companyId: string,
-    analysisId: string,
-    report: string,
-  ): Promise<string> {
-    return this.writeArtifact(
-      companyId,
-      analysisId,
-      "audit-report.json",
-      report,
-    );
+  async writeAuditReport(companyId: string, analysisId: string, report: string): Promise<string> {
+    return this.writeArtifact(companyId, analysisId, "audit-report.json", report);
   }
 }

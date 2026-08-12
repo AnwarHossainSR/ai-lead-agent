@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 
-import { DatabaseModule } from "../database/database.module";
 import { AIModule } from "../ai/ai.module";
+import { DatabaseModule } from "../database/database.module";
 import { OpportunityAnalysisController } from "./opportunity-analysis.controller";
 import { OpportunityAnalysisService } from "./opportunity-analysis.service";
 

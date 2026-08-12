@@ -105,4 +105,3 @@ function isAbortError(error: unknown): boolean {
 function isTimeoutError(error: unknown): boolean {
   return error instanceof Error && error.message === "timeout";
 }
-

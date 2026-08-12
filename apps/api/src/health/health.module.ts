@@ -1,6 +1,6 @@
 import { type ApiEnv } from "@mela/config/env";
 import { Module } from "@nestjs/common";
-import { TerminusModule, type TerminusAsyncModuleOptions } from "@nestjs/terminus";
+import { type TerminusAsyncModuleOptions, TerminusModule } from "@nestjs/terminus";
 
 import { API_ENV } from "../config/env.module";
 import { HealthController } from "./health.controller";

@@ -9,9 +9,9 @@ import {
 } from "@nestjs/common";
 import { eq } from "drizzle-orm";
 
-import { DATABASE } from "../database/database.module";
 import { type Database } from "@mela/database";
-import { opportunityAnalysisRuns, opportunities, companies } from "@mela/database";
+import { companies, opportunities, opportunityAnalysisRuns } from "@mela/database";
+import { DATABASE } from "../database/database.module";
 
 import { OpportunityAnalysisService } from "./opportunity-analysis.service";
 
@@ -37,9 +37,7 @@ export class OpportunityAnalysisController {
    */
   @Post(":companyId")
   @HttpCode(HttpStatus.OK)
-  async analyze(
-    @Param("companyId") companyId: string,
-  ): Promise<{
+  async analyze(@Param("companyId") companyId: string): Promise<{
     readonly run: Record<string, unknown>;
     readonly opportunities: readonly Record<string, unknown>[];
   }> {
@@ -53,10 +51,7 @@ export class OpportunityAnalysisController {
       throw new NotFoundException(`Company "${companyId}" not found.`);
     }
 
-    const result = await this.opportunityAnalysisService.analyze(
-      this.database,
-      { companyId },
-    );
+    const result = await this.opportunityAnalysisService.analyze(this.database, { companyId });
 
     if (!result.runId) {
       throw new NotFoundException(`Opportunity analysis run not found for company "${companyId}".`);

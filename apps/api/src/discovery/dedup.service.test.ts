@@ -1,8 +1,8 @@
 import {
-  startDiscoveryRun,
   type DiscoveryRunRow,
   companies,
   companyDiscoverySources,
+  startDiscoveryRun,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -149,15 +149,21 @@ describe("a website-less candidate", () => {
 
     const first = await service.deduplicate(
       harness.database,
-      dedupInput(candidate({ name: "Al Noor Trading", sourceUrl: "https://fixture.example/companies/a" }), {
-        runId: run.id,
-      }),
+      dedupInput(
+        candidate({ name: "Al Noor Trading", sourceUrl: "https://fixture.example/companies/a" }),
+        {
+          runId: run.id,
+        },
+      ),
     );
     const second = await service.deduplicate(
       harness.database,
-      dedupInput(candidate({ name: "Gulf Shipping Co.", sourceUrl: "https://fixture.example/companies/b" }), {
-        runId: run.id,
-      }),
+      dedupInput(
+        candidate({ name: "Gulf Shipping Co.", sourceUrl: "https://fixture.example/companies/b" }),
+        {
+          runId: run.id,
+        },
+      ),
     );
 
     expect(first.kind).toBe("stored");
@@ -173,7 +179,9 @@ describe("a website-less candidate", () => {
 
     const uae = await service.deduplicate(
       harness.database,
-      dedupInput(candidate({ sourceUrl: "https://fixture.example/companies/a" }), { runId: run.id }),
+      dedupInput(candidate({ sourceUrl: "https://fixture.example/companies/a" }), {
+        runId: run.id,
+      }),
     );
     const saudi = await service.deduplicate(
       harness.database,
@@ -201,17 +209,15 @@ describe("the dedup ordering", () => {
     // new candidate has a different one: the domain wins, so no merge happens.
     const stored = await service.deduplicate(
       harness.database,
-      dedupInput(
-        candidate({ name: "Example Trading L.L.C.", website: "https://example.ae" }),
-        { runId: run.id },
-      ),
+      dedupInput(candidate({ name: "Example Trading L.L.C.", website: "https://example.ae" }), {
+        runId: run.id,
+      }),
     );
     const otherDomain = await service.deduplicate(
       harness.database,
-      dedupInput(
-        candidate({ name: "Example Trading LLC", website: "https://other-example.ae" }),
-        { runId: run.id },
-      ),
+      dedupInput(candidate({ name: "Example Trading LLC", website: "https://other-example.ae" }), {
+        runId: run.id,
+      }),
     );
 
     expect(stored.kind).toBe("stored");

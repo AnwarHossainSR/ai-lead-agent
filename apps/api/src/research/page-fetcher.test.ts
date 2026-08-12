@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { buildFetchUrls, isUrlAllowed } from "./page-fetcher";
 import { CONVENTIONAL_PATHS } from "@mela/config";
+import { buildFetchUrls, isUrlAllowed } from "./page-fetcher";
 
 describe("page-fetcher", () => {
   describe("buildFetchUrls", () => {

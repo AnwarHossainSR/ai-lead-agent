@@ -10,7 +10,8 @@ import * as robots from "./robots";
  * user-agent rotation, a challenge solver, a retry through another network
  * path — this test fails and the design's stated constraint is re-examined.
  */
-const FORBIDDEN_SURFACE = /(proxy|rotate|rotation|user-?agent|fingerprint|captcha|challenge.?solver|headless|retry)/i;
+const FORBIDDEN_SURFACE =
+  /(proxy|rotate|rotation|user-?agent|fingerprint|captcha|challenge.?solver|headless|retry)/i;
 
 describe("the politeness module exposes no evasion options", () => {
   it("robots.ts exports nothing that could override or bypass a policy", () => {

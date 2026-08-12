@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  noHttpsRule,
-  missingViewportMetaRule,
-  consoleErrorsRule,
-  failedRequestsRule,
-  missingTitleRule,
-  missingMetaDescriptionRule,
-  missingFaviconRule,
-  excessivePageWeightRule,
-  runObservationRules,
   type PageCapture,
+  consoleErrorsRule,
+  excessivePageWeightRule,
+  failedRequestsRule,
+  missingFaviconRule,
+  missingMetaDescriptionRule,
+  missingTitleRule,
+  missingViewportMetaRule,
+  noHttpsRule,
+  runObservationRules,
 } from "./observation-rules";
 
 function makeCapture(overrides?: Partial<PageCapture>): PageCapture {

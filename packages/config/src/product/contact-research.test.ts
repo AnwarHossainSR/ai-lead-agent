@@ -1,16 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
-  SENIORITY_LEVELS,
-  ROLE_PATTERNS,
-  CONVENTIONAL_PATHS,
   CONTACT_RESEARCH_CONFIG,
-  validateContactResearchConfig,
+  CONVENTIONAL_PATHS,
+  type ContactResearchConfig,
+  ROLE_PATTERNS,
+  SENIORITY_LEVELS,
+  type SeniorityLevel,
+  classifyRole,
   findSeniorityLevel,
   isSeniorityLevelId,
-  classifyRole,
-  type ContactResearchConfig,
-  type SeniorityLevel,
+  validateContactResearchConfig,
 } from "./contact-research";
 
 describe("contact-research configuration", () => {
@@ -94,7 +94,9 @@ describe("contact-research configuration", () => {
         conventionalPaths: ["/about"],
       };
 
-      expect(() => validateContactResearchConfig(config)).toThrow(/Duplicate seniority identifiers/);
+      expect(() => validateContactResearchConfig(config)).toThrow(
+        /Duplicate seniority identifiers/,
+      );
     });
 
     it("rejects duplicate ranks", () => {
@@ -112,12 +114,8 @@ describe("contact-research configuration", () => {
 
     it("rejects pattern mapping to unknown level", () => {
       const config: ContactResearchConfig = {
-        seniorityLevels: [
-          { id: "c-level", displayName: "C-Level", rank: 1 },
-        ],
-        rolePatterns: [
-          { pattern: "\\bCEO\\b", levelId: "nonexistent" },
-        ],
+        seniorityLevels: [{ id: "c-level", displayName: "C-Level", rank: 1 }],
+        rolePatterns: [{ pattern: "\\bCEO\\b", levelId: "nonexistent" }],
         conventionalPaths: ["/about"],
       };
 

@@ -1,4 +1,4 @@
-import { classifyRole, type SeniorityLevel } from "@mela/config";
+import { type SeniorityLevel, classifyRole } from "@mela/config";
 
 /**
  * Seniority classification result.
@@ -14,9 +14,7 @@ export interface SeniorityClassification {
  * Returns the matching seniority level, or "unknown" if no pattern matches.
  * Returns null level if no title is provided.
  */
-export function classifySeniority(
-  jobTitle: string | null,
-): SeniorityClassification {
+export function classifySeniority(jobTitle: string | null): SeniorityClassification {
   if (jobTitle === null || jobTitle.trim() === "") {
     return { levelId: "unknown", level: null };
   }
@@ -46,9 +44,7 @@ const mxCache = new Map<string, DeliverabilityCheck>();
  * Does NOT open an SMTP session, issue a recipient probe, or send a message.
  * Returns "unknown" on lookup failure or timeout.
  */
-export async function checkDeliverability(
-  domain: string,
-): Promise<DeliverabilityCheck> {
+export async function checkDeliverability(domain: string): Promise<DeliverabilityCheck> {
   // Check cache first
   const cached = mxCache.get(domain);
   if (cached !== undefined) {
@@ -67,9 +63,7 @@ export async function checkDeliverability(
     };
 
     if (data.Answer && Array.isArray(data.Answer)) {
-      const mxRecords = data.Answer.filter(
-        (r: { type?: number }) => r.type === 15,
-      );
+      const mxRecords = data.Answer.filter((r: { type?: number }) => r.type === 15);
 
       const result: DeliverabilityCheck = {
         domain,

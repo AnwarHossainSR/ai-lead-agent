@@ -1,16 +1,10 @@
 import { z } from "zod";
-import { deepFreeze } from "../internal/freeze";
 import { parseOrThrow } from "../internal/errors";
+import { deepFreeze } from "../internal/freeze";
 
 const thresholdSchema = z.object({
-  minimumObservations: z
-    .number()
-    .int()
-    .min(0, "Expected a non-negative integer."),
-  minimumDetections: z
-    .number()
-    .int()
-    .min(0, "Expected a non-negative integer."),
+  minimumObservations: z.number().int().min(0, "Expected a non-negative integer."),
+  minimumDetections: z.number().int().min(0, "Expected a non-negative integer."),
   requireCompletedAnalysis: z.boolean().default(false),
 });
 

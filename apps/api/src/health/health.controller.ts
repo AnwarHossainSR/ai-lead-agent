@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { HealthCheck, HealthCheckService, type HealthCheckResult } from "@nestjs/terminus";
+import { HealthCheck, type HealthCheckResult, HealthCheckService } from "@nestjs/terminus";
 
 import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";

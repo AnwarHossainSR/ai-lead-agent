@@ -47,10 +47,7 @@ export const verificationChecks = pgTable(
     ),
 
     // Backs the stale-query and the per-company history page.
-    index("verification_checks_company_ran_at_idx").on(
-      table.companyId,
-      table.ranAt.desc(),
-    ),
+    index("verification_checks_company_ran_at_idx").on(table.companyId, table.ranAt.desc()),
   ],
 );
 

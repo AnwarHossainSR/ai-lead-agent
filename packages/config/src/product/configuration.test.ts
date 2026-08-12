@@ -8,8 +8,16 @@ describe("invalid configuration halts loading", () => {
     let thrown: unknown;
     try {
       parseCategories([
-        { id: "website_modernization", name: "Website Modernization", serviceId: "website_modernization" },
-        { id: "website_modernization", name: "Web Modernization", serviceId: "web_application_development" },
+        {
+          id: "website_modernization",
+          name: "Website Modernization",
+          serviceId: "website_modernization",
+        },
+        {
+          id: "website_modernization",
+          name: "Web Modernization",
+          serviceId: "web_application_development",
+        },
       ]);
     } catch (error: unknown) {
       thrown = error;
@@ -25,7 +33,11 @@ describe("invalid configuration halts loading", () => {
   it("returns nothing partially validated when a category maps to an unknown service", () => {
     const load = (): unknown =>
       parseCategories([
-        { id: "website_modernization", name: "Website Modernization", serviceId: "unknown_service" },
+        {
+          id: "website_modernization",
+          name: "Website Modernization",
+          serviceId: "unknown_service",
+        },
       ]);
 
     expect(load).toThrow(ConfigurationError);
@@ -35,7 +47,11 @@ describe("invalid configuration halts loading", () => {
   it("reports every failing field rather than only the first for duplicate and unknown service", () => {
     const load = (): unknown =>
       parseCategories([
-        { id: "website_modernization", name: "Website Modernization", serviceId: "unknown_service" },
+        {
+          id: "website_modernization",
+          name: "Website Modernization",
+          serviceId: "unknown_service",
+        },
         { id: "web_application_development", name: "Web App Dev", serviceId: "also_unknown" },
       ]);
 
@@ -79,7 +95,7 @@ describe("consumers cannot mutate configuration", () => {
 
     expect(() => {
       if (first !== undefined) {
-        ;(first as any).name = "Somewhere Else";
+        (first as any).name = "Somewhere Else";
       }
     }).toThrow(TypeError);
 

@@ -14,11 +14,11 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "biome": "biome check --write .",
+    "biome:check": "biome check ."
   },
   "devDependencies": {
-    "prettier": "catalog:",
+    "@biomejs/biome": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

@@ -16,12 +16,7 @@ export class OutputValidationError extends Error {
   readonly promptVersion: number;
   readonly fields: string[];
 
-  constructor(
-    promptName: string,
-    promptVersion: number,
-    fields: string[],
-    cause: z.ZodError,
-  ) {
+  constructor(promptName: string, promptVersion: number, fields: string[], cause: z.ZodError) {
     const fieldList = fields.join(", ");
     super(
       `Prompt "${promptName}" v${promptVersion} produced invalid output. ` +

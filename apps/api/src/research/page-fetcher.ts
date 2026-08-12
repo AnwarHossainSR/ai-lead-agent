@@ -56,10 +56,7 @@ export function buildFetchUrls(
  * This is a placeholder that always returns true — the actual
  * robots.txt checking is done by the PolitenessService.
  */
-export function isUrlAllowed(
-  _url: string,
-  _userAgent: string,
-): boolean {
+export function isUrlAllowed(_url: string, _userAgent: string): boolean {
   // In production, this would check robots.txt
   // For now, we assume all URLs are allowed
   return true;

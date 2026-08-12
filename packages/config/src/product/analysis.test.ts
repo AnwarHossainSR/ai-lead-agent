@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  ANALYSIS_CONFIG,
-  parseAnalysisConfig,
-} from "./analysis";
+import { ANALYSIS_CONFIG, parseAnalysisConfig } from "./analysis";
 
 describe("analysis configuration", () => {
   it("loads the default configuration successfully", () => {

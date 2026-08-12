@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("research service", () => {
   it("extracts emails from mailto links in HTML", () => {
@@ -25,9 +25,9 @@ describe("source-scan test", () => {
     // This test verifies that the research service does not construct
     // email addresses from names and domains. It only extracts what's
     // explicitly present in the HTML.
-    
+
     const html = "<p>John Doe is the CEO</p>";
-    
+
     // The service should not produce an email from this HTML
     // without a mailto link or structured data containing an email
     expect(html).not.toContain("@");

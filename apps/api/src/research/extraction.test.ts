@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   extractMailtoLinks,
-  extractTelLinks,
   extractStructuredData,
+  extractTelLinks,
   extractVisibleAddresses,
 } from "./extraction";
 
@@ -174,22 +174,22 @@ describe("source-scan test", () => {
     // This test verifies that no extraction function takes a name and domain
     // and produces an email address. The functions only extract what's
     // explicitly present in the HTML/text.
-    
-    const html = '<p>John Doe is the CEO</p>';
+
+    const html = "<p>John Doe is the CEO</p>";
     const text = "John Doe is the CEO";
-    
+
     // None of these should produce an email from just the name/domain
     const mailtoResults = extractMailtoLinks(html, "https://example.com");
     const telResults = extractTelLinks(html, "https://example.com");
     const structuredResults = extractStructuredData(html, "https://example.com");
     const visibleResults = extractVisibleAddresses(text, "https://example.com");
-    
+
     // No email should be derived from "John Doe" + "example.com"
     const allEmails = [
       ...mailtoResults.map((r) => r.value),
       ...structuredResults.filter((p) => p.email !== undefined).map((p) => p.email),
     ];
-    
+
     for (const email of allEmails) {
       expect(email).not.toBe("john@example.com");
       expect(email).not.toBe("j.doe@example.com");

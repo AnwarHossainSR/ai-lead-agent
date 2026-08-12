@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { startFixtureServer, type FixtureServerHandle } from "./http-fixture-server";
+import { type FixtureServerHandle, startFixtureServer } from "./http-fixture-server";
 
 let server: FixtureServerHandle;
 
@@ -12,7 +12,9 @@ afterEach(async () => {
   await server?.close();
 });
 
-async function GET(url: string): Promise<{ status: number; headers: Record<string, string>; body: string }> {
+async function GET(
+  url: string,
+): Promise<{ status: number; headers: Record<string, string>; body: string }> {
   const res = await fetch(url, { redirect: "manual" });
   const body = await res.text();
   const headers: Record<string, string> = {};

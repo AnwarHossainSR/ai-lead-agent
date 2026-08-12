@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 // Import to trigger registration
 import "./v1";
@@ -20,9 +20,11 @@ describe("people-extract prompt", () => {
       expect(jsonSchema.properties?.email).toBeUndefined();
 
       // Check nested person objects too
-      const peopleDef = jsonSchema.properties?.people as {
-        items?: { properties?: Record<string, unknown> };
-      } | undefined;
+      const peopleDef = jsonSchema.properties?.people as
+        | {
+            items?: { properties?: Record<string, unknown> };
+          }
+        | undefined;
       expect(peopleDef?.items?.properties?.email).toBeUndefined();
     });
 
@@ -34,9 +36,11 @@ describe("people-extract prompt", () => {
 
       expect(jsonSchema.properties?.telephone).toBeUndefined();
 
-      const peopleDef = jsonSchema.properties?.people as {
-        items?: { properties?: Record<string, unknown> };
-      } | undefined;
+      const peopleDef = jsonSchema.properties?.people as
+        | {
+            items?: { properties?: Record<string, unknown> };
+          }
+        | undefined;
       expect(peopleDef?.items?.properties?.telephone).toBeUndefined();
     });
 
@@ -48,9 +52,11 @@ describe("people-extract prompt", () => {
 
       expect(jsonSchema.properties?.phone).toBeUndefined();
 
-      const peopleDef = jsonSchema.properties?.people as {
-        items?: { properties?: Record<string, unknown> };
-      } | undefined;
+      const peopleDef = jsonSchema.properties?.people as
+        | {
+            items?: { properties?: Record<string, unknown> };
+          }
+        | undefined;
       expect(peopleDef?.items?.properties?.phone).toBeUndefined();
     });
 
@@ -62,9 +68,11 @@ describe("people-extract prompt", () => {
 
       expect(jsonSchema.properties?.contactDetail).toBeUndefined();
 
-      const peopleDef = jsonSchema.properties?.people as {
-        items?: { properties?: Record<string, unknown> };
-      } | undefined;
+      const peopleDef = jsonSchema.properties?.people as
+        | {
+            items?: { properties?: Record<string, unknown> };
+          }
+        | undefined;
       expect(peopleDef?.items?.properties?.contactDetail).toBeUndefined();
     });
   });

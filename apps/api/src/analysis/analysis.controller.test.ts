@@ -1,6 +1,6 @@
 import { type INestApplication } from "@nestjs/common";
 import request from "supertest";
-import { afterEach, beforeAll, afterAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
@@ -110,8 +110,9 @@ describe("GET /api/companies/:id/technologies", () => {
   it("returns technologies for a company", async () => {
     app = await createTestApp();
 
-    const response = await request(app.getHttpServer())
-      .get("/api/companies/00000000-0000-0000-0000-000000000000/technologies");
+    const response = await request(app.getHttpServer()).get(
+      "/api/companies/00000000-0000-0000-0000-000000000000/technologies",
+    );
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("companyId");

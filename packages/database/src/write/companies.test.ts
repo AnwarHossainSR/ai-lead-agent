@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { uuidv7 } from "uuidv7";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { companies } from "../schema/companies";
 import { contacts } from "../schema/contacts";
@@ -8,7 +8,6 @@ import { leads } from "../schema/leads";
 import { verificationChecks } from "../schema/verification-checks";
 import { companyInput, contactInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
-import { DuplicateCompanyError, RecordNotFoundError, WriteValidationError } from "./errors";
 import {
   applyVerificationResult,
   deriveVerificationState,
@@ -17,6 +16,7 @@ import {
   updateCompany,
 } from "./companies";
 import { insertContact } from "./contacts";
+import { DuplicateCompanyError, RecordNotFoundError, WriteValidationError } from "./errors";
 import { insertLead } from "./leads";
 
 let harness: TestDatabase;
@@ -300,7 +300,12 @@ describe("applyVerificationResult", () => {
       checks: [
         { checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" },
         { checkId: "http", status: "passed", required: true, evidence: "HTTP 200 OK" },
-        { checkId: "domain-name-match", status: "passed", required: false, evidence: "Tokens match" },
+        {
+          checkId: "domain-name-match",
+          status: "passed",
+          required: false,
+          evidence: "Tokens match",
+        },
       ],
       verdict: "passed",
     });
@@ -385,7 +390,9 @@ describe("applyVerificationResult", () => {
     await applyVerificationResult(harness.database, {
       companyId: company.id,
       verificationRunId: uuidv7(),
-      checks: [{ checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" }],
+      checks: [
+        { checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" },
+      ],
       verdict: "passed",
     });
 
@@ -501,7 +508,9 @@ describe("listStaleCompanies", () => {
     await applyVerificationResult(harness.database, {
       companyId: company.id,
       verificationRunId: uuidv7(),
-      checks: [{ checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" }],
+      checks: [
+        { checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" },
+      ],
       verdict: "passed",
     });
 
@@ -511,10 +520,7 @@ describe("listStaleCompanies", () => {
   });
 
   it("excludes example companies", async () => {
-    const company = await insertCompany(
-      harness.database,
-      companyInput({ isExample: true }),
-    );
+    const company = await insertCompany(harness.database, companyInput({ isExample: true }));
 
     const stale = await listStaleCompanies(harness.database, 90);
 
@@ -527,7 +533,9 @@ describe("listStaleCompanies", () => {
     await applyVerificationResult(harness.database, {
       companyId: company.id,
       verificationRunId: uuidv7(),
-      checks: [{ checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" }],
+      checks: [
+        { checkId: "dns", status: "passed", required: true, evidence: "Resolved to 1.2.3.4" },
+      ],
       verdict: "passed",
     });
 

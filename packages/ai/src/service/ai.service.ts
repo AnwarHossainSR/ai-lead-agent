@@ -1,11 +1,11 @@
-import { insertAIInvocation, spendInWindow, type Executor } from "@mela/database";
+import { type Executor, insertAIInvocation, spendInWindow } from "@mela/database";
 
-import { resolvePrompt } from "../prompts/registry";
 import type { PromptDefinition } from "../prompts/prompt";
-import type { AIProvider, AIProviderRequest } from "../provider/provider";
+import { resolvePrompt } from "../prompts/registry";
 import { AIProviderError } from "../provider/errors";
+import type { AIProvider, AIProviderRequest } from "../provider/provider";
 import { estimateCost, modelForTier } from "./spend";
-import { parseOutput, failingFields, OutputValidationError } from "./validate";
+import { OutputValidationError, failingFields, parseOutput } from "./validate";
 
 /**
  * Configuration passed to `AIService` by the NestJS module (design D1/D2).
@@ -58,11 +58,7 @@ export class AIService {
    * 6. Record the invocation
    * 7. Return the parsed value + invocation ID
    */
-  async run<T>(
-    promptName: string,
-    promptVersion: number,
-    input: unknown,
-  ): Promise<AIResult<T>> {
+  async run<T>(promptName: string, promptVersion: number, input: unknown): Promise<AIResult<T>> {
     const def = resolvePrompt(promptName, promptVersion);
     const model = modelForTier(def.tier);
 
@@ -123,10 +119,7 @@ export class AIService {
 
       const repairRequest: AIProviderRequest = {
         ...request,
-        messages: [
-          ...request.messages,
-          { role: "user", content: repairMessage },
-        ],
+        messages: [...request.messages, { role: "user", content: repairMessage }],
       };
 
       const repairResponse = await this.provider.request(repairRequest);
@@ -180,18 +173,14 @@ export class AIService {
       );
     } catch (error) {
       // If it's an OutputValidationError or a SpendCeilingError, rethrow
-      if (
-        error instanceof OutputValidationError ||
-        error instanceof SpendCeilingError
-      ) {
+      if (error instanceof OutputValidationError || error instanceof SpendCeilingError) {
         throw error;
       }
 
       // Provider error — record it
       const latencyMs = Date.now() - startTime;
       const cost = estimateCost(def.tier, usage);
-      const failureCode =
-        error instanceof AIProviderError ? error.condition : "unknown";
+      const failureCode = error instanceof AIProviderError ? error.condition : "unknown";
 
       await insertAIInvocation(this.executor, {
         promptName: def.name,
@@ -216,13 +205,8 @@ export class AIService {
    * ceiling is reached, refuses with an error naming the ceiling and the
    * window — and records the refusal.
    */
-  private async assertCeilingNotReached(
-    def: PromptDefinition,
-  ): Promise<void> {
-    const spent = await spendInWindow(
-      this.executor,
-      this.config.spendWindowHours,
-    );
+  private async assertCeilingNotReached(def: PromptDefinition): Promise<void> {
+    const spent = await spendInWindow(this.executor, this.config.spendWindowHours);
 
     if (spent >= this.config.spendCeilingUsd) {
       const model = modelForTier(def.tier);

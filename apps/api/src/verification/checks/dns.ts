@@ -112,6 +112,7 @@ function isTimeoutError(error: unknown): boolean {
 }
 
 function isENOTFOUND(error: unknown): boolean {
-  return error instanceof Error && "code" in error && (error as { code: string }).code === "ENOTFOUND";
+  return (
+    error instanceof Error && "code" in error && (error as { code: string }).code === "ENOTFOUND"
+  );
 }
-

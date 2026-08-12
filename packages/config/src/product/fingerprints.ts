@@ -330,9 +330,7 @@ export const DEFAULT_FINGERPRINTS = deepFreeze(
       id: "hotjar",
       technology: "Hotjar",
       category: "analytics",
-      patterns: [
-        { in: "script", match: "static\\.hotjar\\.com" },
-      ],
+      patterns: [{ in: "script", match: "static\\.hotjar\\.com" }],
       implies: [],
     },
 
@@ -373,9 +371,7 @@ export const DEFAULT_FINGERPRINTS = deepFreeze(
       id: "paypal",
       technology: "PayPal",
       category: "payment",
-      patterns: [
-        { in: "script", match: "paypal\\.com/sdk/js" },
-      ],
+      patterns: [{ in: "script", match: "paypal\\.com/sdk/js" }],
       implies: [],
     },
 
@@ -384,9 +380,7 @@ export const DEFAULT_FINGERPRINTS = deepFreeze(
       id: "aws",
       technology: "Amazon Web Services",
       category: "hosting",
-      patterns: [
-        { in: "header", match: "x-amz-" },
-      ],
+      patterns: [{ in: "header", match: "x-amz-" }],
       implies: [],
     },
     {
@@ -403,9 +397,7 @@ export const DEFAULT_FINGERPRINTS = deepFreeze(
       id: "javascript",
       technology: "JavaScript",
       category: "hosting",
-      patterns: [
-        { in: "html", match: "<script" },
-      ],
+      patterns: [{ in: "html", match: "<script" }],
       implies: [],
     },
   ]),

@@ -1,18 +1,15 @@
-import {
-  companies,
-  discoveryRunSources,
-} from "@mela/database";
+import { companies, discoveryRunSources } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { RunService, type RunRequest } from "./run.service";
+import type { DiscoverySourceId } from "@mela/config";
+import { type RunRequest, RunService } from "./run.service";
 import {
   FakeDiscoverySource,
-  fakeSucceededSource,
   fakeBlockedSource,
   fakeFailedSource,
+  fakeSucceededSource,
 } from "./testing/fake-source";
-import type { DiscoverySourceId } from "@mela/config";
 
 /**
  * Task 6.5 — integration tests for the run service (design D6).
@@ -57,7 +54,10 @@ describe("territory validation", () => {
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -71,7 +71,10 @@ describe("territory validation", () => {
     await expect(
       runService.executeRun(
         harness.database,
-        sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+        sources as unknown as ReadonlyMap<
+          DiscoverySourceId,
+          import("./sources/source").DiscoverySource
+        >,
         runRequest({ countryId: "unknown_country" }),
       ),
     ).rejects.toThrow('Unknown country identifier "unknown_country"');
@@ -83,7 +86,10 @@ describe("territory validation", () => {
     await expect(
       runService.executeRun(
         harness.database,
-        sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+        sources as unknown as ReadonlyMap<
+          DiscoverySourceId,
+          import("./sources/source").DiscoverySource
+        >,
         runRequest({ industryId: "unknown_industry" }),
       ),
     ).rejects.toThrow('Unknown industry identifier "unknown_industry"');
@@ -95,7 +101,10 @@ describe("territory validation", () => {
     await expect(
       runService.executeRun(
         harness.database,
-        sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+        sources as unknown as ReadonlyMap<
+          DiscoverySourceId,
+          import("./sources/source").DiscoverySource
+        >,
         runRequest({ cityId: "riyadh" }),
       ),
     ).rejects.toThrow('City "riyadh" belongs to country "saudi_arabia", not "uae"');
@@ -105,13 +114,14 @@ describe("territory validation", () => {
 describe("source selection", () => {
   it("consults only enabled sources covering the country", async () => {
     const fileImport = fakeSucceededSource("file_import", []);
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", fileImport],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", fileImport]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -124,7 +134,10 @@ describe("source selection", () => {
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -149,7 +162,10 @@ describe("source selection", () => {
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -175,13 +191,14 @@ describe("candidate processing", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -202,13 +219,14 @@ describe("candidate processing", () => {
       },
     ]);
 
-    const sources1 = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source1],
-    ]);
+    const sources1 = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source1]]);
 
     const result1 = await runService.executeRun(
       harness.database,
-      sources1 as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources1 as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -223,13 +241,14 @@ describe("candidate processing", () => {
       },
     ]);
 
-    const sources2 = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source2],
-    ]);
+    const sources2 = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source2]]);
 
     const result2 = await runService.executeRun(
       harness.database,
-      sources2 as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources2 as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -249,13 +268,14 @@ describe("candidate processing", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -273,13 +293,14 @@ describe("source outcomes", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -295,13 +316,14 @@ describe("source outcomes", () => {
   it("records a blocked source", async () => {
     const source = fakeBlockedSource("file_import", "blocked by host");
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -319,13 +341,14 @@ describe("source outcomes", () => {
   it("records a failed source", async () => {
     const source = fakeFailedSource("file_import", "provider error");
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -358,13 +381,14 @@ describe("limits", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest({ candidateLimit: 2 }),
     );
 
@@ -393,14 +417,15 @@ describe("limits", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     // Duration limit of 1 second; clock advances 500ms per call so after 2-3 calls we exceed it
     const result = await fastRunService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest({ durationLimitSeconds: 1 }),
     );
 
@@ -420,13 +445,14 @@ describe("limits", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest({ candidateLimit: 1 }),
     );
 
@@ -443,13 +469,14 @@ describe("run completion", () => {
   it("records run with zero stored count as succeeded", async () => {
     const source = fakeSucceededSource("file_import", []);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -462,13 +489,14 @@ describe("run completion", () => {
     // Only file_import is enabled, so a single failed source means all sources failed
     const source = fakeFailedSource("file_import", "error");
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -488,13 +516,14 @@ describe("run completion", () => {
       },
     ]);
 
-    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([
-      ["file_import", source],
-    ]);
+    const sources = new Map<DiscoverySourceId, FakeDiscoverySource>([["file_import", source]]);
 
     const result = await runService.executeRun(
       harness.database,
-      sources as unknown as ReadonlyMap<DiscoverySourceId, import("./sources/source").DiscoverySource>,
+      sources as unknown as ReadonlyMap<
+        DiscoverySourceId,
+        import("./sources/source").DiscoverySource
+      >,
       runRequest(),
     );
 
@@ -505,8 +534,6 @@ describe("run completion", () => {
     const runSources = allRunSources.filter((s) => s.runId === result.run.id);
 
     expect(runSources[0]?.rejectedCount).toBe(1);
-    expect(runSources[0]?.rejections).toEqual([
-      { reason: "missing_source_url", count: 1 },
-    ]);
+    expect(runSources[0]?.rejections).toEqual([{ reason: "missing_source_url", count: 1 }]);
   });
 });

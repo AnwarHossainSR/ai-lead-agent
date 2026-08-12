@@ -1,8 +1,11 @@
 import { z } from "zod";
 
-import type { Executor } from "../client";
 import { uuidv7 } from "uuidv7";
-import { type OpportunityAnalysisRunRow, opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
+import type { Executor } from "../client";
+import {
+  type OpportunityAnalysisRunRow,
+  opportunityAnalysisRuns,
+} from "../schema/opportunity-analysis-runs";
 import { parseInput } from "./errors";
 
 export const insertOpportunityAnalysisRunInputSchema = z.object({
@@ -23,7 +26,9 @@ export const insertOpportunityAnalysisRunInputSchema = z.object({
   aiInvocationId: z.uuid("Expected the AI invocation identifier.").nullish(),
 });
 
-export type InsertOpportunityAnalysisRunInput = z.input<typeof insertOpportunityAnalysisRunInputSchema>;
+export type InsertOpportunityAnalysisRunInput = z.input<
+  typeof insertOpportunityAnalysisRunInputSchema
+>;
 
 export async function insertOpportunityAnalysisRun(
   executor: Executor,

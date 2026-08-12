@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common";
 
 import { DatabaseModule } from "../database/database.module";
+import { RobotsService } from "../http/robots";
 import { AnalysisController } from "./analysis.controller";
 import { AnalysisService } from "./analysis.service";
-import { BrowserCaptureService } from "./browser-capture.service";
 import { ArtifactService } from "./artifact.service";
-import { PolitenessService } from "./politeness.service";
+import { BrowserCaptureService } from "./browser-capture.service";
 import { MatcherService } from "./matcher.service";
-import { RobotsService } from "../http/robots";
+import { PolitenessService } from "./politeness.service";
 
 /**
  * The analysis module owns website analysis for companies.

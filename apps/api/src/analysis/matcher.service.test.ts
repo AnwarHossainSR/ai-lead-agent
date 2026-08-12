@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { MatcherService, type PageCapture } from "./matcher.service";
 import { DEFAULT_FINGERPRINTS } from "@mela/config";
 import type { Fingerprint } from "@mela/config";
+import { MatcherService, type PageCapture } from "./matcher.service";
 
 function makeCapture(overrides?: Partial<PageCapture>): PageCapture {
   return {
@@ -54,9 +54,7 @@ describe("MatcherService", () => {
 
     it("detects Google Analytics from script URL", () => {
       const capture = makeCapture({
-        scriptUrls: [
-          "https://www.google-analytics.com/analytics.js",
-        ],
+        scriptUrls: ["https://www.google-analytics.com/analytics.js"],
       });
 
       const detections = matcher.detect(capture);
@@ -87,9 +85,7 @@ describe("MatcherService", () => {
           id: "test-version",
           technology: "TestVersion",
           category: "cms",
-          patterns: [
-            { in: "html", match: "version ([\\d.]+)", version: 1 },
-          ],
+          patterns: [{ in: "html", match: "version ([\\d.]+)", version: 1 }],
           implies: [],
         },
       ]);

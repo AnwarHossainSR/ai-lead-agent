@@ -19,10 +19,7 @@ export interface ExtractedDetail {
  * Only extracts addresses that appear in href="mailto:..." attributes.
  * Does not extract addresses from text content to avoid false positives.
  */
-export function extractMailtoLinks(
-  html: string,
-  pageUrl: string,
-): readonly ExtractedDetail[] {
+export function extractMailtoLinks(html: string, pageUrl: string): readonly ExtractedDetail[] {
   const results: ExtractedDetail[] = [];
   const regex = /href\s*=\s*["']mailto:([^"']+)["']/gi;
   let match;
@@ -42,10 +39,7 @@ export function extractMailtoLinks(
  *
  * Only extracts numbers that appear in href="tel:..." attributes.
  */
-export function extractTelLinks(
-  html: string,
-  pageUrl: string,
-): readonly ExtractedDetail[] {
+export function extractTelLinks(html: string, pageUrl: string): readonly ExtractedDetail[] {
   const results: ExtractedDetail[] = [];
   const regex = /href\s*=\s*["']tel:([^"']+)["']/gi;
   let match;
@@ -82,7 +76,8 @@ export function extractStructuredData(
   pageUrl: string,
 ): readonly StructuredDataPerson[] {
   const results: StructuredDataPerson[] = [];
-  const jsonLdRegex = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  const jsonLdRegex =
+    /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match;
 
   while ((match = jsonLdRegex.exec(html)) !== null) {
@@ -180,10 +175,7 @@ export interface VisibleAddress {
  * on the page. Stores the address at the domain it actually appears on,
  * not the company's domain.
  */
-export function extractVisibleAddresses(
-  text: string,
-  pageUrl: string,
-): readonly VisibleAddress[] {
+export function extractVisibleAddresses(text: string, pageUrl: string): readonly VisibleAddress[] {
   const results: VisibleAddress[] = [];
 
   // Pattern for common address formats
