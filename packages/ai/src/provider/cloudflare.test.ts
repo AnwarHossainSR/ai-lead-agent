@@ -135,14 +135,12 @@ describe("an invalid request", () => {
 
 describe("a connection failure below the HTTP layer", () => {
   it("is classified as transient and retried", async () => {
-    fetchMock
-      .mockRejectedValueOnce(new TypeError("fetch failed"))
-      .mockResolvedValueOnce(
-        jsonResponse(200, {
-          success: true,
-          result: { tool_calls: [{ name: "classify", arguments: {} }] },
-        }),
-      );
+    fetchMock.mockRejectedValueOnce(new TypeError("fetch failed")).mockResolvedValueOnce(
+      jsonResponse(200, {
+        success: true,
+        result: { tool_calls: [{ name: "classify", arguments: {} }] },
+      }),
+    );
 
     const response = await settle(provider().request(request()));
 
@@ -153,14 +151,12 @@ describe("a connection failure below the HTTP layer", () => {
 
 describe("a server error", () => {
   it("is retried as transient", async () => {
-    fetchMock
-      .mockResolvedValueOnce(jsonResponse(503, { success: false }))
-      .mockResolvedValueOnce(
-        jsonResponse(200, {
-          success: true,
-          result: { tool_calls: [{ name: "classify", arguments: {} }] },
-        }),
-      );
+    fetchMock.mockResolvedValueOnce(jsonResponse(503, { success: false })).mockResolvedValueOnce(
+      jsonResponse(200, {
+        success: true,
+        result: { tool_calls: [{ name: "classify", arguments: {} }] },
+      }),
+    );
 
     const response = await settle(provider().request(request()));
     expect(response.content).toEqual({});

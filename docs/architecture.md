@@ -96,13 +96,6 @@ Shared TypeScript configurations:
 - `node.json` - For packages and API
 - `next.json` - For Next.js web app
 
-### packages/eslint-config
-
-Shared ESLint configuration:
-- TypeScript rules
-- `no-restricted-properties` for `process.env`
-- Prettier integration
-
 ## Data Flow
 
 1. **Web App** renders server-side, fetching from API

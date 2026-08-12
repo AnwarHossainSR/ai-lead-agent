@@ -111,6 +111,18 @@ Technology detection identifies the software stack behind a company's website.
 
 Delivered: Curated fingerprint patterns; database schema for detections; deterministic matcher service; version extraction from evidence; implication resolution; integration with website analysis; documentation.
 
+### add-opportunity-analysis — archived 2026-08-12
+
+Business opportunity analysis identifies opportunities from website evidence using a structured AI prompt with citation grounding.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `opportunity-analysis`  | versioned prompt, model input assembly, citation validation, below-threshold short-circuit, run history, API endpoints     |
+| `product-configuration` | opportunity taxonomy, evidence thresholds                                                                                  |
+| `lead-data-model`       | opportunity_analysis_runs and opportunities tables with cited evidence, certainty and AI invocation references             |
+
+Delivered: Versioned opportunity-analysis prompt with service catalogue; `buildModelInput` assembling call-local evidence references; `validateCitedEvidence` enforcing citation grounding; `OpportunityAnalysisService` orchestrating threshold check, model call and persistence; `POST /api/opportunity/analysis/:companyId` returning `below_threshold` when no analysis exists; migration with nullable `ai_invocation_id`; 2 API tests and full suite pass (321 tests).
+
 ### add-decision-maker-research — archived 2026-08-12
 
 Contact research finds people at companies who could be contacted.
@@ -125,9 +137,9 @@ Delivered: Seniority classification with Arabic/English patterns; deterministic 
 
 ## Next Module
 
-**`add-opportunity-analysis` (Change #6)** — Analyzes company websites to identify business opportunities based on technology stack, website quality, and contact availability. Depends on `add-ai-provider-abstraction` (1) and `add-technology-detection` (5), both complete. Ready to start.
+**`add-lead-scoring-engine` (Change #8)** — Turns gathered evidence into weighted, explained, reproducible scores and priorities. Depends on `add-website-analysis` (4), `add-technology-detection` (5), `add-opportunity-analysis` (6) and `add-decision-maker-research` (7), all complete. Ready to start.
 
-After that: `add-lead-scoring-engine` (8) → `add-research-summary` (9) → `add-outreach-drafting` (10) → `add-outreach-tracking` (11).
+After that: `add-research-summary` (9) → `add-outreach-drafting` (10) → `add-outreach-tracking` (11).
 
 ## New capabilities these changes introduce
 
@@ -156,9 +168,9 @@ Each change also carries deltas against the three existing capabilities where it
 | ---------------- | ---------- | ----- | ------- |
 | `@mela/config`   | 16         | 235   | passing |
 | `@mela/shared`   | 3          | 66    | passing |
-| `@mela/database` | 9          | 142   | passing |
-| `@mela/ai`       | 8          | 85    | passing |
-| `@mela/api`      | 39         | 319   | passing |
+| `@mela/database` | 10         | 154   | passing |
+| `@mela/ai`       | 9          | 89    | passing |
+| `@mela/api`      | 40         | 321   | passing |
 | `@mela/web`      | 5          | —     | passing |
 
 ## Next step
