@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
-
 import type { Executor } from "../client";
-import { type WebsiteAnalysisRow, websiteAnalysis } from "../schema/website-analysis";
-import { type OpportunityAnalysisRunRow, opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
-import { type CompanyRow, companies } from "../schema/companies";
-import { type TechnologyDetectionRow, technologyDetections } from "../schema/technology-detections";
+import { websiteAnalysis } from "../schema/website-analysis";
+import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
+import { technologyDetections } from "../schema/technology-detections";
 import { CATEGORIES } from "../config/product/services";
+import { opportunityThresholdSchema } from "../config/product";
 
 type ObservationRef = { ref: string; detail: string; url: string };
 type DetectionRef = { ref: string; detail: string; url: string };
@@ -172,13 +171,19 @@ export async function resolveCallLocalReferences(
     .where(eq(technologyDetections.analysisId, latestAnalysis.id));
 
   // Get observations from the analysis
-  const observations = latestAnalysis.observations;
+  // observations is Observation[] from the evidence schema
+  const rawObservations = latestAnalysis.observations as readonly {
+    statement: string;
+    evidence: { detail: string; url: string; observedAt: string };
+    certainty: "observed" | "inferred";
+  }[];
 
   // Check evidence threshold
-  const minObservations = 1;
-  const minDetections = 1;
+  const threshold = opportunityThresholdSchema.parse(opportunityThreshold);
+  const minObservations = threshold.minimumObservations;
+  const minDetections = threshold.minimumDetections;
 
-  const observationCount = observations.length;
+  const observationCount = rawObservations.length;
   const detectionCount = detections.length;
 
   if (observationCount < minObservations || detectionCount < minDetections) {
@@ -214,12 +219,12 @@ export async function resolveCallLocalReferences(
   // Build ref map for quick lookup
   const refMap: Record<string, ObservationRef | DetectionRef> = {};
 
-  for (let i = 0; i < observations.length; i++) {
-    const obs = observations[i];
+  for (let i = 0; i < rawObservations.length; i++) {
+    const obs = rawObservations[i];
     refMap[`o${i + 1}`] = {
       ref: `o${i + 1}`,
-      detail: obs.detail,
-      url: obs.url,
+      detail: obs.evidence.detail,
+      url: obs.evidence.url,
     };
   }
   for (let i = 0; i < detections.length; i++) {

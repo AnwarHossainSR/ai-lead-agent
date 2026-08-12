@@ -1,14 +1,9 @@
 import { eq } from "drizzle-orm";
-
 import type { Executor } from "../client";
-import { type WebsiteAnalysisRow, websiteAnalysis } from "../schema/website-analysis";
-import { type OpportunityAnalysisRunRow, opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
-import { type OpportunityRow, opportunities } from "../schema/opportunities";
-import { type CompanyRow, companies } from "../schema/companies";
-import { type TechnologyDetectionRow, technologyDetections } from "../schema/technology-detections";
-import { insertOpportunityAnalysisRun } from "./opportunity-analysis-runs";
-import { opportunityThreshold } from "../config/product/opportunity-threshold";
-import { CATEGORIES } from "../config/product/services";
+import { websiteAnalysis } from "../schema/website-analysis";
+import { opportunityAnalysisRuns } from "../schema/opportunity-analysis-runs";
+import { technologyDetections } from "../schema/technology-detections";
+import { CATEGORIES, opportunityThresholdSchema } from "@mela/config";
 
 type ObservationRef = { ref: string; detail: string; url: string };
 type DetectionRef = { ref: string; detail: string; url: string };
@@ -59,7 +54,12 @@ export async function buildModelInput(
     .where(eq(technologyDetections.analysisId, latestAnalysis.id));
 
   // Get observations from the analysis (validated against evidence schema)
-  const observations = latestAnalysis.observations;
+  // observations is Observation[] from the evidence schema
+  const rawObservations = latestAnalysis.observations as readonly {
+    statement: string;
+    evidence: { detail: string; url: string; observedAt: string };
+    certainty: "observed" | "inferred";
+  }[];
 
   // Get the service catalogue from configuration
   const serviceCatalogue = CATEGORIES.map((cat) => ({
@@ -68,33 +68,48 @@ export async function buildModelInput(
   }));
 
   // Check evidence threshold
-  const minObservations = opportunityThreshold.minimumObservations;
-  const minDetections = opportunityThreshold.minimumDetections;
+  const threshold = opportunityThresholdSchema.parse(opportunityThreshold);
+  const minObservations = threshold.minimumObservations;
+  const minDetections = threshold.minimumDetections;
 
-  const observationCount = observations.length;
+  const observationCount = rawObservations.length;
   const detectionCount = detections.length;
 
   if (observationCount < minObservations || detectionCount < minDetections) {
     // Below threshold - record outcome and make no model call
-    await insertOpportunityAnalysisRun(executor, {
-      companyId,
-      promptVersion: 1,
-      outcome: "below_threshold",
-      acceptedCount: 0,
-      rejectedCount: 0,
-      rejections: [],
-      aiInvocationId,
-    });
+    await executor
+      .insert(opportunityAnalysisRuns)
+      .values({
+        id: crypto.randomUUID(),
+        companyId,
+        promptVersion: 1,
+        outcome: "below_threshold",
+        acceptedCount: 0,
+        rejectedCount: 0,
+        rejections: [],
+        aiInvocationId,
+      })
+      .returning();
 
-    return { outcome: "below_threshold" };
+    const [run] = await executor
+      .select({ id: opportunityAnalysisRuns.id })
+      .from(opportunityAnalysisRuns)
+      .where(eq(opportunityAnalysisRuns.companyId, companyId))
+      .orderBy(opportunityAnalysisRuns.createdAt.desc())
+      .limit(1);
+
+    return {
+      outcome: "below_threshold",
+      runId: run?.id ?? undefined,
+    };
   }
 
   // Build call-local references
   // Observations get identifiers o1, o2, …
-  const observationRefs = observations.map((obs, index) => ({
+  const observationRefs = rawObservations.map((obs, index) => ({
     ref: `o${index + 1}`,
-    detail: obs.detail,
-    url: obs.url,
+    detail: obs.evidence.detail,
+    url: obs.evidence.url,
   }));
 
   // Detections get identifiers t1, t2, …
