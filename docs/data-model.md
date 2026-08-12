@@ -97,6 +97,38 @@ Stores analysis results for company websites.
 - `website_analysis_company_created_idx` (on `company_id, created_at DESC`)
 - `website_analysis_company_outcome_idx` (on `company_id, outcome`)
 
+### technology_detections
+
+Stores technology detections from website analysis.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| analysis_id | UUID | Foreign key to website_analysis |
+| company_id | UUID | Foreign key to companies |
+| fingerprint_id | TEXT | Identifier of the matched fingerprint |
+| technology_id | TEXT | Human-readable technology name |
+| category | TEXT | Technology category |
+| certainty | certainty | Whether detection was observed or inferred |
+| matched_in | TEXT | Location where pattern matched (observed only) |
+| matched_text | TEXT | Text that matched the pattern (observed only) |
+| version | TEXT | Extracted version string (if present) |
+| implied_by | UUID | Detection that implied this one (inferred only) |
+| created_at | TIMESTAMP | Creation timestamp |
+
+**Constraints:**
+- `technology_detections_analysis_technology_key` - One detection per technology per analysis
+- `technology_detections_observed_requires_evidence` - Observed detections must have matched_in and matched_text
+- `technology_detections_inferred_requires_implication` - Inferred detections must reference implying detection
+
+**Foreign Keys:**
+- `technology_detections_analysis_id_website_analysis_id_fk` - Foreign key to website_analysis (CASCADE DELETE)
+- `technology_detections_company_id_companies_id_fk` - Foreign key to companies (CASCADE DELETE)
+
+**Indexes:**
+- `technology_detections_technology_id_idx` (on `technology_id`)
+- `technology_detections_company_created_idx` (on `company_id, created_at DESC`)
+
 ### leads
 
 Stores scored leads for outreach.

@@ -4,9 +4,11 @@
 
 **`add-company-verification` complete (43/43 tasks).** Verification rule configuration, schema, write path, HTTP politeness, checks, registry, verdict derivation, service and API are all implemented and tested.
 
-**`add-company-discovery` in progress (40/52 tasks).** Source configuration, database schema, file-import adapter, places adapter, rate limiting, deduplication, run orchestration, and API surface are implemented. Documentation and final verification remain.
+**`add-company-discovery` complete (52/52 tasks).** Source configuration, database schema, file-import adapter, places adapter, rate limiting, deduplication, run orchestration, API surface, and documentation are all implemented and tested.
 
-**`add-website-analysis` in progress (40/55 tasks).** Configuration, schema, fixture site, browser capture, artifacts, observation rules, politeness, and API endpoints are implemented. Documentation and final verification remain.
+**`add-website-analysis` complete (55/55 tasks).** Configuration, schema, fixture site, browser capture, artifacts, observation rules, politeness, API endpoints, and documentation are all implemented and tested. 275 API tests passing.
+
+**`add-technology-detection` in progress (50/65 tasks).** Fingerprint configuration, database schema, matcher service, implications, and integration with analysis are implemented. Documentation and final verification remain.
 
 **Pipeline: not started.** Fifteen more changes are planned and validated in `openspec/changes/`.
 None has been applied.

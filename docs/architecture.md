@@ -257,3 +257,49 @@ Pure functions that check page captures for issues:
 - **Polite by default** — respects robots.txt, rate limits, and blocks
 - **No score fabrication** — NULL means "not measured", not zero
 - **Staleness window** — companies are re-analyzed after 30 days by default
+
+## Technology Detection
+
+Technology detection identifies the software stack behind a company's website by matching declared fingerprint patterns against what the analysis actually captured. It runs deterministically with no network requests and no language model calls.
+
+### How It Works
+
+1. **Fingerprint Matching** — Curated patterns are evaluated against captured content (headers, HTML, script URLs, stylesheet URLs, cookies, meta generator)
+2. **Version Extraction** — A version is recorded only when it appears verbatim in the matched evidence; never inferred from behavior
+3. **Implication Resolution** — Technologies implied by detected ones are marked as `inferred`, not `observed`
+4. **Database Persistence** — Detections are attached to the analysis that produced them
+
+### Why Fingerprints Are Curated
+
+Fingerprints are manually curated rather than imported from public databases because:
+- **Accuracy** — each pattern is verified to match the intended technology without false positives
+- **Control** — we decide which technologies to detect and how patterns are expressed
+- **Simplicity** — no need to parse and validate thousands of potentially conflicting patterns
+- **Transparency** — every detection can be traced to a specific, human-reviewed pattern
+
+### Why Versions Are Never Inferred
+
+A version is recorded only when it appears verbatim in the matched evidence because:
+- **Correctness** — inferring versions from behavior leads to wrong assumptions
+- **Reproducibility** — the same capture always yields the same version (or no version)
+- **Honesty** — "unknown version" is more truthful than a guess
+
+### Match Locations
+
+| Location | What it sees |
+|----------|--------------|
+| `header` | Response headers (e.g., `X-Powered-By: Express`) |
+| `html` | Page HTML content (limited to 2MB) |
+| `script` | Script source URLs |
+| `stylesheet` | Stylesheet URLs |
+| `cookie` | Cookie names |
+| `meta` | Meta generator tag content |
+
+### Design Decisions
+
+- **No network requests** — detection runs against stored captures only
+- **No language model** — all matching is deterministic regex evaluation
+- **Time budget** — matching stops after 5 seconds to prevent runaway patterns
+- **HTML byte limit** — only the first 2MB of HTML is examined
+- **Stable order** — fingerprints are evaluated in declared order for deterministic results
+- **Evidence required** — observed detections must have matched text; inferred detections must reference an implying detection
