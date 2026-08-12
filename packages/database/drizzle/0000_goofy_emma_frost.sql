@@ -1,4 +1,6 @@
 CREATE TYPE "public"."certainty" AS ENUM('observed', 'inferred');--> statement-breakpoint
+CREATE TYPE "public"."company_verification_state" AS ENUM('never_checked', 'verified', 'unverified', 'unreachable');--> statement-breakpoint
+CREATE TYPE "public"."verification_verdict" AS ENUM('passed', 'failed', 'unknown');--> statement-breakpoint
 CREATE TYPE "public"."lead_priority" AS ENUM('very_high', 'high', 'medium', 'low');--> statement-breakpoint
 CREATE TYPE "public"."lead_status" AS ENUM('discovered', 'verified', 'analyzing', 'qualified', 'high_priority', 'contacted', 'replied', 'interested', 'meeting', 'proposal', 'won', 'lost', 'not_interested', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."outreach_channel" AS ENUM('email', 'linkedin', 'whatsapp');--> statement-breakpoint
@@ -17,10 +19,26 @@ CREATE TABLE "companies" (
 	"description" text,
 	"discovery_source" text NOT NULL,
 	"discovery_source_url" text NOT NULL,
-	"verified" boolean DEFAULT false NOT NULL,
+	"discovery_run_id" uuid,
+	"verification_state" "company_verification_state" DEFAULT 'never_checked' NOT NULL,
+	"verified_at" timestamp with time zone,
+	"verification_run_id" uuid,
+	"verified" boolean GENERATED ALWAYS AS ((verification_state = 'verified')::boolean) STORED NOT NULL,
 	"is_example" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "verification_checks" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"company_id" uuid NOT NULL,
+	"check_id" text NOT NULL,
+	"verdict" "verification_verdict" NOT NULL,
+	"evidence" text,
+	"evidence_url" text,
+	"verification_run_id" uuid,
+	"ran_at" timestamp with time zone NOT NULL,
+	CONSTRAINT "verification_checks_evidence_required" CHECK (("verification_checks"."verdict" IN ('passed', 'failed') AND "verification_checks"."evidence" IS NOT NULL) OR "verification_checks"."verdict" = 'unknown')
 );
 --> statement-breakpoint
 CREATE TABLE "contacts" (
@@ -123,4 +141,6 @@ CREATE UNIQUE INDEX "leads_company_id_key" ON "leads" USING btree ("company_id")
 CREATE INDEX "leads_priority_idx" ON "leads" USING btree ("priority");--> statement-breakpoint
 CREATE INDEX "leads_lead_score_idx" ON "leads" USING btree ("lead_score" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "leads_status_idx" ON "leads" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "outreach_lead_status_idx" ON "outreach" USING btree ("lead_id","status");
+CREATE INDEX "outreach_lead_status_idx" ON "outreach" USING btree ("lead_id","status");--> statement-breakpoint
+ALTER TABLE "verification_checks" ADD CONSTRAINT "verification_checks_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "verification_checks_company_ran_at_idx" ON "verification_checks" USING btree ("company_id","ran_at" DESC);

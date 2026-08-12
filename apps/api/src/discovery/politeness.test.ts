@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import * as blockDetection from "./block-detection";
-import * as rateLimiter from "./rate-limiter";
-import * as robots from "./robots";
+import * as blockDetection from "../http/block-detection";
+import * as rateLimiter from "../http/rate-limiter";
+import * as robots from "../http/robots";
 
 /**
  * Task 4.4 — the absence is the control. The politeness module exists to slow

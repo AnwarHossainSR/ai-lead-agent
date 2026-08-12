@@ -29,7 +29,21 @@ const score = z
 
 export const insertWebsiteAnalysisInputSchema = z.object({
   companyId: z.uuid("Expected the identifier of the company whose site was analyzed."),
-  analyzedUrl: z.url("Expected the URL that was analyzed."),
+  analysedUrl: z.url("Expected the URL that was analyzed."),
+
+  // Outcome tracking
+  outcome: z.enum(["completed", "partial", "blocked", "skipped", "failed"]).default("completed"),
+  failureReason: z.string().trim().min(1).nullish(),
+  httpStatus: z.number().int().positive().nullish(),
+
+  // Artifact paths
+  desktopScreenshotPath: z.string().trim().min(1).nullish(),
+  mobileScreenshotPath: z.string().trim().min(1).nullish(),
+  renderedHtmlPath: z.string().trim().min(1).nullish(),
+  auditReportPath: z.string().trim().min(1).nullish(),
+
+  // Unverified override
+  unverifiedOverride: z.boolean().default(false),
 
   performanceScore: score,
   accessibilityScore: score,
@@ -59,7 +73,15 @@ export async function insertWebsiteAnalysis(
     .values({
       id: uuidv7(),
       companyId: value.companyId,
-      analyzedUrl: value.analyzedUrl,
+      analysedUrl: value.analysedUrl,
+      outcome: value.outcome,
+      failureReason: value.failureReason ?? null,
+      httpStatus: value.httpStatus ?? null,
+      desktopScreenshotPath: value.desktopScreenshotPath ?? null,
+      mobileScreenshotPath: value.mobileScreenshotPath ?? null,
+      renderedHtmlPath: value.renderedHtmlPath ?? null,
+      auditReportPath: value.auditReportPath ?? null,
+      unverifiedOverride: value.unverifiedOverride,
       performanceScore: value.performanceScore ?? null,
       accessibilityScore: value.accessibilityScore ?? null,
       seoScore: value.seoScore ?? null,

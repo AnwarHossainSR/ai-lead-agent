@@ -73,10 +73,12 @@ async function ensureDatabaseExists(adminUrl: string, databaseName: string): Pro
 const TABLES = [
   "outreach",
   "leads",
+  "technology_detections",
   "website_analysis",
   "contacts",
   "company_discovery_sources",
   "companies",
+  "verification_checks",
   "discovery_run_sources",
   "discovery_runs",
   "ai_invocations",

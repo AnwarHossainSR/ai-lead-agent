@@ -34,6 +34,9 @@ logs/
 npm-debug.log*
 pnpm-debug.log*
 
+# Analysis artifacts
+analysis-artifacts/
+
 # Editor / OS
 .DS_Store
 Thumbs.db

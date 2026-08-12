@@ -15,17 +15,30 @@ export {
 } from "./errors";
 
 export {
+  applyVerificationResult,
+  applyVerificationResultInputSchema,
+  deriveVerificationState,
   findCompanyByNormalizedDomain,
   findCompanyByNormalizedName,
   insertCompany,
   insertCompanyInputSchema,
+  listStaleCompanies,
   updateCompany,
   updateCompanyInputSchema,
+  type ApplyVerificationResultInput,
   type InsertCompanyInput,
   type UpdateCompanyInput,
+  type VerificationCheckResult,
 } from "./companies";
 
-export { insertContact, insertContactInputSchema, type InsertContactInput } from "./contacts";
+export { deleteContactsForCompany, insertContact, insertContactInputSchema, type InsertContactInput } from "./contacts";
+
+export {
+  getLatestContactResearchRuns,
+  insertContactResearchRun,
+  insertContactResearchRunInputSchema,
+  type InsertContactResearchRunInput,
+} from "./contact-research-runs";
 
 export {
   getLatestWebsiteAnalysis,
@@ -33,6 +46,14 @@ export {
   insertWebsiteAnalysisInputSchema,
   type InsertWebsiteAnalysisInput,
 } from "./website-analysis";
+
+export {
+  countCompaniesByTechnology,
+  getLatestDetections,
+  insertTechnologyDetection,
+  insertTechnologyDetectionInputSchema,
+  type InsertTechnologyDetectionInput,
+} from "./technology-detections";
 
 export {
   applyLeadStatusChange,

@@ -31,6 +31,7 @@ export function contactInput(
     companyId,
     name: "Example Contact",
     certainty: "observed",
+    extractionMethod: "deterministic",
     researchSource: "test fixture",
     ...overrides,
   };

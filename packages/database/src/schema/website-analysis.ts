@@ -14,6 +14,7 @@ import {
 
 import type { BusinessOpportunity, Observation, TechnologyEvidence } from "../schemas/evidence";
 import { companies } from "./companies";
+import { websiteAnalysisOutcomeEnum } from "./enums";
 
 /**
  * One analysis of one company's website at one point in time.
@@ -41,8 +42,24 @@ export const websiteAnalysis = pgTable(
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
 
-    analyzedUrl: text("analyzed_url").notNull(),
+    // Outcome and failure tracking
+    outcome: websiteAnalysisOutcomeEnum("outcome").notNull().default("completed"),
+    failureReason: text("failure_reason"),
 
+    // URL analysis details
+    analysedUrl: text("analyzed_url").notNull(),
+    httpStatus: integer("http_status"),
+
+    // Artifact paths (relative to ANALYSIS_ARTIFACT_ROOT)
+    desktopScreenshotPath: text("desktop_screenshot_path"),
+    mobileScreenshotPath: text("mobile_screenshot_path"),
+    renderedHtmlPath: text("rendered_html_path"),
+    auditReportPath: text("audit_report_path"),
+
+    // Unverified override: allows analysis of unverified companies
+    unverifiedOverride: boolean("unverified_override").notNull().default(false),
+
+    // Scores (nullable = not measured)
     performanceScore: integer("performance_score"),
     accessibilityScore: integer("accessibility_score"),
     seoScore: integer("seo_score"),
@@ -66,14 +83,40 @@ export const websiteAnalysis = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
+    // Score range checks
     check("website_analysis_performance_score_range", scoreInRange(table.performanceScore)),
     check("website_analysis_accessibility_score_range", scoreInRange(table.accessibilityScore)),
     check("website_analysis_seo_score_range", scoreInRange(table.seoScore)),
     check("website_analysis_mobile_score_range", scoreInRange(table.mobileScore)),
     check("website_analysis_ux_score_range", scoreInRange(table.uxScore)),
 
+    // Failure reason required for non-completed outcomes
+    check(
+      "website_analysis_failure_reason_required",
+      sql`(${table.outcome} = 'completed') OR (${table.failureReason} IS NOT NULL AND ${table.failureReason} != '')`,
+    ),
+
+    // No scores on blocked, skipped, or failed analyses
+    check(
+      "website_analysis_no_scores_on_failure",
+      sql`NOT (${table.outcome} IN ('blocked', 'skipped', 'failed')) OR (
+        ${table.performanceScore} IS NULL AND
+        ${table.accessibilityScore} IS NULL AND
+        ${table.seoScore} IS NULL AND
+        ${table.mobileScore} IS NULL AND
+        ${table.uxScore} IS NULL
+      )`,
+    ),
+
+    // One in-progress analysis per company (partial unique)
+    // This is enforced at the application level, not as a DB constraint,
+    // because "in-progress" is a transient state.
+
     // Backs getLatestWebsiteAnalysis (design D6).
     index("website_analysis_company_created_idx").on(table.companyId, table.createdAt.desc()),
+
+    // Backs the staleness query
+    index("website_analysis_company_outcome_idx").on(table.companyId, table.outcome),
   ],
 );
 

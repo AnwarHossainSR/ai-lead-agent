@@ -35,13 +35,13 @@ describe("analyses over time", () => {
   it("are all retained, and the latest is the more recently created one", async () => {
     const first = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       seoScore: 40,
     });
 
     const second = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       seoScore: 70,
     });
 
@@ -61,7 +61,7 @@ describe("an unmeasured score", () => {
   it("is stored as unknown rather than as zero", async () => {
     const row = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       performanceScore: 42,
     });
 
@@ -73,7 +73,7 @@ describe("an unmeasured score", () => {
   it("is different from a measured zero", async () => {
     const row = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       accessibilityScore: 0,
     });
 
@@ -86,7 +86,7 @@ describe("an out-of-range score", () => {
     await expect(
       insertWebsiteAnalysis(harness.database, {
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         seoScore: -1,
       }),
     ).rejects.toThrow(WriteValidationError);
@@ -96,7 +96,7 @@ describe("an out-of-range score", () => {
     await expect(
       insertWebsiteAnalysis(harness.database, {
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         uxScore: 101,
       }),
     ).rejects.toThrow(/at most 100/);
@@ -107,7 +107,7 @@ describe("an out-of-range score", () => {
       harness.database.insert(websiteAnalysis).values({
         id: "019fecbb-1111-7000-8000-000000000000",
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         seoScore: 250,
       }),
       "website_analysis_seo_score_range",
@@ -119,7 +119,7 @@ describe("observations", () => {
   it("carry the observed fact and the evidence supporting it", async () => {
     const row = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       observations: [
         {
           statement: "The contact form returns a server error on submission.",
@@ -138,7 +138,7 @@ describe("observations", () => {
     await expect(
       insertWebsiteAnalysis(harness.database, {
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         observations: [{ statement: "The site feels slow.", certainty: "observed" } as never],
       }),
     ).rejects.toThrow(WriteValidationError);
@@ -148,7 +148,7 @@ describe("observations", () => {
     await expect(
       insertWebsiteAnalysis(harness.database, {
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         observations: [
           {
             statement: "The site feels slow.",
@@ -164,7 +164,7 @@ describe("observations", () => {
     await expect(
       insertWebsiteAnalysis(harness.database, {
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         observations: [
           {
             statement: "The site is built on WordPress.",
@@ -181,7 +181,7 @@ describe("business opportunities", () => {
   it("record the impact as prose, and carry their evidence", async () => {
     const row = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       businessOpportunities: [
         {
           statement: "Enquiries submitted through the website are not reaching the business.",
@@ -201,7 +201,7 @@ describe("business opportunities", () => {
     await expect(
       insertWebsiteAnalysis(harness.database, {
         companyId,
-        analyzedUrl: "https://example.ae",
+        analysedUrl: "https://example.ae",
         businessOpportunities: [
           {
             statement: "Their site is old.",
@@ -218,7 +218,7 @@ describe("detected technology", () => {
   it("is stored with its evidence, and its version may be unknown", async () => {
     const row = await insertWebsiteAnalysis(harness.database, {
       companyId,
-      analyzedUrl: "https://example.ae",
+      analysedUrl: "https://example.ae",
       technologyStack: [
         {
           name: "jQuery",

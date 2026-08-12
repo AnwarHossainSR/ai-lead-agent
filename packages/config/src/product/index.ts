@@ -115,3 +115,63 @@ export {
   type AIModelTier,
   type AIModelTierId,
 } from "./ai-model-tiers";
+
+export {
+  REGISTRY_CONFIGS,
+  VERIFICATION_POLITENESS,
+  VERIFICATION_RULE,
+  isVerificationCheckId,
+  parseRegistryConfigs,
+  parseVerificationPoliteness,
+  parseVerificationRule,
+  registryConfigSchema,
+  validateRegistryRequirement,
+  verificationCheckConfigSchema,
+  verificationPolitenessSchema,
+  verificationRuleSchema,
+  type RegistryConfig,
+  type VerificationCheckConfig,
+  type VerificationCheckId,
+  type VerificationPoliteness,
+  type VerificationRule,
+} from "./verification";
+
+export {
+  ANALYSIS_CONFIG,
+  analysisConfigSchema,
+  observationRuleSchema,
+  parseAnalysisConfig,
+  viewportSchema,
+  type AnalysisConfig,
+  type ObservationRule,
+  type Viewport,
+} from "./analysis";
+
+export {
+  DEFAULT_FINGERPRINTS,
+  MATCH_LOCATIONS,
+  TECHNOLOGY_CATEGORIES,
+  fingerprintSchema,
+  parseFingerprints,
+  patternSchema,
+  resolveFingerprint,
+  type Fingerprint,
+  type MatchLocation,
+  type Pattern,
+  type TechnologyCategory,
+} from "./fingerprints";
+
+export {
+  CONVENTIONAL_PATHS,
+  CONTACT_RESEARCH_CONFIG,
+  ROLE_PATTERNS,
+  SENIORITY_LEVELS,
+  classifyRole,
+  contactResearchConfigSchema,
+  findSeniorityLevel,
+  isSeniorityLevelId,
+  validateContactResearchConfig,
+  type ContactResearchConfig,
+  type RolePattern,
+  type SeniorityLevel,
+} from "./contact-research";

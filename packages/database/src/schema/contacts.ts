@@ -2,7 +2,8 @@ import { sql } from "drizzle-orm";
 import { boolean, check, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 import { companies } from "./companies";
-import { certaintyEnum } from "./enums";
+import { certaintyEnum, contactExtractionMethodEnum, mailDeliverabilityEnum } from "./enums";
+import { aiInvocations } from "./ai-invocations";
 
 /**
  * A person at a company.
@@ -32,6 +33,21 @@ export const contacts = pgTable(
     // (`inferred`). A guess is not a third value — it is not stored.
     certainty: certaintyEnum("certainty").notNull(),
 
+    // How the contact was obtained
+    extractionMethod: contactExtractionMethodEnum("extraction_method").notNull(),
+
+    // Seniority level from configured patterns
+    seniorityId: text("seniority_id"),
+
+    // URL where the role was stated
+    roleSourceUrl: text("role_source_url"),
+
+    // Mail deliverability for the email domain
+    mailDeliverability: mailDeliverabilityEnum("mail_deliverability"),
+
+    // Reference to the model invocation when extraction method is model_interpretation
+    aiInvocationId: uuid("ai_invocation_id").references(() => aiInvocations.id, { onDelete: "set null" }),
+
     researchSource: text("research_source").notNull(),
     sourceUrl: text("source_url"),
 
@@ -44,6 +60,16 @@ export const contacts = pgTable(
     check(
       "contacts_contact_details_need_a_source",
       sql`(${table.email} IS NULL AND ${table.phone} IS NULL) OR ${table.sourceUrl} IS NOT NULL`,
+    ),
+    // Interpreted contacts must reference an invocation
+    check(
+      "contacts_interpreted_requires_invocation",
+      sql`(${table.extractionMethod} != 'model_interpretation') OR ${table.aiInvocationId} IS NOT NULL`,
+    ),
+    // Seniority requires a job title
+    check(
+      "contacts_seniority_requires_title",
+      sql`${table.seniorityId} IS NULL OR ${table.jobTitle} IS NOT NULL`,
     ),
     index("contacts_company_id_idx").on(table.companyId),
   ],

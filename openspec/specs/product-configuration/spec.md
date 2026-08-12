@@ -1,9 +1,7 @@
 ## Purpose
 
 Defines the platform's domain vocabulary — target markets, industries, offered services, lead lifecycle, priority bands, outreach channels and scoring weights — as validated configuration data, so the business definition of the product can change without changing application code.
-
-## ADDED Requirements
-
+## Requirements
 ### Requirement: Target markets are configuration
 
 The system SHALL define its target countries and cities as configuration data. Each country entry SHALL carry a stable identifier, a display name, an ISO 3166-1 alpha-2 code, and an enabled flag. Each city entry SHALL carry a stable identifier, a display name, and the identifier of the country it belongs to. The system SHALL NOT hardcode country or city names in application logic.
@@ -150,3 +148,81 @@ The system SHALL validate all product configuration against an explicit schema w
 
 - **WHEN** a consumer attempts to modify a loaded configuration value at runtime
 - **THEN** the modification is rejected and the configuration remains unchanged
+
+### Requirement: The verification rule is configuration
+
+The system SHALL declare the verification rule as validated configuration naming each check, whether it is required, whether it is sufficient on its own, its timeout, and the staleness window after which a verdict must be re-derived. The rule SHALL be validated at load time: a rule naming an unknown check, declaring no required check, or declaring a non-positive timeout or window SHALL fail immediately.
+
+#### Scenario: A rule naming an unknown check fails at load
+
+- **WHEN** the configured rule names a check identifier that no check implements
+- **THEN** loading the configuration fails with an error naming the unknown check
+
+#### Scenario: A rule with no required check fails at load
+
+- **WHEN** the configured rule marks no check as required
+- **THEN** loading the configuration fails stating that at least one check must be required
+
+#### Scenario: A non-positive staleness window fails at load
+
+- **WHEN** the staleness window is configured as zero or negative
+- **THEN** loading the configuration fails naming the setting
+
+#### Scenario: Changing which checks are required needs no code change
+
+- **WHEN** a check's required flag is changed in configuration
+- **THEN** the derived verdict changes accordingly with no change to verification logic
+
+### Requirement: Per-host politeness limits are configuration
+
+The system SHALL declare the minimum interval between requests to a single host and the maximum requests per company as validated configuration. The configuration SHALL contain no setting that permits ignoring `robots.txt`, defeating a challenge, or exceeding a host's declared limits.
+
+#### Scenario: A non-positive request interval fails at load
+
+- **WHEN** the per-host interval is configured as zero or negative
+- **THEN** loading the configuration fails naming the setting
+
+#### Scenario: There is no politeness override
+
+- **WHEN** the verification configuration schema is inspected
+- **THEN** it contains no field that would permit ignoring `robots.txt` or a host's declared limits
+
+### Requirement: Discovery sources are configuration, not code
+
+The system SHALL declare each discovery source as validated configuration carrying a unique identifier, a display name, its kind, whether it is enabled, the countries it covers, its maximum request rate, and whether it may be crawled. Adding or disabling a source SHALL be a configuration edit requiring no change to discovery logic. Configuration SHALL be validated at load time, and an invalid declaration SHALL fail immediately rather than at the first run.
+
+#### Scenario: A duplicate source identifier fails at load
+
+- **WHEN** two configured sources declare the same identifier
+- **THEN** loading the configuration fails with an error naming the duplicate
+
+#### Scenario: A source covering an unconfigured country fails at load
+
+- **WHEN** a source declares coverage of a country identifier that is not configured
+- **THEN** loading the configuration fails naming the source and the unknown country
+
+#### Scenario: A non-positive request rate fails at load
+
+- **WHEN** a source declares a maximum request rate of zero or less
+- **THEN** loading the configuration fails naming the source
+
+#### Scenario: Resolving an unknown source is refused
+
+- **WHEN** a source identifier that is not configured is resolved
+- **THEN** the call fails with an error naming the requested identifier and listing the configured ones
+- **AND** no default source is returned
+
+### Requirement: Crawl permission is explicit per source
+
+The system SHALL treat a source as not crawlable unless its configuration states otherwise. The configuration SHALL carry no setting that permits ignoring `robots.txt`, bypassing a bot check, or exceeding a source's declared crawl-delay.
+
+#### Scenario: Crawl permission defaults to denied
+
+- **WHEN** a source is configured without a crawl permission setting
+- **THEN** it is treated as not crawlable
+
+#### Scenario: There is no override for robots exclusion
+
+- **WHEN** the discovery source configuration schema is inspected
+- **THEN** it contains no field that would permit ignoring `robots.txt` or a declared crawl-delay
+

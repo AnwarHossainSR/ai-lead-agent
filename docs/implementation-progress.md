@@ -1,13 +1,41 @@
 # Implementation Progress
 
-## Current Status
+## Pipeline Status
 
-**`add-ai-provider-abstraction` in progress (30/39 tasks).** Provider transport, prompt registry, and the service layer are implemented. API wiring and documentation remain.
+### The pipeline, in order
 
-**Pipeline: not started.** Fifteen more changes are planned and validated in `openspec/changes/`.
-None has been applied.
+| Done | #   | Change                        | Depends on | Tasks |
+| ---- | --- | ----------------------------- | ---------- | ----- |
+| [x]  | 1   | `add-ai-provider-abstraction` | —          | 39    |
+| [x]  | 2   | `add-company-discovery`       | —          | 52    |
+| [x]  | 3   | `add-company-verification`    | 2          | 43    |
+| [x]  | 4   | `add-website-analysis`        | 3          | 55    |
+| [x]  | 5   | `add-technology-detection`    | 4          | 65    |
+| [ ]  | 6   | `add-opportunity-analysis`    | 1, 5       | 44    |
+| [x]  | 7   | `add-decision-maker-research` | 3, 4       | 49    |
+| [ ]  | 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
+| [ ]  | 9   | `add-research-summary`        | 8          | 43    |
+| [ ]  | 10  | `add-outreach-drafting`       | 9          | 43    |
+| [ ]  | 11  | `add-outreach-tracking`       | 10         | 51    |
 
-## Completed
+### Infrastructure and surface
+
+| Done | #   | Change                | Depends on                          | Tasks |
+| ---- | --- | --------------------- | ----------------------------------- | ----- |
+| [ ]  | 12  | `add-background-jobs` | 2–11                                | 52    |
+| [ ]  | 13  | `add-dashboard`       | 8, 11                               | 50    |
+| [ ]  | 14  | `add-authentication`  | — for the API; 13 for its UI half   | 51    |
+| [ ]  | 15  | `add-observability`   | — for logging; 12 for queue metrics | 48    |
+| [ ]  | 16  | `add-deployment`      | 14, 15                              | 55    |
+
+### What can be built in parallel
+
+- **1, 2, 14 and 15** have no dependency on each other and can start immediately.
+- The chain **3 → 4 → 5** is strictly sequential.
+- **6 and 7** can run in parallel once 4 is done.
+- Everything from **8** onward is sequential.
+
+## Completed Changes
 
 ### bootstrap-project-foundation — archived 2026-08-11
 
@@ -23,43 +51,83 @@ Delivered: pnpm + Turborepo monorepo; Docker Compose stack; `@mela/config`, `@me
 `@mela/database`; NestJS API with a Terminus health endpoint; Next.js 16 web shell; GitHub
 Actions running lint, typecheck, test and build with no deployment step.
 
-## Planned changes
+### add-ai-provider-abstraction — archived 2026-08-12
 
-Sixteen changes, all with proposal, spec deltas, design and tasks, all passing
-`openspec validate --strict`. Arrows are hard dependencies.
+AI provider abstraction with prompt registry, versioned prompts, and spend ceiling.
 
-### The pipeline, in order
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `ai-provider`           | provider interface, Gemini + Cloudflare implementations, retry, errors, prompt registry, AIService                         |
+| `product-configuration` | AI model tiers, prompt configuration                                                                                       |
+| `developer-environment` | AI environment variables, provider setup                                                                                   |
 
-| #   | Change                        | Depends on | Tasks |
-| --- | ----------------------------- | ---------- | ----- |
-| 1   | `add-ai-provider-abstraction` | —          | 39    |
-| 2   | `add-company-discovery`       | —          | 52    |
-| 3   | `add-company-verification`    | 2          | 43    |
-| 4   | `add-website-analysis`        | 3          | 55    |
-| 5   | `add-technology-detection`    | 4          | 44    |
-| 6   | `add-opportunity-analysis`    | 1, 5       | 44    |
-| 7   | `add-decision-maker-research` | 3, 4       | 49    |
-| 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
-| 9   | `add-research-summary`        | 8          | 43    |
-| 10  | `add-outreach-drafting`       | 9          | 43    |
-| 11  | `add-outreach-tracking`       | 10         | 51    |
+Delivered: `AIProvider` interface with Gemini and Cloudflare implementations; `AIService` with prompt resolution, output validation, cost estimation, and spend ceiling; prompt registry with versioned modules; retry logic; error handling.
 
-### Infrastructure and surface
+### add-company-discovery — archived 2026-08-12
 
-| #   | Change                | Depends on                          | Tasks |
-| --- | --------------------- | ----------------------------------- | ----- |
-| 12  | `add-background-jobs` | 2–11                                | 52    |
-| 13  | `add-dashboard`       | 8, 11                               | 50    |
-| 14  | `add-authentication`  | — for the API; 13 for its UI half   | 51    |
-| 15  | `add-observability`   | — for logging; 12 for queue metrics | 48    |
-| 16  | `add-deployment`      | 14, 15                              | 55    |
+Discovery of new companies across configured territories and industries.
 
-### What can be built in parallel
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `company-discovery`     | source configuration, database schema, file-import adapter, places adapter, rate limiting, deduplication, run orchestration |
+| `product-configuration` | discovery source configs, territory settings                                                                               |
+| `lead-data-model`       | discovery_runs, discovery_run_sources, company_discovery_sources tables                                                    |
 
-- **1, 2, 14 and 15** have no dependency on each other and can start immediately.
-- The chain **3 → 4 → 5** is strictly sequential.
-- **6 and 7** can run in parallel once 4 is done.
-- Everything from **8** onward is sequential.
+Delivered: Pluggable discovery sources (file_import, places); rate limiting with token buckets; deterministic deduplication; run orchestration with limits; API endpoints for runs and candidates; documentation.
+
+### add-company-verification — archived 2026-08-12
+
+Verification of discovered companies via deterministic checks and registry lookups.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `company-verification`  | verification rule, checks (DNS, HTTP, domain-name-match, registry), verdict derivation, service, API endpoints             |
+| `product-configuration` | verification rule config, politeness settings, registry configs                                                             |
+| `lead-data-model`       | verification_checks table, verification enums, verification columns on companies                                           |
+
+Delivered: Verification rule configuration with frozen validated data; database schema with evidence-required CHECK constraint; four deterministic checks with injected dependencies; pure `deriveState` function; `VerificationService` orchestrating checks and persisting results; three API endpoints for single/batch verification and state retrieval.
+
+### add-website-analysis — archived 2026-08-12
+
+Website analysis captures company web presence using headless browsers, runs quality audits, and records observations.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `website-analysis`      | configuration, schema, fixture site, browser capture, artifacts, observation rules, politeness, API endpoints              |
+| `product-configuration` | analysis config, viewport settings, observation rules                                                                      |
+| `lead-data-model`       | website_analysis table, analysis outcomes, score columns                                                                   |
+
+Delivered: Analysis configuration with viewports and observation rules; Playwright capture at desktop and mobile viewports; Lighthouse scoring via CDP; artifact storage; observation rules for issues; politeness with robots.txt; API endpoints for triggering and retrieving analyses.
+
+### add-technology-detection — archived 2026-08-12
+
+Technology detection identifies the software stack behind a company's website.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `technology-detection`  | fingerprint configuration, database schema, matcher service, implications, integration with analysis                        |
+| `product-configuration` | fingerprint patterns, match locations, technology categories                                                               |
+| `lead-data-model`       | technology_detections table, detection outcomes                                                                            |
+
+Delivered: Curated fingerprint patterns; database schema for detections; deterministic matcher service; version extraction from evidence; implication resolution; integration with website analysis; documentation.
+
+### add-decision-maker-research — archived 2026-08-12
+
+Contact research finds people at companies who could be contacted.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `decision-maker-research`| seniority levels, role patterns, deterministic extraction, model extraction, seniority classification, deliverability checks |
+| `product-configuration` | contact research config, conventional paths                                                                                |
+| `lead-data-model`       | contacts table updates, contact_research_runs table, new enums                                                             |
+
+Delivered: Seniority classification with Arabic/English patterns; deterministic extraction (mailto, tel, structured data); model extraction with grounding check; MX-based deliverability via DNS-over-HTTPS; ResearchService orchestrating extraction and persistence; API endpoints for research, listing, and deletion; documentation.
+
+## Next Module
+
+**`add-opportunity-analysis` (Change #6)** — Analyzes company websites to identify business opportunities based on technology stack, website quality, and contact availability. Depends on `add-ai-provider-abstraction` (1) and `add-technology-detection` (5), both complete. Ready to start.
+
+After that: `add-lead-scoring-engine` (8) → `add-research-summary` (9) → `add-outreach-drafting` (10) → `add-outreach-tracking` (11).
 
 ## New capabilities these changes introduce
 
@@ -86,14 +154,13 @@ Each change also carries deltas against the three existing capabilities where it
 
 | Package          | Test files | Tests | Status  |
 | ---------------- | ---------- | ----- | ------- |
-| `@mela/config`   | 9          | 119   | passing |
+| `@mela/config`   | 16         | 235   | passing |
 | `@mela/shared`   | 3          | 66    | passing |
-| `@mela/database` | 7          | 82    | passing |
-| `@mela/ai`       | 7          | 76    | passing |
-| `@mela/api`      | 8          | 44    | passing |
+| `@mela/database` | 9          | 142   | passing |
+| `@mela/ai`       | 8          | 85    | passing |
+| `@mela/api`      | 39         | 319   | passing |
 | `@mela/web`      | 5          | —     | passing |
 
 ## Next step
 
-Apply a change with `/opsx:apply <change-name>`. `add-ai-provider-abstraction`,
-`add-company-discovery`, `add-authentication` and `add-observability` are all unblocked.
+Apply a change with `/opsx:apply <change-name>`. `add-opportunity-analysis` (6) and `add-decision-maker-research` (7) are now unblocked.

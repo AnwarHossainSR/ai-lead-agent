@@ -2,10 +2,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { contacts } from "../schema/contacts";
 import { expectConstraintViolation } from "../testing/constraints";
-import { companyInput, contactInput } from "../testing/fixtures";
+import { companyInput, contactInput, aiInvocationInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
 import { insertCompany } from "./companies";
-import { insertContact } from "./contacts";
+import { insertContact, deleteContactsForCompany } from "./contacts";
+import { insertAIInvocation } from "./ai-invocations";
 import { WriteValidationError } from "./errors";
 
 let harness: TestDatabase;
@@ -36,6 +37,110 @@ describe("a researched contact", () => {
     expect(row.name).toBe("Example Contact");
     expect(row.jobTitle).toBe("Operations Director");
     expect(row.certainty).toBe("observed");
+  });
+
+  it("stores extraction method", async () => {
+    const row = await insertContact(
+      harness.database,
+      contactInput(companyId, { extractionMethod: "deterministic" }),
+    );
+
+    expect(row.extractionMethod).toBe("deterministic");
+  });
+
+  it("stores seniority ID", async () => {
+    const row = await insertContact(
+      harness.database,
+      contactInput(companyId, { seniorityId: "c-level", jobTitle: "CEO" }),
+    );
+
+    expect(row.seniorityId).toBe("c-level");
+    expect(row.jobTitle).toBe("CEO");
+  });
+
+  it("stores role source URL", async () => {
+    const row = await insertContact(
+      harness.database,
+      contactInput(companyId, { roleSourceUrl: "https://example.com/about" }),
+    );
+
+    expect(row.roleSourceUrl).toBe("https://example.com/about");
+  });
+
+  it("stores mail deliverability", async () => {
+    const row = await insertContact(
+      harness.database,
+      contactInput(companyId, { mailDeliverability: "receivable" }),
+    );
+
+    expect(row.mailDeliverability).toBe("receivable");
+  });
+});
+
+describe("interpreted contacts require invocation", () => {
+  it("refuses model_interpretation without ai_invocation_id", async () => {
+    await expectConstraintViolation(
+      harness.database.insert(contacts).values({
+        id: "019fecbb-0000-7000-8001-000000000000",
+        companyId,
+        name: "Interpreted Contact",
+        certainty: "inferred",
+        extractionMethod: "model_interpretation",
+        researchSource: "model extraction",
+        sourceUrl: "https://example.com/team",
+      }),
+      "contacts_interpreted_requires_invocation",
+    );
+  });
+
+  it("accepts model_interpretation with ai_invocation_id", async () => {
+    // First create an AI invocation to reference
+    const invocation = await insertAIInvocation(
+      harness.database,
+      aiInvocationInput(),
+    );
+
+    const row = await insertContact(
+      harness.database,
+      contactInput(companyId, {
+        extractionMethod: "model_interpretation",
+        aiInvocationId: invocation.id,
+      }),
+    );
+
+    expect(row.extractionMethod).toBe("model_interpretation");
+    expect(row.aiInvocationId).toBe(invocation.id);
+  });
+});
+
+describe("seniority requires job title", () => {
+  it("refuses seniority_id without job_title", async () => {
+    await expectConstraintViolation(
+      harness.database.insert(contacts).values({
+        id: "019fecbb-0000-7000-8003-000000000000",
+        companyId,
+        name: "Senior Contact",
+        certainty: "observed",
+        extractionMethod: "deterministic",
+        seniorityId: "c-level",
+        researchSource: "team page",
+        sourceUrl: "https://example.com/team",
+      }),
+      "contacts_seniority_requires_title",
+    );
+  });
+
+  it("accepts seniority_id with job_title", async () => {
+    const row = await insertContact(
+      harness.database,
+      contactInput(companyId, {
+        seniorityId: "c-level",
+        jobTitle: "CEO",
+      }),
+    );
+
+    expect(row.seniorityId).toBe("c-level");
+    expect(row.jobTitle).toBe("CEO");
   });
 });
 
@@ -78,6 +183,7 @@ describe("contact details without a source", () => {
         name: "Example Contact",
         email: "guessed@example.ae",
         certainty: "inferred",
+        extractionMethod: "deterministic",
         researchSource: "pattern guess",
         sourceUrl: null,
       }),
@@ -110,5 +216,44 @@ describe("certainty", () => {
         contactInput(companyId, { certainty: "guessed" as "observed" }),
       ),
     ).rejects.toThrow(WriteValidationError);
+  });
+});
+
+describe("deleteContactsForCompany", () => {
+  it("deletes all contacts for a company", async () => {
+    // Create some contacts
+    await insertContact(harness.database, contactInput(companyId));
+    await insertContact(
+      harness.database,
+      contactInput(companyId, { name: "Second Contact" }),
+    );
+
+    // Verify they exist
+    const before = await harness.database.select().from(contacts);
+    expect(before).toHaveLength(2);
+
+    // Delete them
+    await deleteContactsForCompany(harness.database, companyId);
+
+    // Verify they're gone
+    const after = await harness.database.select().from(contacts);
+    expect(after).toHaveLength(0);
+  });
+
+  it("does not delete contacts for other companies", async () => {
+    // Create a second company
+    const otherCompany = await insertCompany(harness.database, companyInput());
+
+    // Create contacts for both companies
+    await insertContact(harness.database, contactInput(companyId));
+    await insertContact(harness.database, contactInput(otherCompany.id));
+
+    // Delete contacts for first company
+    await deleteContactsForCompany(harness.database, companyId);
+
+    // Verify only first company's contacts are gone
+    const remaining = await harness.database.select().from(contacts);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0].companyId).toBe(otherCompany.id);
   });
 });

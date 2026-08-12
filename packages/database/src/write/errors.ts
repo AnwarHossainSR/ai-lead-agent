@@ -87,6 +87,7 @@ export class RecordNotFoundError extends Error {
 }
 
 const UNIQUE_VIOLATION = "23505";
+const FOREIGN_KEY_VIOLATION = "23503";
 
 /**
  * True when `error` is PostgreSQL's unique-violation on the named constraint.
@@ -111,6 +112,29 @@ export function isUniqueViolation(error: unknown, constraint: string): boolean {
     };
 
     if (code === UNIQUE_VIOLATION && constraintName === constraint) {
+      return true;
+    }
+
+    candidate = (candidate as { cause?: unknown }).cause;
+  }
+
+  return false;
+}
+
+/**
+ * True when `error` is PostgreSQL's foreign-key violation.
+ */
+export function isForeignKeyViolation(error: unknown): boolean {
+  let candidate: unknown = error;
+
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (typeof candidate !== "object" || candidate === null) {
+      return false;
+    }
+
+    const { code } = candidate as { code?: unknown };
+
+    if (code === FOREIGN_KEY_VIOLATION) {
       return true;
     }
 

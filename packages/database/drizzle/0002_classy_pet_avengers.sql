@@ -43,7 +43,6 @@ CREATE TABLE "discovery_runs" (
 	CONSTRAINT "discovery_runs_duration_limit_positive" CHECK ("discovery_runs"."duration_limit_seconds" >= 1)
 );
 --> statement-breakpoint
-ALTER TABLE "companies" ADD COLUMN "discovery_run_id" uuid;--> statement-breakpoint
 ALTER TABLE "company_discovery_sources" ADD CONSTRAINT "company_discovery_sources_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "discovery_run_sources" ADD CONSTRAINT "discovery_run_sources_run_id_discovery_runs_id_fk" FOREIGN KEY ("run_id") REFERENCES "public"."discovery_runs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "discovery_run_sources_run_source_key" ON "discovery_run_sources" USING btree ("run_id","source_id");--> statement-breakpoint

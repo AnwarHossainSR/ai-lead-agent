@@ -137,3 +137,101 @@ export const discoverySourceOutcomeEnum = pgEnum(
   "discovery_source_outcome",
   DISCOVERY_SOURCE_OUTCOMES,
 );
+
+/**
+ * Outcome of one verification check. `passed` and `failed` require evidence;
+ * `unknown` means the check could not determine anything (timeout, block,
+ * missing registry).
+ */
+export const VERIFICATION_VERDICTS = ["passed", "failed", "unknown"] as const;
+
+export type VerificationVerdict = (typeof VERIFICATION_VERDICTS)[number];
+
+export const verificationVerdictEnum = pgEnum("verification_verdict", VERIFICATION_VERDICTS);
+
+/**
+ * A company's derived verification state. `never_checked` is the initial
+ * state; the rest are derived from check results.
+ */
+export const COMPANY_VERIFICATION_STATES = [
+  "never_checked",
+  "verified",
+  "unverified",
+  "unreachable",
+] as const;
+
+export type CompanyVerificationState = (typeof COMPANY_VERIFICATION_STATES)[number];
+
+export const companyVerificationStateEnum = pgEnum(
+  "company_verification_state",
+  COMPANY_VERIFICATION_STATES,
+);
+
+/**
+ * Outcome of a website analysis attempt. `completed` means the full pipeline
+ * ran; the rest record specific failure modes.
+ */
+export const WEBSITE_ANALYSIS_OUTCOMES = [
+  "completed",
+  "partial",
+  "blocked",
+  "skipped",
+  "failed",
+] as const;
+
+export type WebsiteAnalysisOutcome = (typeof WEBSITE_ANALYSIS_OUTCOMES)[number];
+
+export const websiteAnalysisOutcomeEnum = pgEnum(
+  "website_analysis_outcome",
+  WEBSITE_ANALYSIS_OUTCOMES,
+);
+
+/**
+ * Contact extraction method: how the contact was obtained.
+ */
+export const CONTACT_EXTRACTION_METHODS = [
+  "deterministic",
+  "model_interpretation",
+  "manual_entry",
+] as const;
+
+export type ContactExtractionMethod = (typeof CONTACT_EXTRACTION_METHODS)[number];
+
+export const contactExtractionMethodEnum = pgEnum(
+  "contact_extraction_method",
+  CONTACT_EXTRACTION_METHODS,
+);
+
+/**
+ * Mail deliverability state for an email domain.
+ */
+export const MAIL_DELIVERABILITY_STATES = [
+  "receivable",
+  "not_receivable",
+  "unknown",
+] as const;
+
+export type MailDeliverability = (typeof MAIL_DELIVERABILITY_STATES)[number];
+
+export const mailDeliverabilityEnum = pgEnum(
+  "mail_deliverability",
+  MAIL_DELIVERABILITY_STATES,
+);
+
+/**
+ * Contact research run outcome.
+ */
+export const CONTACT_RESEARCH_OUTCOMES = [
+  "contacts_found",
+  "none_found",
+  "blocked",
+  "skipped",
+  "failed",
+] as const;
+
+export type ContactResearchOutcome = (typeof CONTACT_RESEARCH_OUTCOMES)[number];
+
+export const contactResearchOutcomeEnum = pgEnum(
+  "contact_research_outcome",
+  CONTACT_RESEARCH_OUTCOMES,
+);

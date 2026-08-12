@@ -94,6 +94,53 @@ export const apiEnvSchema = z.object({
   AI_SPEND_WINDOW_HOURS: positiveInteger
     .default(24)
     .describe("Rolling window, in hours, over which AI_SPEND_CEILING_USD is enforced."),
+
+  // ---------------------------------------------------------------------------
+  // Discovery sources
+  // ---------------------------------------------------------------------------
+
+  PLACES_API_KEY: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .describe(
+      "API key for the licensed places provider. When absent the places source is disabled for the run.",
+    ),
+
+  PLACES_BASE_URL: httpUrl
+    .default("https://api.places.example.com/v1")
+    .describe("Base URL for the licensed places provider."),
+
+  // ---------------------------------------------------------------------------
+  // Website analysis
+  // ---------------------------------------------------------------------------
+
+  ANALYSIS_ARTIFACT_ROOT: z
+    .string()
+    .min(1, "Expected a path for ANALYSIS_ARTIFACT_ROOT.")
+    .default("./analysis-artifacts")
+    .describe(
+      "Directory where analysis artifacts (screenshots, HTML, audit reports) are stored. Created at startup if absent.",
+    ),
+
+  ANALYSIS_NAVIGATION_TIMEOUT_MS: positiveInteger
+    .default(30_000)
+    .describe(
+      "Maximum time in milliseconds to wait for a page to reach its load condition. Exceeding this ends the analysis with a timeout reason.",
+    ),
+
+  ANALYSIS_RUN_TIMEOUT_MS: positiveInteger
+    .default(120_000)
+    .describe(
+      "Maximum total time in milliseconds for an entire analysis run including capture and audit. Exceeding this ends the analysis with a timeout reason.",
+    ),
+
+  ANALYSIS_MAX_PAGE_BYTES: positiveInteger
+    .default(10 * 1024 * 1024)
+    .describe(
+      "Maximum allowed page weight in bytes. Exceeding this ends the analysis with a weight limit reason.",
+    ),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

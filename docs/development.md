@@ -81,6 +81,30 @@ pnpm --filter @mela/web test
 pnpm --filter @mela/web test:ui
 ```
 
+## Website Analysis
+
+### Browser Installation
+
+The website analysis module uses Playwright for browser capture. Install the browser before running analysis tests:
+
+```bash
+# Install Playwright browsers (Chromium only)
+npx playwright install chromium
+
+# Or install all browsers
+npx playwright install
+```
+
+### Artifact Directory
+
+Analysis artifacts (screenshots, HTML, audit reports) are stored in `./analysis-artifacts` by default. This directory is gitignored.
+
+To change the location, set `ANALYSIS_ARTIFACT_ROOT` in your `.env` file:
+
+```
+ANALYSIS_ARTIFACT_ROOT=/path/to/artifacts
+```
+
 ## Troubleshooting on Windows
 
 ### Port Already in Use
