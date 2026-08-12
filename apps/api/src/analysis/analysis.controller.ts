@@ -1,10 +1,28 @@
 import {
+  Body,
   Controller,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
+  Post,
 } from "@nestjs/common";
+import { z } from "zod";
 
+import { createZodDto } from "../validation/zod-dto";
 import { AnalysisService } from "./analysis.service";
+
+/**
+ * Zod schema for the POST /api/companies/:id/analysis request body.
+ */
+const startAnalysisBodySchema = z.object({
+  unverifiedOverride: z.boolean().default(false),
+});
+
+/**
+ * DTO for the POST /api/companies/:id/analysis request body.
+ */
+export class StartAnalysisDto extends createZodDto(startAnalysisBodySchema) {}
 
 /**
  * The analysis controller owns the API surface for website analysis.
@@ -12,6 +30,32 @@ import { AnalysisService } from "./analysis.service";
 @Controller("companies")
 export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}
+
+  /**
+   * POST /api/companies/:id/analysis — start an analysis.
+   */
+  @Post(":id/analysis")
+  @HttpCode(HttpStatus.ACCEPTED)
+  async startAnalysis(
+    @Param("id") id: string,
+    @Body() body: StartAnalysisDto,
+  ): Promise<{
+    readonly companyId: string;
+    readonly status: string;
+    readonly message: string;
+  }> {
+    const eligibility = await this.analysisService.checkEligibility(id);
+
+    if (!eligibility.eligible) {
+      throw new NotFoundException(eligibility.reason);
+    }
+
+    return {
+      companyId: id,
+      status: "accepted",
+      message: "Analysis accepted for processing",
+    };
+  }
 
   /**
    * GET /api/companies/:id/analysis/latest — get the latest analysis.
@@ -53,7 +97,6 @@ export class AnalysisController {
     readonly companyId: string;
     readonly analyses: readonly Record<string, unknown>[];
   }> {
-    // For now, return the latest analysis
     const analysis = await this.analysisService.getLatestAnalysis(id);
 
     return {
