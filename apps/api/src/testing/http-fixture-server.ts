@@ -28,7 +28,10 @@ export type FixtureRoute =
   | { kind: "timeout" }
   | { kind: "block"; status: number; body?: string }
   | { kind: "redirect"; status: number; location: string }
-  | { kind: "error"; status: number };
+  | { kind: "error"; status: number }
+  | { kind: "html"; body: string; status?: number; headers?: Record<string, string> }
+  | { kind: "oversized"; sizeBytes: number }
+  | { kind: "robots"; content: string };
 
 const DEFAULT_ROUTES: Record<string, FixtureRoute> = {
   "/ok": { kind: "ok" },
@@ -42,6 +45,21 @@ const DEFAULT_ROUTES: Record<string, FixtureRoute> = {
   "/redirect/chain": { kind: "redirect", status: 301, location: "/redirect/302" },
   "/redirect/302": { kind: "redirect", status: 302, location: "/ok" },
   "/error/500": { kind: "error", status: 500 },
+  // Analysis-specific routes
+  "/good": {
+    kind: "html",
+    body: "<!DOCTYPE html><html><head><title>Good Site</title><meta name='description' content='A good site'><link rel='icon' href='/favicon.ico'></head><body><h1>Welcome</h1></body></html>",
+  },
+  "/console-errors": {
+    kind: "html",
+    body: "<!DOCTYPE html><html><head><title>Console Errors</title></head><body><script>console.error('test error');</script></body></html>",
+  },
+  "/never-loading": { kind: "timeout" },
+  "/challenge": { kind: "block", status: 403, body: "Access Denied - Challenge" },
+  "/restrictive-robots": {
+    kind: "robots",
+    content: "User-agent: *\nDisallow: /private/\nDisallow: /admin/\n",
+  },
 };
 
 function handleRequest(
@@ -96,6 +114,30 @@ function handleRequest(
     case "error":
       res.writeHead(route.status);
       res.end("error");
+      return;
+
+    case "html":
+      res.writeHead(route.status ?? 200, {
+        "content-type": "text/html",
+        ...route.headers,
+      });
+      res.end(route.body);
+      return;
+
+    case "oversized": {
+      const chunk = "x".repeat(1024);
+      const chunks = Math.ceil(route.sizeBytes / 1024);
+      res.writeHead(200, { "content-type": "text/html" });
+      for (let i = 0; i < chunks; i++) {
+        res.write(chunk);
+      }
+      res.end();
+      return;
+    }
+
+    case "robots":
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end(route.content);
       return;
   }
 }
