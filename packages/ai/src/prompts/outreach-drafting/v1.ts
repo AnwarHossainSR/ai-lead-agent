@@ -29,16 +29,15 @@ const claimSchema = z.object({
   cites: z.array(z.string().trim().min(1)).min(1, "Expected at least one citation."),
 });
 
-const outputSchema = z.object({
+export const outputSchema = z.object({
   subject: z.string().trim().min(1).optional(),
   body: z.string().trim().min(1, "Expected a message body."),
   claims: z.array(claimSchema).min(1),
 });
 
-export type OutreachDraftingInput = z.infer<typeof outreachDraftingInputSchema>;
-export type OutreachDraftingOutput = z.infer<typeof outputSchema>;
+export const outreachDraftingOutputSchema = outputSchema;
 
-const outreachDraftingInputSchema = z.object({
+export const outreachDraftingInputSchema = z.object({
   channel: z.object({
     id: z.string().trim().min(1),
     name: z.string().trim().min(1),
@@ -88,7 +87,8 @@ const outreachDraftingInputSchema = z.object({
     .min(1),
 });
 
-export { outreachDraftingInputSchema, outputSchema };
+export type OutreachDraftingInput = z.infer<typeof outreachDraftingInputSchema>;
+export type OutreachDraftingOutput = z.infer<typeof outputSchema>;
 
 function render(input: OutreachDraftingInput): RenderedPrompt {
   const subjectInstruction = input.channel.subjectApplies
@@ -144,7 +144,13 @@ ${subjectInstruction}
   }
 
   lines.push(`\nContact:`);
-  const contactDetails = [input.contact.name, input.contact.jobTitle, input.contact.email, input.contact.phone, input.contact.linkedinUrl]
+  const contactDetails = [
+    input.contact.name,
+    input.contact.jobTitle,
+    input.contact.email,
+    input.contact.phone,
+    input.contact.linkedinUrl,
+  ]
     .filter(Boolean)
     .join(", ");
   lines.push(`- ${contactDetails}`);

@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  ConfigurationError,
   DEFAULT_PROHIBITED_CLAIM_CATEGORIES,
   findProhibitedClaimCategory,
   parseProhibitedClaimCategories,
-  prohibitedClaimCategoriesSchema,
   resolveProhibitedClaimCategory,
 } from "./research-summary";
 

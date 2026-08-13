@@ -15,7 +15,7 @@
 | [x]  | 7   | `add-decision-maker-research` | 3, 4       | 49    |
 | [x]  | 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
 | [x]  | 9   | `add-research-summary`        | 8          | 43    |
-| [ ]  | 10  | `add-outreach-drafting`       | 9          | 43    |
+| [x]  | 10  | `add-outreach-drafting`       | 9          | 43    |
 | [ ]  | 11  | `add-outreach-tracking`       | 10         | 51    |
 
 ### Infrastructure and surface
@@ -159,11 +159,23 @@ Synthesizes gathered evidence into a concise, cited summary for outreach.
 
 Delivered: Research summary v1 prompt with structured sections and citation requirements; prohibited claim configuration with 6 default categories and safe pattern validation; input assembly mapping company evidence to prompt format; deterministic screening removing prohibited claims; derived unknown facts identifying missing evidence; `ResearchSummaryService` orchestrating evidence gathering, model call, screening and persistence; API endpoints for generating and retrieving summaries; database migration with CHECK constraints; full test suite passes.
 
+### add-outreach-drafting — completed 2026-08-13
+
+Drafts personalised outreach messages grounded in lead evidence, with human approval and no automatic sending.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `outreach-drafting`     | versioned prompt, channel constraints, prohibited content categories, citation screening, input assembly, service, API endpoints, workflow tests |
+| `product-configuration` | outreach channel config with tone/length constraints, automated sending forbidden, prohibited content categories with safe regex patterns |
+| `lead-data-model`       | outreach table with provenance columns, approval/revocation timestamps, text hash, rejection reason, CHECK constraints enforcing approval order and text integrity |
+
+Delivered: Outreach-drafting v1 prompt with per-channel tone and length constraints; prohibited content configuration with 5 default categories and safe pattern validation; input assembly from lead evidence, opportunities, contact and service catalogue; deterministic citation and content screening; `OutreachDraftingService` orchestrating model call, grounding and draft persistence; workflow endpoints for draft, submit, approve, reject, cancel and edit; database migration adding provenance columns and 7 CHECK constraints; absence-of-transport tests; full API test suite passes.
+
 ## Next Module
 
-**`add-outreach-drafting` (Change #10)** — Drafts outreach messages for leads. Depends on `add-research-summary` (9), now complete. Ready to start.
+**`add-outreach-tracking` (Change #11)** — Tracks outreach message status and responses. Depends on `add-outreach-drafting` (10), now complete. Ready to start.
 
-After that: `add-outreach-tracking` (11).
+After that: `add-background-jobs` (12).
 
 ## New capabilities these changes introduce
 

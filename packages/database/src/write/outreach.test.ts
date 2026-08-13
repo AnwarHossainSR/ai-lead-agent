@@ -1,6 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { automatedSendingIsForbiddenEverywhere } from "@mela/config";
 import { eq } from "drizzle-orm";
-import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { outreach } from "../schema/outreach";
@@ -321,19 +321,17 @@ describe("database constraints", () => {
 
   it("reject a generated body without an invocation reference", async () => {
     await expectConstraintViolation(
-      harness.database
-        .insert(outreach)
-        .values({
-          id: randomUUID(),
-          leadId,
-          channel: "email",
-          messageBody: "Manual body.",
-          generatedBody: "Generated body.",
-          aiInvocationId: null,
-          status: "draft",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
+      harness.database.insert(outreach).values({
+        id: randomUUID(),
+        leadId,
+        channel: "email",
+        messageBody: "Manual body.",
+        generatedBody: "Generated body.",
+        aiInvocationId: null,
+        status: "draft",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
       "outreach_generated_requires_invocation",
     );
   });

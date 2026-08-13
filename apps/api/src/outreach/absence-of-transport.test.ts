@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { apiEnvSchema } from "@mela/config/env";
-import { OutreachModule } from "./outreach.module";
 
 const FORBIDDEN_DEPENDENCY_PATTERNS = [
   /nodemailer/i,

@@ -192,28 +192,47 @@ Stores scored leads for outreach.
 
 ### outreach
 
-Tracks outreach attempts to contacts.
+Tracks outreach message drafts, approvals, and state transitions.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | UUID | Primary key |
 | lead_id | UUID | Foreign key to leads |
-| contact_id | UUID | Foreign key to contacts |
 | channel | outreach_channel | Communication channel |
+| subject | TEXT | Message subject (nullable for channels without subjects) |
+| message_body | TEXT | Message body |
 | status | outreach_status | Current status |
-| message_content | TEXT | Message body |
+| generated_subject | TEXT | AI-generated subject |
+| generated_body | TEXT | AI-generated body |
+| is_human_edited | BOOLEAN | Whether a human has edited the text |
+| prompt_version | INTEGER | Version of the drafting prompt used |
+| ai_invocation_id | UUID | Foreign key to ai_invocations |
+| cited_facts | JSONB | Fact identifiers cited in the message |
 | approved_at | TIMESTAMP | Approval timestamp |
 | sent_at | TIMESTAMP | Send timestamp |
-| opened_at | TIMESTAMP | Open timestamp |
-| replied_at | TIMESTAMP | Reply timestamp |
+| responded_at | TIMESTAMP | Response timestamp |
+| approval_revoked_at | TIMESTAMP | When approval was revoked by editing |
+| approved_text_hash | TEXT | MD5 of subject + body at approval time |
+| rejection_reason | TEXT | Reason for rejection |
+| rejected_at | TIMESTAMP | Rejection timestamp |
+| notes | TEXT | Operator notes |
+| is_example | BOOLEAN | Whether this is an example record |
 | created_at | TIMESTAMP | Creation timestamp |
 | updated_at | TIMESTAMP | Last update timestamp |
 
 **Constraints:**
 - `outreach_lead_id_fk` - Foreign key to leads
-- `outreach_contact_id_fk` - Foreign key to contacts
-- `outreach_sent_requires_approval_check` - Cannot be sent without approval
-- `outreach_sent_after_approval_check` - Sent timestamp must be after approval
+- `outreach_ai_invocation_id_ai_invocations_id_fk` - Foreign key to ai_invocations
+- `outreach_generated_requires_invocation` - Generated body requires an AI invocation
+- `outreach_sent_requires_approval` - Cannot be sent/replied/bounced without approval
+- `outreach_sent_at_requires_approved_at` - Sent timestamp requires approval timestamp
+- `outreach_sent_at_not_before_approved_at` - Sent cannot be before approval
+- `outreach_responded_at_requires_sent_at` - Response requires sent timestamp
+- `outreach_approved_text_hash_matches` - Approved text hash must match current text
+- `outreach_rejection_requires_reason` - Rejection requires a non-blank reason
+
+**Indexes:**
+- `outreach_lead_status_idx` (on `lead_id`, `status`)
 
 ### discovery_runs
 

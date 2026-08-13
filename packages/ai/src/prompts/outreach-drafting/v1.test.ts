@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { z } from "zod";
-import { outreachDraftingInputSchema, outputSchema } from "./v1";
+import { outputSchema, outreachDraftingInputSchema } from "./v1";
 
 describe("outreach drafting output schema shape", () => {
   it("parses a draft with subject and body", () => {

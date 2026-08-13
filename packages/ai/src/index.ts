@@ -36,4 +36,11 @@ export {
   type ResearchSummaryOutput,
 } from "./prompts/research-summary/v1";
 
+export {
+  outreachDraftingInputSchema,
+  outreachDraftingOutputSchema,
+  type OutreachDraftingInput,
+  type OutreachDraftingOutput,
+} from "./prompts/outreach-drafting/v1";
+
 export { FakeAIProvider, type FakeProviderScenario } from "./testing/fake-provider";

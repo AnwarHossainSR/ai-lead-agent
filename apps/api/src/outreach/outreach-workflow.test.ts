@@ -2,10 +2,9 @@ import { Test } from "@nestjs/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AIService } from "@mela/ai";
-import { eq } from "drizzle-orm";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { companyInput, contactInput, leadInput } from "@mela/database/testing/fixtures";
-import { insertCompany, insertContact, insertLead, insertOutreachDraft } from "@mela/database";
+import { companyInput, leadInput } from "@mela/database/testing/fixtures";
+import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 
@@ -22,7 +21,6 @@ describe("outreach workflow", () => {
     const company = await insertCompany(harness.database, companyInput());
     companyId = company.id;
 
-    const contact = await insertContact(harness.database, contactInput(companyId));
     const lead = await insertLead(harness.database, leadInput(companyId));
     leadId = lead.id;
 

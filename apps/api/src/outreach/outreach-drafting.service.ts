@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import { eq } from "drizzle-orm";
 import type { AIService } from "@mela/ai";
+import type { OutreachDraftingOutput } from "@mela/ai";
 import type { Database, OutreachRow } from "@mela/database";
 import {
   approveOutreach,
@@ -57,13 +58,6 @@ export class OutreachDraftingService {
 
     const companyId = lead.companyId;
 
-    let company: import("@mela/database").CompanyRow;
-    try {
-      company = await this.getCompany(companyId);
-    } catch {
-      return { reason: `Company ${companyId} not found.` };
-    }
-
     let evidence: import("@mela/database").CompanyEvidence;
     try {
       evidence = await this.gatherEvidence(companyId);
@@ -103,8 +97,8 @@ export class OutreachDraftingService {
       contactId: input.contactId,
       channelId: input.channelId,
       summary: {
-        sections: summary.sections,
-        citedFacts: summary.citedFacts,
+        sections: summary.sections as readonly string[],
+        citedFacts: summary.citedFacts as readonly string[],
       },
     };
 
@@ -167,7 +161,7 @@ export class OutreachDraftingService {
     };
   }
 
-  private async getLead(leadId: string) {
+  private async getLead(leadId: string): Promise<LeadRow> {
     const [lead] = await this.database
       .select()
       .from(require("@mela/database").leads)
@@ -178,21 +172,7 @@ export class OutreachDraftingService {
       throw new Error(`Lead ${leadId} not found.`);
     }
 
-    return lead;
-  }
-
-  private async getCompany(companyId: string) {
-    const [company] = await this.database
-      .select()
-      .from(require("@mela/database").companies)
-      .where(eq(require("@mela/database").companies.id, companyId))
-      .limit(1);
-
-    if (company === undefined) {
-      throw new Error(`Company ${companyId} not found.`);
-    }
-
-    return company;
+    return lead as LeadRow;
   }
 
   private async gatherEvidence(companyId: string) {

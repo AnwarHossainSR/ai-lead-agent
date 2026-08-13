@@ -82,7 +82,7 @@ export function assembleOutreachDraftingInput(
       maxBodyLength: channel.maxBodyLength,
     },
     summary: {
-      sections: facts.summary.sections,
+      sections: Array.from(facts.summary.sections),
       citedFacts,
     },
     opportunities,

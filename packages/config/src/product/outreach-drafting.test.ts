@@ -4,7 +4,6 @@ import {
   DEFAULT_PROHIBITED_CONTENT_CATEGORIES,
   findProhibitedContentCategory,
   parseProhibitedContentCategories,
-  prohibitedContentCategoriesSchema,
   resolveProhibitedContentCategory,
 } from "./outreach-drafting";
 

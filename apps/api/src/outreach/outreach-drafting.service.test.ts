@@ -2,7 +2,6 @@ import { Test } from "@nestjs/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AIService } from "@mela/ai";
-import { eq } from "drizzle-orm";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { insertCompany, insertLead } from "@mela/database";

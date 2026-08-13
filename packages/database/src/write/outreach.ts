@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
 import { and, eq } from "drizzle-orm";
-import { createHash } from "node:crypto";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -264,7 +264,10 @@ export async function listOutreach(
   executor: Executor,
   filters?: { status?: OutreachRow["status"]; leadId?: string },
 ): Promise<OutreachRow[]> {
-  const conditions: (ReturnType<typeof eq<typeof outreach.status>> | ReturnType<typeof eq<typeof outreach.leadId>>)[] = [];
+  const conditions: (
+    | ReturnType<typeof eq<typeof outreach.status>>
+    | ReturnType<typeof eq<typeof outreach.leadId>>
+  )[] = [];
   if (filters?.status !== undefined) {
     conditions.push(eq(outreach.status, filters.status));
   }
@@ -272,7 +275,12 @@ export async function listOutreach(
     conditions.push(eq(outreach.leadId, filters.leadId));
   }
 
-  const whereClause = conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : and(...conditions)) : undefined;
+  const whereClause =
+    conditions.length > 0
+      ? conditions.length === 1
+        ? conditions[0]
+        : and(...conditions)
+      : undefined;
 
   return executor.select().from(outreach).where(whereClause);
 }

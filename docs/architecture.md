@@ -145,6 +145,33 @@ Sources are configured in `packages/config/src/product/discovery-sources.ts` wit
 - **Deterministic deduplication** — domain first, then name within country, no LLM involvement
 - **Human approval before outreach** — discovery finds companies; outreach requires explicit approval
 
+## Outreach Drafting and Approval
+
+Outreach drafts are AI-generated messages grounded in stored lead evidence. The module stores drafts and records approvals; it does not send messages.
+
+### No Send Path
+
+There is no transport, no mail client, no scheduler, and no credential for an external sending service. The API environment schema declares no SMTP, SendGrid, Mailgun, or equivalent keys. The `outreach` table has no `sent_by` column and no transport reference.
+
+### Approval and Revocation
+
+- A draft starts in `draft` state.
+- `POST /api/outreach/:id/submit` moves it to `pending_approval`.
+- `POST /api/outreach/:id/approve` moves it to `approved` with a server-side timestamp.
+- Editing an approved record revokes approval, returns it to `draft`, and records `approval_revoked_at`. This ensures the text a person read is the text that goes out.
+
+### Database Constraints
+
+The `outreach` table enforces these rules at the database level so no application code path can bypass them:
+
+- `outreach_generated_requires_invocation` — a generated body must carry an `ai_invocation_id`.
+- `outreach_sent_requires_approval` — a record cannot be `sent`, `replied`, or `bounced` without both `approved_at` and `sent_at`.
+- `outreach_sent_at_requires_approved_at` — `sent_at` cannot exist without `approved_at`.
+- `outreach_sent_at_not_before_approved_at` — `sent_at` cannot be earlier than `approved_at`.
+- `outreach_responded_at_requires_sent_at` — `responded_at` cannot exist without `sent_at`.
+- `outreach_approved_text_hash_matches` — an approved record's `approved_text_hash` must equal the MD5 of its current subject and body, catching hand-written updates after approval.
+- `outreach_rejection_requires_reason` — a `rejected_at` timestamp requires a non-blank `rejection_reason`.
+
 ## Company Verification
 
 Verification confirms whether a discovered company's online presence is reachable and matches expectations. It runs deterministic checks (DNS, HTTP, domain-name-match) and optional registry lookups.
