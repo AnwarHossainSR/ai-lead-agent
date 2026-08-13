@@ -25,7 +25,8 @@
     "@nestjs/terminus": "catalog:",
     "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
-    "bullmq": "catalog:",
+    "@upstash/qstash": "catalog:",
+    "@upstash/qstash": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "zod": "catalog:"
