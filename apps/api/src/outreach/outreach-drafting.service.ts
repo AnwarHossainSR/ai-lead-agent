@@ -5,10 +5,12 @@ import type { AIService } from "@mela/ai";
 import type { OutreachDraftingOutput } from "@mela/ai";
 import type { Database, OutreachRow } from "@mela/database";
 import {
+  applyLeadStatusChange,
   approveOutreach,
   cancelOutreach,
   getCurrentLeadResearchSummary,
   insertOutreachDraft,
+  insertOutreachResponse,
   listOutreach,
   recordOutreachSend,
   rejectOutreach,
@@ -16,7 +18,14 @@ import {
   updateOutreachText,
   type LeadRow,
 } from "@mela/database";
-import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
+import { outreachResponseClassificationInputSchema } from "@mela/ai";
+import type { OutreachResponseClassificationOutput } from "@mela/ai";
+import {
+  DEFAULT_RESPONSE_CATEGORIES,
+  NO_RESPONSE_INTERVAL_DAYS,
+  OUTREACH_CHANNELS,
+  type OutreachChannelId,
+} from "@mela/config";
 import { DATABASE } from "../database/database.module";
 import { type OutreachDraftingFacts, assembleOutreachDraftingInput } from "./outreach-drafting.input";
 import { screenOutreachDraft } from "./outreach-drafting.grounding";
@@ -41,6 +50,14 @@ export interface DraftOutreachRefusal {
 }
 
 export type DraftOutreachResponse = DraftOutreachResult | DraftOutreachRefusal;
+
+export interface ClassifyResponseResult {
+  readonly outreachId: string;
+  readonly categoryId: string;
+  readonly basisText: string;
+  readonly isClassified: boolean;
+  readonly proposedTransition: string | null;
+}
 
 @Injectable()
 export class OutreachDraftingService {
@@ -215,5 +232,136 @@ export class OutreachDraftingService {
       sentAt: body.sentAt,
       means: body.means,
     });
+  }
+
+  async classifyResponse(outreachId: string, replyText: string): Promise<ClassifyResponseResult> {
+    const [outreach] = await this.database
+      .select()
+      .from(require("@mela/database").outreach)
+      .where(eq(require("@mela/database").outreach.id, outreachId))
+      .limit(1);
+
+    if (outreach === undefined) {
+      throw new Error(`Outreach ${outreachId} not found.`);
+    }
+
+    const channel = OUTREACH_CHANNELS.find((c) => c.id === outreach.channel);
+    const categories = DEFAULT_RESPONSE_CATEGORIES.map((c) => ({
+      id: c.id,
+      name: c.name,
+      description: c.name,
+    }));
+
+    const input = outreachResponseClassificationInputSchema.parse({
+      replyText,
+      outreachChannel: channel?.name ?? outreach.channel,
+      categories,
+    });
+
+    const aiResult = await this.aiService.run<OutreachResponseClassificationOutput>(
+      "outreach-response-classification",
+      1,
+      input,
+    );
+
+    const output = aiResult.value;
+    const basisText = output.basisText.trim();
+    const isGrounded = basisText.length > 0 && replyText.includes(basisText);
+
+    const category = isGrounded
+      ? output.categoryId
+      : "unclassified";
+    const finalBasis = isGrounded
+      ? basisText
+      : "The proposed basis text was not found in the reply.";
+
+    const proposedTransition = isGrounded
+      ? DEFAULT_RESPONSE_CATEGORIES.find((c) => c.id === category)?.proposedTransition ?? null
+      : null;
+
+    return {
+      outreachId,
+      categoryId: category,
+      basisText: finalBasis,
+      isClassified: isGrounded,
+      proposedTransition,
+    };
+  }
+
+  async recordResponse(outreachId: string, body: {
+    categoryId: string;
+    receivedAt: Date;
+    body?: string;
+    proposedCategoryId?: string;
+    aiInvocationId?: string;
+  }): Promise<{ outreachId: string; responseId: string; leadStatus: string }> {
+    const [outreach] = await this.database
+      .select()
+      .from(require("@mela/database").outreach)
+      .where(eq(require("@mela/database").outreach.id, outreachId))
+      .limit(1);
+
+    if (outreach === undefined) {
+      throw new Error(`Outreach ${outreachId} not found.`);
+    }
+
+    const category = DEFAULT_RESPONSE_CATEGORIES.find((c) => c.id === body.categoryId);
+    if (category === undefined) {
+      throw new Error(`Unknown response category "${body.categoryId}".`);
+    }
+
+    const response = await insertOutreachResponse(this.database, {
+      outreachId,
+      kind: "replied",
+      receivedAt: body.receivedAt,
+      body: body.body ?? null,
+      proposedCategoryId: body.proposedCategoryId ?? null,
+      confirmedCategoryId: body.categoryId,
+      aiInvocationId: body.aiInvocationId ?? null,
+    });
+
+    const lead = await applyLeadStatusChange(this.database, outreach.leadId, category.proposedTransition as any);
+
+    return {
+      outreachId,
+      responseId: response.id,
+      leadStatus: lead.status,
+    };
+  }
+
+  async recordNoResponse(outreachId: string, receivedAt: Date): Promise<{ outreachId: string; responseId: string }> {
+    const [outreach] = await this.database
+      .select()
+      .from(require("@mela/database").outreach)
+      .where(eq(require("@mela/database").outreach.id, outreachId))
+      .limit(1);
+
+    if (outreach === undefined) {
+      throw new Error(`Outreach ${outreachId} not found.`);
+    }
+
+    if (outreach.sentAt === null) {
+      throw new Error("Outreach has not been sent.");
+    }
+
+    const elapsedDays = (receivedAt.getTime() - outreach.sentAt.getTime()) / (1000 * 60 * 60 * 24);
+    if (elapsedDays < NO_RESPONSE_INTERVAL_DAYS) {
+      throw new Error(`No-response can only be recorded after ${NO_RESPONSE_INTERVAL_DAYS} days.`);
+    }
+
+    const response = await insertOutreachResponse(this.database, {
+      outreachId,
+      kind: "no_response",
+      receivedAt,
+      body: null,
+      proposedCategoryId: null,
+      confirmedCategoryId: "unclassified",
+      aiInvocationId: null,
+    });
+
+    return {
+      outreachId,
+      responseId: response.id,
+    };
   }
 }

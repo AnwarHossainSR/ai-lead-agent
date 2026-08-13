@@ -1,5 +1,8 @@
+import { eq } from "drizzle-orm";
 import { Test } from "@nestjs/testing";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { type INestApplication } from "@nestjs/common";
+import request from "supertest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AIService } from "@mela/ai";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
@@ -7,6 +10,7 @@ import { companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
+import { createTestApp } from "../testing/app";
 
 describe("recordOutreachSent", () => {
   let harness: TestDatabase;
