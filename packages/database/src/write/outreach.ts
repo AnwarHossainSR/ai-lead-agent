@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
-import { and, desc, eq } from "drizzle-orm";
+import { type SQL, and, count, desc, eq, gte } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -263,11 +263,47 @@ export async function rejectOutreach(
   });
 }
 
-export interface ListOutreachFilters {
+export interface OutreachFilters {
   readonly status?: OutreachRow["status"];
   readonly leadId?: string;
+  /** Keeps only records sent at or after this time. */
+  readonly sentAfter?: Date;
+}
+
+export interface ListOutreachFilters extends OutreachFilters {
   readonly limit?: number;
   readonly offset?: number;
+}
+
+/** Shared by listOutreach and countOutreach, so the two never disagree about what a filter means. */
+function buildOutreachConditions(filters?: OutreachFilters): SQL[] {
+  const conditions: SQL[] = [];
+
+  if (filters?.status !== undefined) {
+    conditions.push(eq(outreach.status, filters.status));
+  }
+  if (filters?.leadId !== undefined) {
+    conditions.push(eq(outreach.leadId, filters.leadId));
+  }
+  if (filters?.sentAfter !== undefined) {
+    conditions.push(gte(outreach.sentAt, filters.sentAfter));
+  }
+
+  return conditions;
+}
+
+export async function countOutreach(
+  executor: Executor,
+  filters?: OutreachFilters,
+): Promise<number> {
+  const conditions = buildOutreachConditions(filters);
+
+  const [row] = await executor
+    .select({ value: count() })
+    .from(outreach)
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+  return row?.value ?? 0;
 }
 
 /**
@@ -278,25 +314,13 @@ export async function listOutreach(
   executor: Executor,
   filters?: ListOutreachFilters,
 ): Promise<OutreachRow[]> {
-  const conditions: (
-    | ReturnType<typeof eq<typeof outreach.status>>
-    | ReturnType<typeof eq<typeof outreach.leadId>>
-  )[] = [];
-  if (filters?.status !== undefined) {
-    conditions.push(eq(outreach.status, filters.status));
-  }
-  if (filters?.leadId !== undefined) {
-    conditions.push(eq(outreach.leadId, filters.leadId));
-  }
+  const conditions = buildOutreachConditions(filters);
 
-  const whereClause =
-    conditions.length > 0
-      ? conditions.length === 1
-        ? conditions[0]
-        : and(...conditions)
-      : undefined;
-
-  let query = executor.select().from(outreach).where(whereClause).orderBy(desc(outreach.createdAt));
+  let query = executor
+    .select()
+    .from(outreach)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(outreach.createdAt));
 
   if (filters?.limit !== undefined) {
     query = query.limit(filters.limit) as typeof query;

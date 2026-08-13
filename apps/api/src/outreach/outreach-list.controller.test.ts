@@ -3,9 +3,11 @@ import request from "supertest";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  approveOutreach,
   insertCompany,
   insertLead,
   insertOutreachDraft,
+  recordOutreachSend,
   submitOutreachForApproval,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
@@ -98,5 +100,45 @@ describe("GET /api/outreach", () => {
       .expect(200);
 
     expect(page.body).toHaveLength(2);
+  });
+});
+
+describe("GET /api/outreach/count", () => {
+  it("counts by status, and by sentAfter for a 'sent this week' style query", async () => {
+    const company = await insertCompany(harness.database, companyInput());
+    const lead = await insertLead(harness.database, leadInput(company.id));
+
+    const toSend = await draftFor(lead.id, "Will be sent.");
+    await submitOutreachForApproval(harness.database, toSend.id);
+    await approveOutreach(harness.database, toSend.id);
+
+    // sentAt must not precede the approval timestamp the server just
+    // stamped, so it is set slightly in the future rather than backdated.
+    const sentAt = new Date(Date.now() + 1_000);
+    await recordOutreachSend(harness.database, { outreachId: toSend.id, sentAt, means: "gmail" });
+
+    await draftFor(lead.id, "Still a draft.");
+
+    const totalSent = await request(app?.getHttpServer())
+      .get("/api/outreach/count?status=sent")
+      .expect(200);
+    expect(totalSent.body).toEqual({ count: 1 });
+
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const sentSinceAnHourAgo = await request(app?.getHttpServer())
+      .get(`/api/outreach/count?status=sent&sentAfter=${oneHourAgo}`)
+      .expect(200);
+    expect(sentSinceAnHourAgo.body).toEqual({ count: 1 });
+
+    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const sentSinceAnHourFromNow = await request(app?.getHttpServer())
+      .get(`/api/outreach/count?status=sent&sentAfter=${oneHourFromNow}`)
+      .expect(200);
+    expect(sentSinceAnHourFromNow.body).toEqual({ count: 0 });
+
+    const drafts = await request(app?.getHttpServer())
+      .get("/api/outreach/count?status=draft")
+      .expect(200);
+    expect(drafts.body).toEqual({ count: 1 });
   });
 });

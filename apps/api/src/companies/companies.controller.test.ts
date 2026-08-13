@@ -186,3 +186,24 @@ describe("GET /api/companies/:id/opportunities", () => {
     expect(response.body).toEqual([]);
   });
 });
+
+describe("GET /api/companies/count", () => {
+  it("counts companies matching the same filters as the list endpoint", async () => {
+    await insertCompany(
+      harness.database,
+      companyInput({ name: "Logistics Co", industryId: "logistics" }),
+    );
+    await insertCompany(
+      harness.database,
+      companyInput({ name: "Hospitality Co", industryId: "hospitality" }),
+    );
+
+    const total = await request(app?.getHttpServer()).get("/api/companies/count").expect(200);
+    expect(total.body).toEqual({ count: 2 });
+
+    const filtered = await request(app?.getHttpServer())
+      .get("/api/companies/count?industryId=logistics")
+      .expect(200);
+    expect(filtered.body).toEqual({ count: 1 });
+  });
+});

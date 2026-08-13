@@ -5,7 +5,7 @@ import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
 import { CompaniesService } from "./companies.service";
 
-const listCompaniesQuerySchema = z.object({
+const companyFiltersSchema = z.object({
   verificationState: z
     .enum([...COMPANY_VERIFICATION_STATES] as [
       CompanyVerificationState,
@@ -15,12 +15,16 @@ const listCompaniesQuerySchema = z.object({
   countryId: z.string().min(1).optional(),
   cityId: z.string().min(1).optional(),
   industryId: z.string().min(1).optional(),
+});
+
+const listCompaniesQuerySchema = companyFiltersSchema.extend({
   order: z.enum(["created_desc", "name_asc"]).default("created_desc"),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
 class ListCompaniesQueryDto extends createZodDto(listCompaniesQuerySchema) {}
+class CountCompaniesQueryDto extends createZodDto(companyFiltersSchema) {}
 
 @Controller("companies")
 export class CompaniesController {
@@ -37,6 +41,12 @@ export class CompaniesController {
       limit: query.limit,
       offset: query.offset,
     });
+  }
+
+  @Get("count")
+  async countCompanies(@Query() query: CountCompaniesQueryDto) {
+    const value = await this.companiesService.countCompanies(query);
+    return { count: value };
   }
 
   @Get(":id/opportunities")

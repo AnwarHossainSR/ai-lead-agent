@@ -18,6 +18,7 @@ import {
   cancelOutreach,
   clearCompanyDoNotContact,
   clearContactDoNotContact,
+  countOutreach,
   getCurrentLeadResearchSummary,
   insertOutreachDraft,
   insertOutreachResponse,
@@ -229,6 +230,15 @@ export class OutreachDraftingService {
       offset: filters?.offset,
     });
     return rows;
+  }
+
+  async countOutreach(filters?: { status?: string; leadId?: string; sentAfter?: Date }) {
+    const status = filters?.status as OutreachRow["status"] | undefined;
+    return countOutreach(this.database, {
+      status,
+      leadId: filters?.leadId,
+      sentAfter: filters?.sentAfter,
+    });
   }
 
   async updateOutreach(outreachId: string, changes: { subject?: string; messageBody?: string }) {

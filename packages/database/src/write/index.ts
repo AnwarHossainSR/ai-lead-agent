@@ -97,6 +97,7 @@ export {
 export {
   approveOutreach,
   cancelOutreach,
+  countOutreach,
   insertOutreachDraft,
   insertOutreachInputSchema,
   insertOutreachResponse,
@@ -111,6 +112,8 @@ export {
   updateOutreachText,
   type InsertOutreachInput,
   type InsertOutreachResponseInput,
+  type ListOutreachFilters,
+  type OutreachFilters,
   type RecordOutreachSendInput,
 } from "./outreach";
 

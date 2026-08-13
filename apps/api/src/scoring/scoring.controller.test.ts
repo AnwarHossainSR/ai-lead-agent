@@ -152,3 +152,42 @@ describe("GET /api/leads", () => {
     expect(freshOnly.body).toHaveLength(0);
   });
 });
+
+describe("GET /api/leads/count", () => {
+  it("counts leads matching the same filters as the list endpoint", async () => {
+    const logisticsCo = await insertCompany(
+      harness.database,
+      companyInput({ name: "Logistics Co", industryId: "logistics" }),
+    );
+    const hospitalityCo = await insertCompany(
+      harness.database,
+      companyInput({ name: "Hospitality Co", industryId: "hospitality" }),
+    );
+
+    await insertLead(harness.database, leadInput(logisticsCo.id, { scores: VERY_HIGH_SCORES }));
+    await insertLead(harness.database, leadInput(hospitalityCo.id, { scores: LOW_SCORES }));
+
+    const total = await request(app?.getHttpServer()).get("/api/leads/count").expect(200);
+    expect(total.body).toEqual({ count: 2 });
+
+    const filtered = await request(app?.getHttpServer())
+      .get("/api/leads/count?industryId=logistics")
+      .expect(200);
+    expect(filtered.body).toEqual({ count: 1 });
+  });
+
+  it("excludes terminal-status leads when active=true", async () => {
+    const company = await insertCompany(harness.database, companyInput({ name: "Won Co" }));
+    const lead = await insertLead(harness.database, leadInput(company.id, { scores: LOW_SCORES }));
+
+    await harness.database.update(leads).set({ status: "won" }).where(eq(leads.id, lead.id));
+
+    const active = await request(app?.getHttpServer())
+      .get("/api/leads/count?active=true")
+      .expect(200);
+    expect(active.body).toEqual({ count: 0 });
+
+    const all = await request(app?.getHttpServer()).get("/api/leads/count").expect(200);
+    expect(all.body).toEqual({ count: 1 });
+  });
+});

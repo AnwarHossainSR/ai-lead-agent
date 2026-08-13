@@ -9,14 +9,17 @@ import {
   opportunityAnalysisRuns,
   websiteAnalysis,
 } from "@mela/database";
-import { type SQL, and, asc, desc, eq, inArray } from "drizzle-orm";
+import { type SQL, and, asc, count, desc, eq, inArray } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 
-export interface ListCompaniesOptions {
+export interface CompanyFilters {
   readonly verificationState?: CompanyVerificationState;
   readonly countryId?: string;
   readonly cityId?: string;
   readonly industryId?: string;
+}
+
+export interface ListCompaniesOptions extends CompanyFilters {
   readonly order?: "created_desc" | "name_asc";
   readonly limit?: number;
   readonly offset?: number;
@@ -77,7 +80,7 @@ export interface ListedCompany {
 export class CompaniesService {
   constructor(@Inject(DATABASE) private readonly database: Database) {}
 
-  async listCompanies(options: ListCompaniesOptions = {}): Promise<ListedCompany[]> {
+  private buildCompanyConditions(options: CompanyFilters): SQL[] {
     const conditions: SQL[] = [];
 
     if (options.verificationState) {
@@ -92,6 +95,23 @@ export class CompaniesService {
     if (options.industryId) {
       conditions.push(eq(companies.industryId, options.industryId));
     }
+
+    return conditions;
+  }
+
+  async countCompanies(options: CompanyFilters = {}): Promise<number> {
+    const conditions = this.buildCompanyConditions(options);
+
+    const [row] = await this.database
+      .select({ value: count() })
+      .from(companies)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    return row?.value ?? 0;
+  }
+
+  async listCompanies(options: ListCompaniesOptions = {}): Promise<ListedCompany[]> {
+    const conditions = this.buildCompanyConditions(options);
 
     const orderColumn =
       options.order === "name_asc" ? asc(companies.name) : desc(companies.createdAt);
