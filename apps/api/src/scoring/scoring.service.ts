@@ -1,23 +1,23 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 
-import { type Database, DATABASE } from "../database/database.module";
+import { DATABASE } from "../database/database.module";
 import {
   gatherCompanyEvidence,
   identifyEvidence,
   NoEvidenceForScoringError,
   assertEvidenceForScoring,
+  type Database,
 } from "@mela/database";
-import { INITIAL_LEAD_STATUS, classifyPriority } from "@mela/config";
 import { composeScores, type ScoringInput } from "./composer";
 import { formatExplanation } from "./formatter";
-import { validateScorersMatchWeights } from "./scorer";
 import {
   insertLead,
   updateLeadScore,
   type LeadRow,
 } from "@mela/database";
+import { type LeadPriority } from "@mela/config";
 import { insertLeadScoreSnapshot, compareSnapshots, leadScoreSnapshots, leads } from "@mela/database";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export interface ScoreCompanyInput {
   readonly companyId: string;
@@ -58,7 +58,7 @@ export interface RecomputeResult {
 }
 
 export interface ListLeadsOptions {
-  readonly priority?: string;
+  readonly priority?: LeadPriority;
   readonly minScore?: number;
   readonly maxScore?: number;
   readonly limit?: number;
@@ -276,17 +276,23 @@ export class ScoringService {
   }
 
   async listLeads(options: ListLeadsOptions = {}): Promise<LeadRow[]> {
-    let query = this.database.select().from(leads);
+    const conditions: ReturnType<typeof eq>[] = [];
 
     if (options.priority) {
-      query = query.where(eq(leads.priority, options.priority)) as any;
+      conditions.push(eq(leads.priority, options.priority));
     }
 
     if (options.minScore !== undefined) {
-      query = query.where(eq(leads.leadScore, options.minScore)) as any;
+      conditions.push(eq(leads.leadScore, options.minScore));
     }
 
-    query = query.orderBy(leads.leadScore.desc()) as any;
+    let query = this.database.select().from(leads);
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    query = query.orderBy(leads.leadScore) as any;
 
     if (options.limit) {
       query = query.limit(options.limit) as any;

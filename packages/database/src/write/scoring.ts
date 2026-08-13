@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 import { z } from "zod";
 
 import type { Executor } from "../client";
@@ -124,7 +124,7 @@ export async function listStaleLeads(executor: Executor, currentWeightVersion: n
   return executor
     .select()
     .from(leads)
-    .where(and(eq(leads.weightVersion, currentWeightVersion - 1)));
+    .where(and(lt(leads.weightVersion, currentWeightVersion)));
 }
 
 export type LeadScoreSnapshotWithDiff = {

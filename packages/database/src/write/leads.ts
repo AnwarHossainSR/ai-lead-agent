@@ -61,8 +61,6 @@ export const insertLeadInputSchema = z
       company_quality: componentScore,
     }),
 
-    // Required: a score whose reasoning is not written down cannot be argued
-    // with, corrected, or used to open a conversation.
     scoreExplanation: z
       .string()
       .trim()
@@ -74,6 +72,8 @@ export const insertLeadInputSchema = z
       .trim()
       .min(1, "Expected a reason or nothing at all; a blank string is not a reason.")
       .nullish(),
+
+    weightVersion: z.number().int().min(1).default(1),
 
     isExample: z.boolean().default(false),
   })
@@ -120,7 +120,7 @@ export async function insertLead(executor: Executor, input: InsertLeadInput): Pr
         contactReason: value.contactReason ?? null,
         status: INITIAL_LEAD_STATUS,
         isExample: value.isExample,
-        weightVersion: 1,
+        weightVersion: value.weightVersion,
         scoredAt: new Date(),
       } as const)
       .returning();
