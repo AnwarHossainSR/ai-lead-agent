@@ -9,7 +9,7 @@
     "pnpm": ">=11"
   },
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "pnpm --filter @mela/api dev & pnpm --filter @mela/api worker & pnpm --filter @mela/web dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

@@ -60,6 +60,7 @@ async function createPipeApp(): Promise<INestApplication> {
     ANALYSIS_NAVIGATION_TIMEOUT_MS: 30000,
     ANALYSIS_RUN_TIMEOUT_MS: 120000,
     ANALYSIS_MAX_PAGE_BYTES: 10485760,
+    WORKER_SHUTDOWN_TIMEOUT_MS: 30000,
   } satisfies ApiEnv);
 
   await app.init();
