@@ -6,13 +6,16 @@ import { companies } from "../schema/companies";
 import { contacts } from "../schema/contacts";
 import { leads } from "../schema/leads";
 import { verificationChecks } from "../schema/verification-checks";
+import { expectConstraintViolation } from "../testing/constraints";
 import { companyInput, contactInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
 import {
   applyVerificationResult,
+  clearCompanyDoNotContact,
   deriveVerificationState,
   insertCompany,
   listStaleCompanies,
+  setCompanyDoNotContact,
   updateCompany,
 } from "./companies";
 import { insertContact } from "./contacts";
@@ -597,5 +600,48 @@ describe("deriveVerificationState", () => {
 
     expect(result.state).toBe("unreachable");
     expect(result.verdict).toBe("unknown");
+  });
+});
+
+describe("do-not-contact markers", () => {
+  it("stores the marker with its reason and time", async () => {
+    const company = await insertCompany(harness.database, companyInput());
+
+    const marked = await setCompanyDoNotContact(harness.database, {
+      companyId: company.id,
+      reason: "Unsubscribe request",
+    });
+
+    expect(marked.doNotContactAt).toBeInstanceOf(Date);
+    expect(marked.doNotContactReason).toBe("Unsubscribe request");
+  });
+
+  it("refuses a blank reason via the database", async () => {
+    const company = await insertCompany(harness.database, companyInput());
+
+    await expectConstraintViolation(
+      harness.database
+        .update(companies)
+        .set({
+          doNotContactAt: new Date(),
+          doNotContactReason: "   ",
+        })
+        .where(eq(companies.id, company.id)),
+      "companies_do_not_contact_requires_reason",
+    );
+  });
+
+  it("clears the marker", async () => {
+    const company = await insertCompany(harness.database, companyInput());
+
+    await setCompanyDoNotContact(harness.database, {
+      companyId: company.id,
+      reason: "Unsubscribe request",
+    });
+
+    const cleared = await clearCompanyDoNotContact(harness.database, company.id);
+
+    expect(cleared.doNotContactAt).toBeNull();
+    expect(cleared.doNotContactReason).toBeNull();
   });
 });

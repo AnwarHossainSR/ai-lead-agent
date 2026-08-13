@@ -233,3 +233,16 @@ export {
   type ProhibitedContentCategoryId,
   type ProhibitedContentCategories,
 } from "./outreach-drafting";
+
+export {
+  DEFAULT_RESPONSE_CATEGORIES,
+  MINIMUM_REPORTING_SAMPLE_SIZE,
+  NO_RESPONSE_INTERVAL_DAYS,
+  OUTREACH_TRACKING_CONFIG,
+  findResponseCategory,
+  parseOutreachTrackingConfig,
+  parseResponseCategories,
+  resolveResponseCategory,
+  type ResponseCategory,
+  type OutreachTrackingConfig,
+} from "./outreach-tracking";

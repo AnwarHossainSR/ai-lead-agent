@@ -43,4 +43,11 @@ export {
   type OutreachDraftingOutput,
 } from "./prompts/outreach-drafting/v1";
 
+export {
+  outreachResponseClassificationInputSchema,
+  outreachResponseClassificationOutputSchema,
+  type OutreachResponseClassificationInput,
+  type OutreachResponseClassificationOutput,
+} from "./prompts/outreach-response-classification/v1";
+
 export { FakeAIProvider, type FakeProviderScenario } from "./testing/fake-provider";

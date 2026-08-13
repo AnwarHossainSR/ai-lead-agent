@@ -387,3 +387,60 @@ export async function listStaleCompanies(
 
   return rows;
 }
+
+export const setCompanyDoNotContactInputSchema = z.object({
+  companyId: z.string().uuid("Expected the company identifier."),
+  reason: z.string().trim().min(1, "Expected a non-blank reason."),
+});
+
+export type SetCompanyDoNotContactInput = z.input<typeof setCompanyDoNotContactInputSchema>;
+
+/**
+ * Marks a company as not to be contacted, recording the time and reason.
+ */
+export async function setCompanyDoNotContact(
+  executor: Executor,
+  input: SetCompanyDoNotContactInput,
+): Promise<CompanyRow> {
+  const value = parseInput("The do-not-contact marker", setCompanyDoNotContactInputSchema, input);
+
+  const [row] = await executor
+    .update(companies)
+    .set({
+      doNotContactAt: databaseNow(),
+      doNotContactReason: value.reason,
+      updatedAt: databaseNow(),
+    })
+    .where(eq(companies.id, value.companyId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("company", value.companyId);
+  }
+
+  return row;
+}
+
+/**
+ * Clears the do-not-contact marker on a company.
+ */
+export async function clearCompanyDoNotContact(
+  executor: Executor,
+  companyId: string,
+): Promise<CompanyRow> {
+  const [row] = await executor
+    .update(companies)
+    .set({
+      doNotContactAt: null,
+      doNotContactReason: null,
+      updatedAt: databaseNow(),
+    })
+    .where(eq(companies.id, companyId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("company", companyId);
+  }
+
+  return row;
+}

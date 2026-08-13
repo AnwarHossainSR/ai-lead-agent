@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { contacts } from "../schema/contacts";
@@ -6,7 +7,12 @@ import { aiInvocationInput, companyInput, contactInput } from "../testing/fixtur
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
 import { insertAIInvocation } from "./ai-invocations";
 import { insertCompany } from "./companies";
-import { deleteContactsForCompany, insertContact } from "./contacts";
+import {
+  clearContactDoNotContact,
+  deleteContactsForCompany,
+  insertContact,
+  setContactDoNotContact,
+} from "./contacts";
 import { WriteValidationError } from "./errors";
 
 let harness: TestDatabase;
@@ -249,5 +255,57 @@ describe("deleteContactsForCompany", () => {
     const remaining = await harness.database.select().from(contacts);
     expect(remaining).toHaveLength(1);
     expect(remaining[0]!.companyId).toBe(otherCompany.id);
+  });
+});
+
+describe("do-not-contact markers", () => {
+  it("stores the marker with its reason and time", async () => {
+    const contact = await insertContact(
+      harness.database,
+      contactInput(companyId, { jobTitle: "Operations Director" }),
+    );
+
+    const marked = await setContactDoNotContact(harness.database, {
+      contactId: contact.id,
+      reason: "Unsubscribe request",
+    });
+
+    expect(marked.doNotContactAt).toBeInstanceOf(Date);
+    expect(marked.doNotContactReason).toBe("Unsubscribe request");
+  });
+
+  it("refuses a blank reason via the database", async () => {
+    const contact = await insertContact(
+      harness.database,
+      contactInput(companyId, { jobTitle: "Operations Director" }),
+    );
+
+    await expectConstraintViolation(
+      harness.database
+        .update(contacts)
+        .set({
+          doNotContactAt: new Date(),
+          doNotContactReason: "   ",
+        })
+        .where(eq(contacts.id, contact.id)),
+      "contacts_do_not_contact_requires_reason",
+    );
+  });
+
+  it("clears the marker", async () => {
+    const contact = await insertContact(
+      harness.database,
+      contactInput(companyId, { jobTitle: "Operations Director" }),
+    );
+
+    await setContactDoNotContact(harness.database, {
+      contactId: contact.id,
+      reason: "Unsubscribe request",
+    });
+
+    const cleared = await clearContactDoNotContact(harness.database, contact.id);
+
+    expect(cleared.doNotContactAt).toBeNull();
+    expect(cleared.doNotContactReason).toBeNull();
   });
 });

@@ -15,7 +15,8 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "biome": "biome check --write .",
-    "biome:check": "biome check ."
+    "biome:check": "biome check .",
+    "db:fresh": "pnpm --filter @mela/database db:fresh"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

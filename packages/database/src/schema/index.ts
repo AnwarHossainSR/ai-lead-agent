@@ -21,6 +21,7 @@ export * from "./lead-research-summaries";
 export * from "./opportunity-analysis-runs";
 export * from "./opportunities";
 export * from "./outreach";
+export * from "./outreach-responses";
 export * from "./ai-invocations";
 export * from "./verification-checks";
 export * from "./relations";

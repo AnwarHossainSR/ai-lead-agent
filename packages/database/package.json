@@ -32,9 +32,11 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:reset": "tsx src/scripts/reset.ts",
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/scripts/seed.ts"
+    "db:seed": "tsx src/scripts/seed.ts",
+    "db:fresh": "pnpm db:reset && pnpm db:migrate && pnpm db:seed"
   },
   "dependencies": {
     "@mela/config": "workspace:*",

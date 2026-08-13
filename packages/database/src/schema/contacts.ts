@@ -55,6 +55,9 @@ export const contacts = pgTable(
 
     isExample: boolean("is_example").notNull().default(false),
 
+    doNotContactAt: timestamp("do_not_contact_at", { withTimezone: true }),
+    doNotContactReason: text("do_not_contact_reason"),
+
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -72,6 +75,10 @@ export const contacts = pgTable(
     check(
       "contacts_seniority_requires_title",
       sql`${table.seniorityId} IS NULL OR ${table.jobTitle} IS NOT NULL`,
+    ),
+    check(
+      "contacts_do_not_contact_requires_reason",
+      sql`${table.doNotContactAt} IS NULL OR length(btrim(${table.doNotContactReason})) > 0`,
     ),
     index("contacts_company_id_idx").on(table.companyId),
   ],
