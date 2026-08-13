@@ -5,6 +5,7 @@ import {
   index,
   integer,
   pgTable,
+  text,
   timestamp,
   uniqueIndex,
   uuid,
@@ -54,9 +55,6 @@ export const leads = pgTable(
     scoredAt: timestamp("scored_at", { withTimezone: true }).notNull().defaultNow(),
 
     isExample: boolean("is_example").notNull().default(false),
-
-    weightVersion: integer("weight_version").notNull(),
-    scoredAt: timestamp("scored_at", { withTimezone: true }).notNull(),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

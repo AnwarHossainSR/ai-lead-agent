@@ -1,6 +1,6 @@
 import type * as GenAI from "@google/genai" with { "resolution-mode": "import" };
 
-import { AIProviderError, AIProviderTimeoutError, type AIProviderConditionType } from "./errors";
+import { type AIProviderConditionType, AIProviderError, AIProviderTimeoutError } from "./errors";
 import type { AIMessage, AIProvider, AIProviderRequest, AIProviderResponse } from "./provider";
 import { withRetry } from "./retry";
 
@@ -122,7 +122,10 @@ function toContents(messages: readonly AIMessage[]): {
     .filter((message) => message.role === "user")
     .map((message) => ({ role: "user" as const, parts: [{ text: message.content }] }));
 
-  return { systemInstruction: systemInstruction.length > 0 ? systemInstruction : undefined, contents };
+  return {
+    systemInstruction: systemInstruction.length > 0 ? systemInstruction : undefined,
+    contents,
+  };
 }
 
 /**

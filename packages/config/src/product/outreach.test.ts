@@ -15,6 +15,24 @@ describe("configured channels", () => {
       "whatsapp",
     ]);
   });
+
+  it("each declare a tone, subject applicability and length limits", () => {
+    for (const channel of OUTREACH_CHANNELS) {
+      expect(channel.tone.length).toBeGreaterThan(0);
+      expect(typeof channel.subjectApplies).toBe("boolean");
+      expect(channel.maxSubjectLength).toBeGreaterThan(0);
+      expect(channel.maxBodyLength).toBeGreaterThan(0);
+    }
+  });
+
+  it("email has a subject and shorter limits than LinkedIn body", () => {
+    const email = resolveOutreachChannel("email");
+    const linkedin = resolveOutreachChannel("linkedin");
+
+    expect(email.subjectApplies).toBe(true);
+    expect(linkedin.subjectApplies).toBe(false);
+    expect(email.maxBodyLength).toBeLessThan(linkedin.maxBodyLength);
+  });
 });
 
 describe("automated sending", () => {
@@ -30,9 +48,67 @@ describe("automated sending", () => {
 
   it("cannot be enabled by editing configuration alone", () => {
     const load = (): unknown =>
-      parseOutreachChannels([{ id: "email", name: "Email", automatedSendingPermitted: true }]);
+      parseOutreachChannels([
+        {
+          id: "email",
+          name: "Email",
+          tone: "Professional",
+          subjectApplies: true,
+          maxSubjectLength: 120,
+          maxBodyLength: 2000,
+          automatedSendingPermitted: true,
+        },
+      ]);
 
     expect(load).toThrow(/0\.automatedSendingPermitted/);
+  });
+
+  it("rejects a channel with a non-positive max subject length", () => {
+    expect(() =>
+      parseOutreachChannels([
+        {
+          id: "email",
+          name: "Email",
+          tone: "Professional",
+          subjectApplies: true,
+          maxSubjectLength: 0,
+          maxBodyLength: 2000,
+          automatedSendingPermitted: false,
+        },
+      ]),
+    ).toThrow(/0\.maxSubjectLength/);
+  });
+
+  it("rejects a channel with a non-positive max body length", () => {
+    expect(() =>
+      parseOutreachChannels([
+        {
+          id: "email",
+          name: "Email",
+          tone: "Professional",
+          subjectApplies: true,
+          maxSubjectLength: 120,
+          maxBodyLength: -1,
+          automatedSendingPermitted: false,
+        },
+      ]),
+    ).toThrow(/0\.maxBodyLength/);
+  });
+
+  it("rejects a channel with a blank tone", () => {
+    expect(() =>
+      parseOutreachChannels([
+        {
+          id: "email",
+          name: "Email",
+          tone: "   ",
+          subjectApplies: true,
+          maxSubjectLength: 120,
+          maxBodyLength: 2000,
+          automatedSendingPermitted: false,
+        },
+      ]),
+    ).toThrow(/0\.tone/);
   });
 });
 

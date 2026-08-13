@@ -13,6 +13,8 @@ describe("ScoringService purity", () => {
 
   it("does not reference any HTTP client or fetch utility", () => {
     const source = require("fs").readFileSync(require.resolve("./scoring.service.ts"), "utf-8");
-    expect(source).not.toMatch(/fetch\(|http[s]?\.request|axios|got\(|superagent|HttpService|HttpClient/i);
+    expect(source).not.toMatch(
+      /fetch\(|http[s]?\.request|axios|got\(|superagent|HttpService|HttpClient/i,
+    );
   });
 });

@@ -79,13 +79,24 @@ export {
 } from "./scoring";
 
 export {
+  getCurrentLeadResearchSummary,
+  getLeadResearchSummaryHistory,
+  insertLeadResearchSummary,
+  insertLeadResearchSummaryInputSchema,
+  type InsertLeadResearchSummaryInput,
+} from "./lead-research-summaries";
+
+export {
   approveOutreach,
   cancelOutreach,
   insertOutreachDraft,
   insertOutreachInputSchema,
+  listOutreach,
   markOutreachSent,
   recordOutreachResponse,
+  rejectOutreach,
   submitOutreachForApproval,
+  updateOutreachText,
   type InsertOutreachInput,
 } from "./outreach";
 

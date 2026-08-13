@@ -1,5 +1,6 @@
+import { createHash } from "node:crypto";
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -56,8 +57,19 @@ export async function insertOutreachDraft(
       id: uuidv7(),
       leadId: value.leadId,
       channel: value.channel,
+      subject: null,
       messageBody: value.messageBody,
       status: "draft",
+      generatedSubject: null,
+      generatedBody: null,
+      isHumanEdited: false,
+      promptVersion: null,
+      aiInvocationId: null,
+      citedFacts: [],
+      rejectionReason: null,
+      rejectedAt: null,
+      approvalRevokedAt: null,
+      approvedTextHash: null,
       notes: value.notes ?? null,
       isExample: value.isExample,
     })
@@ -90,9 +102,101 @@ export async function approveOutreach(
   executor: Executor,
   outreachId: string,
 ): Promise<OutreachRow> {
-  return transition(executor, outreachId, ["draft", "pending_approval"], {
-    status: "approved",
-    approvedAt: databaseNow(),
+  const [current] = await executor
+    .select()
+    .from(outreach)
+    .where(eq(outreach.id, outreachId))
+    .limit(1);
+
+  if (current === undefined) {
+    throw new RecordNotFoundError("outreach", outreachId);
+  }
+
+  if (!["draft", "pending_approval"].includes(current.status)) {
+    throw new WriteValidationError("Approving outreach", [
+      `Outreach ${outreachId} is "${current.status}"; approval is reachable only from draft, pending_approval.`,
+    ]);
+  }
+
+  const approvedAt = databaseNow();
+  const textHash = createHash("md5")
+    .update(`${current.subject ?? ""}\n${current.messageBody}`)
+    .digest("hex");
+
+  const [row] = await executor
+    .update(outreach)
+    .set({
+      status: "approved",
+      approvedAt,
+      approvedTextHash: textHash,
+      updatedAt: approvedAt,
+    })
+    .where(eq(outreach.id, outreachId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("outreach", outreachId);
+  }
+
+  return row;
+}
+
+/**
+ * Edits the subject and/or body of an outreach record.
+ *
+ * When the record was approved, editing its text revokes the approval and
+ * returns it to `draft`, recording the revocation time. This ensures the text
+ * a person read is the text that goes out.
+ */
+export async function updateOutreachText(
+  executor: Executor,
+  outreachId: string,
+  changes: { subject?: string | null; messageBody?: string },
+): Promise<OutreachRow> {
+  const [current] = await executor
+    .select()
+    .from(outreach)
+    .where(eq(outreach.id, outreachId))
+    .limit(1);
+
+  if (current === undefined) {
+    throw new RecordNotFoundError("outreach", outreachId);
+  }
+
+  const hasSubjectChange = changes.subject !== undefined && changes.subject !== current.subject;
+  const hasBodyChange =
+    changes.messageBody !== undefined && changes.messageBody !== current.messageBody;
+  const textIsChanging = hasSubjectChange || hasBodyChange;
+
+  if (textIsChanging && current.status === "approved") {
+    const [row] = await executor
+      .update(outreach)
+      .set({
+        subject: changes.subject ?? current.subject,
+        messageBody: changes.messageBody ?? current.messageBody,
+        isHumanEdited: true,
+        status: "draft",
+        approvedAt: null,
+        approvalRevokedAt: databaseNow(),
+        updatedAt: databaseNow(),
+      })
+      .where(eq(outreach.id, outreachId))
+      .returning();
+
+    if (row === undefined) {
+      throw new RecordNotFoundError("outreach", outreachId);
+    }
+
+    return row;
+  }
+
+  const permittedFrom: readonly OutreachRow["status"][] = textIsChanging
+    ? (["draft", "pending_approval", "rejected"] as const)
+    : (["draft", "pending_approval", "rejected", "approved"] as const);
+
+  return transition(executor, outreachId, permittedFrom, {
+    ...changes,
+    isHumanEdited: textIsChanging || current.isHumanEdited,
   });
 }
 
@@ -131,8 +235,58 @@ export async function cancelOutreach(executor: Executor, outreachId: string): Pr
   });
 }
 
+/**
+ * Rejects an outreach record that is pending approval.
+ *
+ * Requires a non-blank reason. Once rejected, the record cannot be approved.
+ */
+export async function rejectOutreach(
+  executor: Executor,
+  outreachId: string,
+  reason: string,
+): Promise<OutreachRow> {
+  const trimmed = reason.trim();
+
+  if (trimmed.length === 0) {
+    throw new WriteValidationError("Rejecting outreach", [
+      "Expected a non-blank rejection reason.",
+    ]);
+  }
+
+  return transition(executor, outreachId, ["pending_approval"], {
+    status: "rejected",
+    rejectionReason: trimmed,
+    rejectedAt: databaseNow(),
+  });
+}
+
+export async function listOutreach(
+  executor: Executor,
+  filters?: { status?: OutreachRow["status"]; leadId?: string },
+): Promise<OutreachRow[]> {
+  const conditions: (
+    | ReturnType<typeof eq<typeof outreach.status>>
+    | ReturnType<typeof eq<typeof outreach.leadId>>
+  )[] = [];
+  if (filters?.status !== undefined) {
+    conditions.push(eq(outreach.status, filters.status));
+  }
+  if (filters?.leadId !== undefined) {
+    conditions.push(eq(outreach.leadId, filters.leadId));
+  }
+
+  const whereClause =
+    conditions.length > 0
+      ? conditions.length === 1
+        ? conditions[0]
+        : and(...conditions)
+      : undefined;
+
+  return executor.select().from(outreach).where(whereClause);
+}
+
 type OutreachChanges = Assignments<typeof outreach.$inferInsert> & {
-  readonly status: OutreachRow["status"];
+  readonly status?: OutreachRow["status"];
 };
 
 async function transition(

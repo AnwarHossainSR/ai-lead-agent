@@ -9,6 +9,10 @@ const SUBJECT = "Outreach channel configuration";
 export const outreachChannelSchema = z.object({
   id: identifierSchema,
   name: displayNameSchema,
+  tone: z.string().trim().min(1, "Expected a tone description for the channel."),
+  subjectApplies: z.boolean(),
+  maxSubjectLength: z.number().int().positive("Expected a positive maximum subject length."),
+  maxBodyLength: z.number().int().positive("Expected a positive maximum body length."),
 
   // z.literal(false) rather than z.boolean(): every outreach message in this
   // product requires human approval before it is sent, so a channel cannot be
@@ -31,9 +35,33 @@ export function parseOutreachChannels(raw: unknown): readonly OutreachChannel[] 
 }
 
 const OUTREACH_CHANNEL_DATA = [
-  { id: "email", name: "Email", automatedSendingPermitted: false },
-  { id: "linkedin", name: "LinkedIn", automatedSendingPermitted: false },
-  { id: "whatsapp", name: "WhatsApp", automatedSendingPermitted: false },
+  {
+    id: "email",
+    name: "Email",
+    tone: "Professional and direct",
+    subjectApplies: true,
+    maxSubjectLength: 120,
+    maxBodyLength: 2000,
+    automatedSendingPermitted: false,
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    tone: "Conversational and respectful",
+    subjectApplies: false,
+    maxSubjectLength: 200,
+    maxBodyLength: 3000,
+    automatedSendingPermitted: false,
+  },
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    tone: "Friendly and concise",
+    subjectApplies: false,
+    maxSubjectLength: 60,
+    maxBodyLength: 1500,
+    automatedSendingPermitted: false,
+  },
 ] as const;
 
 export const OUTREACH_CHANNELS = parseOutreachChannels(OUTREACH_CHANNEL_DATA);
