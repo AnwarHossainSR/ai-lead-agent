@@ -5,13 +5,19 @@ import type { AIService } from "@mela/ai";
 import { hydrateEnvironment } from "@mela/config/env";
 import {
   applyLeadStatusChange,
+  insertAIInvocation,
   insertCompany,
+  insertContact,
   insertLead,
   insertOutreachDraft,
+  insertLeadResearchSummary,
   recordOutreachSend,
+  setCompanyDoNotContact,
+  setContactDoNotContact,
 } from "@mela/database";
+import { eq } from "drizzle-orm";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { companyInput, leadInput } from "@mela/database/testing/fixtures";
+import { companyInput, contactInput, leadInput } from "@mela/database/testing/fixtures";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 
@@ -294,6 +300,122 @@ describe("outreach-drafting service", () => {
       await expect(service.recordNoResponse(outreachId, new Date())).rejects.toThrow(
         "No-response can only be recorded after 14 days.",
       );
+    });
+  });
+
+  describe("do-not-contact", () => {
+    it("refuses drafting for a marked company", async () => {
+      const company = await insertCompany(harness.database, companyInput());
+      await setCompanyDoNotContact(harness.database, {
+        companyId: company.id,
+        reason: "Unsubscribe request",
+      });
+
+      const lead = await insertLead(harness.database, leadInput(company.id));
+      const contact = await insertContact(harness.database, contactInput(company.id, { email: "test@example.com", sourceUrl: "https://example.com/contact" }));
+      const aiInvocation = await insertAIInvocation(harness.database, {
+        promptName: "test",
+        promptVersion: 1,
+        model: "test",
+        tier: "test",
+        inputTokens: 1,
+        outputTokens: 1,
+        estimatedCostUsd: 0,
+        latencyMs: 1,
+        attempts: 1,
+        outcome: "succeeded",
+      });
+      await insertLeadResearchSummary(harness.database, {
+        leadId: lead.id,
+        companyId: company.id,
+        sections: { business: [{ text: "Test", cites: ["c1"] }] },
+        citedFacts: ["c1"],
+        promptVersion: 1,
+        aiInvocationId: aiInvocation.id,
+      });
+
+      const result = await service.draftOutreach({
+        leadId: lead.id,
+        contactId: contact.id,
+        channelId: "email",
+      });
+
+      expect(result).toMatchObject({ reason: `Company ${company.id} is marked do-not-contact.` });
+    });
+
+    it("refuses drafting for a marked contact", async () => {
+      const company = await insertCompany(harness.database, companyInput());
+      const contact = await insertContact(harness.database, contactInput(company.id, { email: "test@example.com", sourceUrl: "https://example.com/contact" }));
+      await setContactDoNotContact(harness.database, {
+        contactId: contact.id,
+        reason: "Unsubscribe request",
+      });
+
+      const lead = await insertLead(harness.database, leadInput(company.id));
+      const aiInvocation = await insertAIInvocation(harness.database, {
+        promptName: "test",
+        promptVersion: 1,
+        model: "test",
+        tier: "test",
+        inputTokens: 1,
+        outputTokens: 1,
+        estimatedCostUsd: 0,
+        latencyMs: 1,
+        attempts: 1,
+        outcome: "succeeded",
+      });
+      await insertLeadResearchSummary(harness.database, {
+        leadId: lead.id,
+        companyId: company.id,
+        sections: { business: [{ text: "Test", cites: ["c1"] }] },
+        citedFacts: ["c1"],
+        promptVersion: 1,
+        aiInvocationId: aiInvocation.id,
+      });
+
+      const result = await service.draftOutreach({
+        leadId: lead.id,
+        contactId: contact.id,
+        channelId: "email",
+      });
+
+      expect(result).toMatchObject({ reason: `Contact ${contact.id} is marked do-not-contact.` });
+    });
+
+    it("sets company do-not-contact on unsubscribe", async () => {
+      const company = await insertCompany(harness.database, companyInput());
+      const lead = await insertLead(harness.database, leadInput(company.id));
+      const draft = await insertOutreachDraft(harness.database, {
+        leadId: lead.id,
+        channel: "email",
+        messageBody: "Example draft.",
+        isExample: false,
+      });
+      await service.approveOutreach(draft.id);
+      await recordOutreachSend(harness.database, {
+        outreachId: draft.id,
+        sentAt: new Date(Date.now() + 60_000),
+        means: "gmail",
+      });
+      await applyLeadStatusChange(harness.database, lead.id, "verified");
+      await applyLeadStatusChange(harness.database, lead.id, "analyzing");
+      await applyLeadStatusChange(harness.database, lead.id, "qualified");
+      await applyLeadStatusChange(harness.database, lead.id, "high_priority");
+      await applyLeadStatusChange(harness.database, lead.id, "contacted");
+
+      await service.recordResponse(draft.id, {
+        categoryId: "unsubscribe",
+        receivedAt: new Date(Date.now() + 120_000),
+      });
+
+      const [updatedCompany] = await harness.database
+        .select()
+        .from(require("@mela/database").companies)
+        .where(eq(require("@mela/database").companies.id, company.id))
+        .limit(1);
+
+      expect(updatedCompany!.doNotContactAt).toBeInstanceOf(Date);
+      expect(updatedCompany!.doNotContactReason).toBe("Unsubscribe request");
     });
   });
 });

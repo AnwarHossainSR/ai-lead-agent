@@ -16,12 +16,16 @@ import {
   applyLeadStatusChange,
   approveOutreach,
   cancelOutreach,
+  clearCompanyDoNotContact,
+  clearContactDoNotContact,
   getCurrentLeadResearchSummary,
   insertOutreachDraft,
   insertOutreachResponse,
   listOutreach,
   recordOutreachSend,
   rejectOutreach,
+  setCompanyDoNotContact,
+  setContactDoNotContact,
   submitOutreachForApproval,
   updateOutreachText,
 } from "@mela/database";
@@ -94,6 +98,14 @@ export class OutreachDraftingService {
     const contact = evidence.contacts.find((c) => c.id === input.contactId);
     if (contact === undefined) {
       return { reason: `Contact ${input.contactId} not found.` };
+    }
+
+    if (contact.doNotContactAt !== null) {
+      return { reason: `Contact ${input.contactId} is marked do-not-contact.` };
+    }
+
+    if (evidence.company.doNotContactAt !== null) {
+      return { reason: `Company ${companyId} is marked do-not-contact.` };
     }
 
     const channel = OUTREACH_CHANNELS.find((c) => c.id === input.channelId);
@@ -328,6 +340,21 @@ export class OutreachDraftingService {
       category.proposedTransition as any,
     );
 
+    if (body.categoryId === "unsubscribe") {
+      const [company] = await this.database
+        .select()
+        .from(require("@mela/database").companies)
+        .where(eq(require("@mela/database").companies.id, lead.companyId))
+        .limit(1);
+
+      if (company !== undefined && company.doNotContactAt === null) {
+        await setCompanyDoNotContact(this.database, {
+          companyId: company.id,
+          reason: "Unsubscribe request",
+        });
+      }
+    }
+
     return {
       outreachId,
       responseId: response.id,
@@ -372,5 +399,21 @@ export class OutreachDraftingService {
       outreachId,
       responseId: response.id,
     };
+  }
+
+  async setCompanyDoNotContact(companyId: string, reason: string) {
+    return setCompanyDoNotContact(this.database, { companyId, reason });
+  }
+
+  async clearCompanyDoNotContact(companyId: string) {
+    return clearCompanyDoNotContact(this.database, companyId);
+  }
+
+  async setContactDoNotContact(contactId: string, reason: string) {
+    return setContactDoNotContact(this.database, { contactId, reason });
+  }
+
+  async clearContactDoNotContact(contactId: string) {
+    return clearContactDoNotContact(this.database, contactId);
   }
 }

@@ -64,6 +64,18 @@ const recordNoResponseSchema = z.object({
 
 class RecordNoResponseDto extends createZodDto(recordNoResponseSchema) {}
 
+const setCompanyDoNotContactSchema = z.object({
+  reason: z.string().trim().min(1, "Expected the reason."),
+});
+
+class SetCompanyDoNotContactDto extends createZodDto(setCompanyDoNotContactSchema) {}
+
+const setContactDoNotContactSchema = z.object({
+  reason: z.string().trim().min(1, "Expected the reason."),
+});
+
+class SetContactDoNotContactDto extends createZodDto(setContactDoNotContactSchema) {}
+
 @Controller()
 export class OutreachController {
   constructor(private readonly outreachDraftingService: OutreachDraftingService) {}
@@ -162,8 +174,30 @@ export class OutreachController {
     }
   }
 
-  @Post("outreach/:id/cancel")
-  async cancelOutreach(@Param("id") outreachId: string) {
-    return this.outreachDraftingService.cancelOutreach(outreachId);
-  }
+   @Post("outreach/:id/cancel")
+   async cancelOutreach(@Param("id") outreachId: string) {
+     return this.outreachDraftingService.cancelOutreach(outreachId);
+   }
+
+   @Post("companies/:id/do-not-contact")
+   @UsePipes(new ValidationPipe({ transform: true }))
+   async setCompanyDoNotContact(@Param("id") companyId: string, @Body() body: SetCompanyDoNotContactDto) {
+     return this.outreachDraftingService.setCompanyDoNotContact(companyId, body.reason);
+   }
+
+   @Post("companies/:id/clear-do-not-contact")
+   async clearCompanyDoNotContact(@Param("id") companyId: string) {
+     return this.outreachDraftingService.clearCompanyDoNotContact(companyId);
+   }
+
+   @Post("contacts/:id/do-not-contact")
+   @UsePipes(new ValidationPipe({ transform: true }))
+   async setContactDoNotContact(@Param("id") contactId: string, @Body() body: SetContactDoNotContactDto) {
+     return this.outreachDraftingService.setContactDoNotContact(contactId, body.reason);
+   }
+
+   @Post("contacts/:id/clear-do-not-contact")
+   async clearContactDoNotContact(@Param("id") contactId: string) {
+     return this.outreachDraftingService.clearContactDoNotContact(contactId);
+   }
 }
