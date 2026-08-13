@@ -167,7 +167,7 @@ describe("getCurrentLeadResearchSummary", () => {
     });
 
     const current = await getCurrentLeadResearchSummary(harness.database, leadId);
-    expect(current?.sections.business[0]?.text).toBe("Second");
+    expect(current?.sections.business?.[0]?.text).toBe("Second");
   });
 
   it("returns undefined when no summary exists", async () => {
@@ -198,7 +198,7 @@ describe("getLeadResearchSummaryHistory", () => {
 
     const history = await getLeadResearchSummaryHistory(harness.database, leadId);
     expect(history).toHaveLength(2);
-    expect(history[0]?.sections.business[0]?.text).toBe("Second");
-    expect(history[1]?.sections.business[0]?.text).toBe("First");
+    expect(history[0]?.sections.business?.[0]?.text).toBe("Second");
+    expect(history[1]?.sections.business?.[0]?.text).toBe("First");
   });
 });

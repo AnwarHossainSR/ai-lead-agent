@@ -162,6 +162,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build workspace
+        run: pnpm build
       - name: Run migrations
         run: pnpm --filter @mela/database db:migrate
       - name: Run database tests
