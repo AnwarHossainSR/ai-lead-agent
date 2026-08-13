@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
-import { insertCompany, insertLead, insertOutreachDraft, recordOutreachSend } from "@mela/database";
+import { approveOutreach, insertCompany, insertLead, insertOutreachDraft, recordOutreachSend } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { AnalyticsService } from "./analytics.service";
 
@@ -13,6 +13,7 @@ describe("analytics service", () => {
 
   beforeEach(async () => {
     harness = await setupTestDatabase();
+    await harness.truncate();
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -46,20 +47,21 @@ describe("analytics service", () => {
       messageBody: "Example draft.",
       isExample: false,
     });
+    const approved = await approveOutreach(harness.database, draft.id);
     await recordOutreachSend(harness.database, {
       outreachId: draft.id,
-      sentAt: new Date(),
+      sentAt: new Date(approved.approvedAt!.getTime() + 1_000),
       means: "gmail",
     });
 
     const result = await service.getOutreachAggregates({ segment: "industry" });
 
     expect(result).toHaveLength(1);
-    expect(result[0].segment).toBe("industry");
-    expect(result[0].value).toBe(company.industryId);
-    expect(result[0].sent).toBe(1);
-    expect(result[0].responded).toBe(0);
-    expect(result[0].unrecorded).toBe(1);
-    expect(result[0].responseRate).toBe(0);
+    expect(result[0]!.segment).toBe("industry");
+    expect(result[0]!.value).toBe(company.industryId);
+    expect(result[0]!.sent).toBe(1);
+    expect(result[0]!.responded).toBe(0);
+    expect(result[0]!.unrecorded).toBe(1);
+    expect(result[0]!.responseRate).toBe(0);
   });
 });

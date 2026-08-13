@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 import { eq, sql } from "drizzle-orm";
 import type { Database } from "@mela/database";
