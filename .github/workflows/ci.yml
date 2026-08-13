@@ -13,6 +13,7 @@ concurrency:
 permissions:
   contents: read
   pull-requests: write
+  statuses: write
 
 jobs:
   should-run:
@@ -33,6 +34,41 @@ jobs:
           else
             echo "run-tests=false" >> "$GITHUB_OUTPUT"
           fi
+
+  # issue_comment runs execute against the PR head via `ref:` on checkout, but
+  # GitHub still attaches check runs to github.sha (the default branch HEAD for
+  # issue_comment events). Resolve the PR's real head SHA here and post a
+  # pending commit status to it so the PR page actually shows this run.
+  pr-sha:
+    name: Resolve PR head SHA
+    needs: should-run
+    if: needs.should-run.outputs.run-tests == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - id: sha
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            sha=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}" --jq .head.sha)
+          else
+            sha="${{ github.event.pull_request.head.sha }}"
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Report pending status to PR head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/${{ github.repository }}/statuses/${{ steps.sha.outputs.sha }}" \
+            -f state="pending" \
+            -f context="CI / required" \
+            -f description="lint, typecheck, build and test running" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
   lint:
     name: Lint
@@ -136,3 +172,36 @@ jobs:
         run: pnpm --filter @mela/shared test
       - name: Run API tests
         run: pnpm --filter @mela/api test
+
+  report-status:
+    name: Report status
+    needs: [should-run, pr-sha, lint, typecheck, build, test]
+    if: always() && needs.should-run.outputs.run-tests == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine roll-up result
+        id: rollup
+        run: |
+          set -euo pipefail
+          state=success
+          for r in "${{ needs.lint.result }}" "${{ needs.typecheck.result }}" "${{ needs.build.result }}" "${{ needs.test.result }}"; do
+            if [ "$r" != "success" ]; then
+              state=failure
+            fi
+          done
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+
+      - name: Report final status to PR head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/${{ github.repository }}/statuses/${{ needs.pr-sha.outputs.sha }}" \
+            -f state="${{ steps.rollup.outputs.state }}" \
+            -f context="CI / required" \
+            -f description="Roll-up of lint, typecheck, build and test jobs" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Fail run if any job failed
+        if: steps.rollup.outputs.state == 'failure'
+        run: exit 1
