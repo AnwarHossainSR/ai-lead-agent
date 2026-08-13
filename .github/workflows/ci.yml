@@ -2,17 +2,43 @@ name: CI
 
 on:
   issue_comment:
-    types: [created]
+    types: [created, edited]
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
+  should-run:
+    name: Should run
+    runs-on: ubuntu-latest
+    outputs:
+      run-tests: ${{ steps.filter.outputs.run-tests }}
+    steps:
+      - id: filter
+        run: |
+          BODY="${{ github.event.issue.title }}"
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            BODY="${{ github.event.comment.body }}"
+          fi
+
+          if echo "$BODY" | grep -qE '(^|[^a-zA-Z0-9])/test([^a-zA-Z0-9]|$)'; then
+            echo "run-tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run-tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    if: github.event.comment.body == '/test'
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run-tests == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -26,7 +52,8 @@ jobs:
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
-    if: github.event.comment.body == '/test'
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run-tests == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -40,7 +67,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    if: github.event.comment.body == '/test'
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run-tests == 'true' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -54,7 +82,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    if: github.event.comment.body == '/test'
+    needs: should-run
+    if: ${{ needs.should-run.outputs.run-tests == 'true' }}
     services:
       postgres:
         image: postgres:17-alpine
