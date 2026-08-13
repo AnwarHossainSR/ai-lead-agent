@@ -47,7 +47,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 6. Company and pipeline views
 
-- [ ] 6.1 Build the company list with verification state, analysis outcome and pipeline stage, including failed and blocked records
+- [x] 6.1 Build the company list with verification state, analysis outcome and pipeline stage, including failed and blocked records
 - [ ] 6.2 Build the company detail view with its analyses, detections and contacts
 - [ ] 6.3 Add the needs-attention view collecting blocked, failed and unreachable records with counts and ages
 - [ ] 6.4 Add tests: a blocked analysis shows as blocked, unreachable is distinguishable from unverified, a below-threshold company states the reason

@@ -2,66 +2,14 @@
 
 import { ACTIVE_CITIES, INDUSTRIES, LEAD_PRIORITIES, LEAD_STATUSES, SERVICES } from "@mela/config";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FilterSelect } from "@/components/filter-select";
 import { formatLabel } from "@/lib/format-label";
 import type { LeadListFilters } from "@/lib/lead-filters";
-import { useFilterParams } from "@/lib/use-filter-params";
 
 const STALE_OPTIONS = [
   { value: "true", label: "Stale only" },
   { value: "false", label: "Fresh only" },
 ];
-
-function FilterSelect({
-  label,
-  paramKey,
-  value,
-  options,
-}: {
-  label: string;
-  paramKey: string;
-  value: string | undefined;
-  options: readonly { value: string; label: string }[];
-}) {
-  const { setParam } = useFilterParams();
-
-  const allLabel = `All ${label.toLowerCase()}`;
-
-  return (
-    <Select
-      value={value ?? "all"}
-      onValueChange={(next) => setParam(paramKey, next === "all" ? null : String(next))}
-    >
-      <SelectTrigger aria-label={label} className="w-full sm:w-44">
-        {/* base-ui only knows an item's label once that item has mounted, so a
-            filter restored from the URL would otherwise show the raw id until
-            the menu is opened once. Formatting from `options` here makes the
-            trigger correct from first paint. */}
-        <SelectValue placeholder={label}>
-          {(current: string) =>
-            current === "all"
-              ? allLabel
-              : (options.find((o) => o.value === current)?.label ?? current)
-          }
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">All {label.toLowerCase()}</SelectItem>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
 
 type LeadFiltersBarProps = Pick<
   LeadListFilters,
