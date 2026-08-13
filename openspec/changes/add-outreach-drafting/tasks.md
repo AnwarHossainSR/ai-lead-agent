@@ -38,14 +38,14 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 5. Drafting and grounding
 
-- [ ] 5.1 Build the model input from the lead's current research summary, its opportunities with citations, the selected contact and the service catalogue, minting call-local references
-- [ ] 5.2 Refuse drafting for a lead with no current summary, a contact with no detail for the channel, a detail with no source URL, or an unknown channel — each naming the reason and making no model call where the refusal precedes it
-- [ ] 5.3 Implement the post-parse citation check rejecting the whole draft when any claim is uncited or cites an unsupplied identifier
-- [ ] 5.4 Implement the prohibited-content screen over the whole body, rejecting the draft with the matched category
-- [ ] 5.5 Validate channel length constraints after generation, rejecting rather than truncating
-- [ ] 5.6 Persist accepted drafts with their provenance in the draft state
-- [ ] 5.7 Add unit tests against the fake provider for every rejection path and the no-partial-salvage rule
-- [ ] 5.8 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 5.1 Build the model input from the lead's current research summary, its opportunities with citations, the selected contact and the service catalogue, minting call-local references
+- [x] 5.2 Refuse drafting for a lead with no current summary, a contact with no detail for the channel, a detail with no source URL, or an unknown channel — each naming the reason and making no model call where the refusal precedes it
+- [x] 5.3 Implement the post-parse citation check rejecting the whole draft when any claim is uncited or cites an unsupplied identifier
+- [x] 5.4 Implement the prohibited-content screen over the whole body, rejecting the draft with the matched category
+- [x] 5.5 Validate channel length constraints after generation, rejecting rather than truncating
+- [x] 5.6 Persist accepted drafts with their provenance in the draft state
+- [x] 5.7 Add unit tests against the fake provider for every rejection path and the no-partial-salvage rule
+- [x] 5.8 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 6. Review workflow
 
