@@ -60,6 +60,8 @@
       ".next",
       ".turbo",
       "coverage",
+      "test-results",
+      "playwright-report",
       "drizzle",
       "**/tsconfig*.json",
       "**/provider/gemini.ts"
