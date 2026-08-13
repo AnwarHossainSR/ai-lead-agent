@@ -59,9 +59,9 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 7. Documentation and final verification
 
-- [ ] 7.1 Document the module in `docs/architecture.md`, stating that no send exists and that an edit revokes approval, with the database constraints that enforce both
-- [ ] 7.2 Add `docs/outreach-review.md`: the workflow, what approval means, and why there is no bulk approval
-- [ ] 7.3 Update `docs/data-model.md` and `docs/implementation-progress.md`
-- [ ] 7.4 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
-- [ ] 7.5 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
-- [ ] 7.6 Run `openspec validate add-outreach-drafting --strict` and resolve anything it reports
+- [x] 7.1 Document the module in `docs/architecture.md`, stating that no send exists and that an edit revokes approval, with the database constraints that enforce both
+- [x] 7.2 Add `docs/outreach-review.md`: the workflow, what approval means, and why there is no bulk approval
+- [x] 7.3 Update `docs/data-model.md` and `docs/implementation-progress.md`
+- [x] 7.4 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
+- [x] 7.5 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
+- [x] 7.6 Run `openspec validate add-outreach-drafting --strict` and resolve anything it reports
