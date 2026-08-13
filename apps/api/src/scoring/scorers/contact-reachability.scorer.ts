@@ -1,6 +1,6 @@
-import type { ComponentResult, Scorer } from "../scorer";
-import type { CompanyEvidence } from "@mela/database";
 import { getComponentRules } from "@mela/config/product/lead-scoring";
+import type { CompanyEvidence } from "@mela/database";
+import type { ComponentResult, Scorer } from "../scorer";
 
 const DELIVERABLE_RANK: Record<string, number> = {
   receivable: 2,
@@ -8,7 +8,7 @@ const DELIVERABLE_RANK: Record<string, number> = {
   unknown: 0,
 };
 
-function seniorityRank(seniorityId: string | undefined): number {
+function seniorityRank(seniorityId: string | null | undefined): number {
   if (seniorityId === undefined || seniorityId === null) return 0;
   const id = seniorityId.toLowerCase();
   if (id.includes("c_level") || id.includes("owner") || id.includes("founder")) return 3;
@@ -33,14 +33,14 @@ export const contactReachabilityScorer: Scorer = {
 
     const scoredContacts = contacts.map((c) => ({
       id: c.id,
-      rank: seniorityRank(c.seniorityId) + (DELIVERABLE_RANK[c.mailDeliverability] ?? 0),
+      rank: seniorityRank(c.seniorityId) + (DELIVERABLE_RANK[c.mailDeliverability ?? "unknown"] ?? 0),
     }));
 
     const bestRank = Math.max(...scoredContacts.map((c) => c.rank));
     const normalizedCount = contacts.length >= 3 ? 100 : (contacts.length / 3) * 100;
     const normalizedRank = (bestRank / 5) * 100;
 
-    const normalizedScore = (normalizedCount * 0.7) + (normalizedRank * 0.3);
+    const normalizedScore = normalizedCount * 0.7 + normalizedRank * 0.3;
     const threshold = rules.thresholds.find(
       (t) => normalizedScore >= t.minimum && normalizedScore <= t.maximum,
     );

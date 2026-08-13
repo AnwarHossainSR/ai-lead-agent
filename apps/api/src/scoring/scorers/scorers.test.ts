@@ -1,16 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { CompanyEvidence } from "@mela/database";
-import type { ComponentResult } from "../scorer";
 import { businessFitScorer } from "./business-fit.scorer";
 import { contactReachabilityScorer } from "./contact-reachability.scorer";
 import { opportunityStrengthScorer } from "./opportunity-strength.scorer";
 import { technologyFitScorer } from "./technology-fit.scorer";
 import { websiteQualityScorer } from "./website-quality.scorer";
-
-function noop(): void {
-  // no-op
-}
 
 const SCORERS = [
   { scorer: websiteQualityScorer, name: "websiteQualityScorer" },
@@ -31,7 +26,13 @@ describe("websiteQualityScorer", () => {
   });
 
   it("returns points from the matching threshold when scores are present", () => {
-    const analysis = makeAnalysis({ performanceScore: 80, accessibilityScore: 70, seoScore: 60, mobileScore: 75, uxScore: 85 });
+    const analysis = makeAnalysis({
+      performanceScore: 80,
+      accessibilityScore: 70,
+      seoScore: 60,
+      mobileScore: 75,
+      uxScore: 85,
+    });
     const evidence = makeEvidence({ analysis });
     const result = scorer.score(evidence);
     expect(result.value).toBeGreaterThan(0);
@@ -39,7 +40,13 @@ describe("websiteQualityScorer", () => {
   });
 
   it("records missing scores when some lighthouse scores are absent", () => {
-    const analysis = makeAnalysis({ performanceScore: 80, accessibilityScore: null, seoScore: null, mobileScore: null, uxScore: null });
+    const analysis = makeAnalysis({
+      performanceScore: 80,
+      accessibilityScore: null,
+      seoScore: null,
+      mobileScore: null,
+      uxScore: null,
+    });
     const evidence = makeEvidence({ analysis });
     const result = scorer.score(evidence);
     expect(result.missing).toContain("accessibility_score");
@@ -139,7 +146,12 @@ describe("businessFitScorer", () => {
   });
 
   it("returns points based on target profile match", () => {
-    const company = makeCompany({ countryId: "uae", cityId: "dubai", industryId: "logistics", companySize: "51-200" });
+    const company = makeCompany({
+      countryId: "uae",
+      cityId: "dubai",
+      industryId: "logistics",
+      companySize: "51-200",
+    });
     const evidence = makeEvidence({ company });
     const result = scorer.score(evidence);
     expect(result.value).toBeGreaterThan(0);
@@ -194,14 +206,16 @@ function makeEvidence(overrides: Partial<CompanyEvidence> = {}): CompanyEvidence
   } as CompanyEvidence;
 }
 
-function makeAnalysis(overrides: Partial<{
-  performanceScore: number | null;
-  accessibilityScore: number | null;
-  seoScore: number | null;
-  mobileScore: number | null;
-  uxScore: number | null;
-  observations: readonly { statement: string }[];
-}> = {}): any {
+function makeAnalysis(
+  overrides: Partial<{
+    performanceScore: number | null;
+    accessibilityScore: number | null;
+    seoScore: number | null;
+    mobileScore: number | null;
+    uxScore: number | null;
+    observations: readonly { statement: string }[];
+  }> = {},
+): any {
   return {
     id: "019fecbb-1111-7000-8000-000000000000",
     companyId: "019fecbb-2222-7000-8000-000000000000",
@@ -216,15 +230,15 @@ function makeAnalysis(overrides: Partial<{
   };
 }
 
-function makeDetections(items: { technologyId: string; certainty: "observed" | "inferred" }[]): readonly any[] {
+function makeDetections(
+  items: { technologyId: string; certainty: "observed" | "inferred" }[],
+): readonly any[] {
   return items.map((item, index) => ({
     id: `019fecbb-${index}-7000-8000-000000000000`,
     analysisId: "019fecbb-1111-7000-8000-000000000000",
     companyId: "019fecbb-2222-7000-8000-000000000000",
     fingerprintId: `fp-${index}`,
-    technologyId: item.technologyId,
     category: "cms",
-    certainty: item.certainty,
     matchedIn: "html",
     matchedText: "test",
     createdAt: new Date(),
@@ -272,12 +286,14 @@ function makeContacts(count: number, seniority: string, deliverability: string):
   }));
 }
 
-function makeCompany(overrides: Partial<{
-  countryId: string | undefined;
-  cityId: string | undefined;
-  industryId: string | undefined;
-  companySize: string | undefined;
-}> = {}): any {
+function makeCompany(
+  overrides: Partial<{
+    countryId: string | undefined;
+    cityId: string | undefined;
+    industryId: string | undefined;
+    companySize: string | undefined;
+  }> = {},
+): any {
   return {
     id: "019fecbb-2222-7000-8000-000000000000",
     name: "Example Trading L.L.C.",

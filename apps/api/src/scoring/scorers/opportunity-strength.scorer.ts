@@ -1,6 +1,6 @@
-import type { ComponentResult, Scorer } from "../scorer";
-import type { CompanyEvidence } from "@mela/database";
 import { getComponentRules } from "@mela/config/product/lead-scoring";
+import type { CompanyEvidence } from "@mela/database";
+import type { ComponentResult, Scorer } from "../scorer";
 
 export const opportunityStrengthScorer: Scorer = {
   id: "business_opportunity",

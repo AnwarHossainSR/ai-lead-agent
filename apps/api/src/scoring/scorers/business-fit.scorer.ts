@@ -1,26 +1,23 @@
-import type { ComponentResult, Scorer } from "../scorer";
+import { DEFAULT_BUSINESS_FIT_PROFILE, getComponentRules } from "@mela/config/product/lead-scoring";
 import type { CompanyEvidence } from "@mela/database";
-import {
-  getComponentRules,
-  DEFAULT_BUSINESS_FIT_PROFILE,
-} from "@mela/config/product/lead-scoring";
+import type { ComponentResult, Scorer } from "../scorer";
 
-function matchIndustry(industryId: string | undefined): boolean {
+function matchIndustry(industryId: string | null | undefined): boolean {
   if (industryId === undefined || industryId === null) return false;
   return DEFAULT_BUSINESS_FIT_PROFILE.targetIndustryIds.includes(industryId);
 }
 
-function matchCountry(countryId: string | undefined): boolean {
+function matchCountry(countryId: string | null | undefined): boolean {
   if (countryId === undefined || countryId === null) return false;
   return DEFAULT_BUSINESS_FIT_PROFILE.targetCountryIds.includes(countryId);
 }
 
-function matchCity(cityId: string | undefined): boolean {
+function matchCity(cityId: string | null | undefined): boolean {
   if (cityId === undefined || cityId === null) return false;
   return DEFAULT_BUSINESS_FIT_PROFILE.targetCityIds.includes(cityId);
 }
 
-function matchSize(companySize: string | undefined): boolean {
+function matchSize(companySize: string | null | undefined): boolean {
   if (companySize === undefined || companySize === null) return false;
   return DEFAULT_BUSINESS_FIT_PROFILE.preferredCompanySizes.includes(companySize);
 }
@@ -35,7 +32,8 @@ export const businessFitScorer: Scorer = {
     if (company.countryId === undefined || company.countryId === null) missing.push("country");
     if (company.industryId === undefined || company.industryId === null) missing.push("industry");
     if (company.cityId === undefined || company.cityId === null) missing.push("city");
-    if (company.companySize === undefined || company.companySize === null) missing.push("company_size");
+    if (company.companySize === undefined || company.companySize === null)
+      missing.push("company_size");
 
     if (missing.length === 4) {
       return {

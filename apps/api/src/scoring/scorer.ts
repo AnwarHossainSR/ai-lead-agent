@@ -1,6 +1,5 @@
 import { ConfigurationError } from "@mela/config/internal/errors";
 import { SCORE_COMPONENTS } from "@mela/config/product/lead-scoring";
-import type { ComponentRules } from "@mela/config/product/lead-scoring";
 import type { CompanyEvidence } from "@mela/database";
 
 /**
@@ -17,10 +16,10 @@ export interface ComponentResult {
  */
 export interface Scorer {
   readonly id: string;
-  readonly score: (evidence: CompanyEvidence, rules: ComponentRules) => ComponentResult;
+  readonly score: (evidence: CompanyEvidence) => ComponentResult;
 }
 
-const SCORERS: readonly Scorer[] = [];
+const SCORERS: Scorer[] = [];
 
 export function registerScorer(scorer: Scorer): void {
   SCORERS.push(scorer);
@@ -37,6 +36,7 @@ export function validateScorersMatchWeights(): void {
   for (const componentId of componentIds) {
     if (!scorerIds.has(componentId)) {
       throw new ConfigurationError(
+        "Lead scoring",
         `No scorer implemented for component "${componentId}". Every configured weight must have a scorer.`,
       );
     }
@@ -45,6 +45,7 @@ export function validateScorersMatchWeights(): void {
   for (const scorer of SCORERS) {
     if (!componentIds.includes(scorer.id)) {
       throw new ConfigurationError(
+        "Lead scoring",
         `Scorer "${scorer.id}" has no matching weight configuration. Every scorer must have a configured weight.`,
       );
     }

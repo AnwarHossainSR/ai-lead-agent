@@ -1,6 +1,6 @@
-import type { ComponentResult, Scorer } from "../scorer";
+import { CONFIGURED_TECHNOLOGIES, getComponentRules } from "@mela/config/product/lead-scoring";
 import type { CompanyEvidence } from "@mela/database";
-import { getComponentRules, CONFIGURED_TECHNOLOGIES } from "@mela/config/product/lead-scoring";
+import type { ComponentResult, Scorer } from "../scorer";
 
 export const technologyFitScorer: Scorer = {
   id: "technical_opportunity",
