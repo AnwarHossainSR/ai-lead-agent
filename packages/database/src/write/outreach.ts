@@ -27,10 +27,34 @@ const channelSchema = z.enum(
   OUTREACH_CHANNELS.map((channel) => channel.id) as [OutreachChannelId, ...OutreachChannelId[]],
 );
 
+/**
+ * One citation behind a claim the drafted message makes, resolved to a
+ * source at draft time — not the AI's raw ref, which means nothing once the
+ * evidence it pointed at may have changed. `url` and `certainty` are null
+ * when the underlying fact (currently: anything sourced from the lead's
+ * research summary) has no resolvable source in this version of the
+ * pipeline; that is recorded explicitly rather than invented.
+ */
+const outreachCitationSchema = z.object({
+  ref: z.string().trim().min(1),
+  detail: z.string().trim().min(1),
+  url: z.string().trim().min(1).nullable(),
+  certainty: z.enum(["observed", "inferred"]).nullable(),
+});
+
+const outreachClaimSchema = z.object({
+  text: z.string().trim().min(1),
+  citations: z.array(outreachCitationSchema).min(1),
+});
+
+export type OutreachCitation = z.infer<typeof outreachCitationSchema>;
+export type OutreachClaim = z.infer<typeof outreachClaimSchema>;
+
 export const insertOutreachInputSchema = z.object({
   leadId: z.uuid("Expected the identifier of the lead this message is for."),
   channel: channelSchema,
   messageBody: z.string().trim().min(1, "Expected the message body."),
+  citedFacts: z.array(outreachClaimSchema).default([]),
   notes: z
     .string()
     .trim()
@@ -66,7 +90,7 @@ export async function insertOutreachDraft(
       isHumanEdited: false,
       promptVersion: null,
       aiInvocationId: null,
-      citedFacts: [],
+      citedFacts: value.citedFacts,
       rejectionReason: null,
       rejectedAt: null,
       approvalRevokedAt: null,
@@ -273,6 +297,16 @@ export interface OutreachFilters {
 export interface ListOutreachFilters extends OutreachFilters {
   readonly limit?: number;
   readonly offset?: number;
+}
+
+/** A single outreach record, for the review view. */
+export async function getOutreach(
+  executor: Executor,
+  outreachId: string,
+): Promise<OutreachRow | undefined> {
+  const [row] = await executor.select().from(outreach).where(eq(outreach.id, outreachId)).limit(1);
+
+  return row;
 }
 
 /** Shared by listOutreach and countOutreach, so the two never disagree about what a filter means. */

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -120,6 +121,19 @@ export class OutreachController {
       sentAfter: query.sentAfter,
     });
     return { count: value };
+  }
+
+  // Registered after "outreach/count": a route parameter registered earlier
+  // would swallow that literal path segment as an :id.
+  @Get("outreach/:id")
+  async getOutreach(@Param("id") outreachId: string) {
+    const record = await this.outreachDraftingService.getOutreach(outreachId);
+
+    if (record === undefined) {
+      throw new NotFoundException(`Outreach "${outreachId}" not found.`);
+    }
+
+    return record;
   }
 
   @Patch("outreach/:id")
