@@ -41,8 +41,8 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 5.3 Add approve, edit, reject-with-required-reason and cancel actions as Server Actions
 - [x] 5.4 Show that an edit to an approved message revoked its approval and returned it to the queue
 - [x] 5.5 Confirm the view offers no bulk approval, no multi-select and no send control
-- [~] 5.6 ~~Add the Playwright workflow test: open, read, approve, edit, assert back in the queue; and a rejection requiring a reason~~ — skipped per user instruction (no new Playwright tests this session). Covered instead by vitest component tests on `MessageReviewCard` (viewport-gated approve, required rejection reason, revoke-on-edit notice).
-- [~] 5.7 ~~Add a Playwright test asserting no bulk-approval or send control exists anywhere in the outreach views~~ — skipped per user instruction. Covered instead by a vitest assertion that no bulk-approve, multi-select or send control renders.
+- [ ] 5.6 Add the Playwright workflow test: open, read, approve, edit, assert back in the queue; and a rejection requiring a reason — **deferred**: skipped per user instruction (no new Playwright tests this session). Covered instead by vitest component tests on `MessageReviewCard` (viewport-gated approve, required rejection reason, revoke-on-edit notice).
+- [ ] 5.7 Add a Playwright test asserting no bulk-approval or send control exists anywhere in the outreach views — **deferred**: skipped per user instruction. Covered instead by a vitest assertion that no bulk-approve, multi-select or send control renders.
 - [x] 5.8 Verify: `pnpm --filter @mela/web lint typecheck test` passes (Playwright portion of the `test` script intentionally not exercised for this section's new surface, per the same instruction) plus `build`
 
 ## 6. Company and pipeline views
