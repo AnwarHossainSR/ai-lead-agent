@@ -15,7 +15,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 2.1 Add the list endpoints the views need: leads with filters and ordering, companies with pipeline state, outreach by status
 - [x] 2.2 Include the certainty, source URL and recorded time on every claim the views render
 - [x] 2.3 Include failure and incomplete states in list responses rather than omitting those records
-- [ ] 2.4 Add API tests for the filters, ordering and the presence of provenance fields
+- [x] 2.4 Add API tests for the filters, ordering and the presence of provenance fields
 - [ ] 2.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 3. Application shell and navigation

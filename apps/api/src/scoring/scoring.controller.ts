@@ -35,7 +35,13 @@ const listLeadsQuerySchema = z.object({
   serviceId: z.string().min(1).optional(),
   minScore: z.coerce.number().int().min(0).max(100).optional(),
   maxScore: z.coerce.number().int().min(0).max(100).optional(),
-  stale: z.coerce.boolean().optional(),
+  // z.coerce.boolean() would treat the query string "false" as truthy — any
+  // non-empty string coerces to true — so the two accepted strings are
+  // matched explicitly instead.
+  stale: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
   staleAfterDays: z.coerce.number().int().min(1).optional(),
   order: z.enum(["score_asc", "score_desc"]).default("score_desc"),
   limit: z.coerce.number().int().min(1).max(200).default(50),
