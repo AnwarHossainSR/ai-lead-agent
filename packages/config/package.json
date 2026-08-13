@@ -13,6 +13,14 @@
     "./env": {
       "types": "./dist/env/index.d.ts",
       "default": "./dist/env/index.js"
+    },
+    "./internal/*": {
+      "types": "./dist/internal/*.d.ts",
+      "default": "./dist/internal/*.js"
+    },
+    "./product/*": {
+      "types": "./dist/product/*.d.ts",
+      "default": "./dist/product/*.js"
     }
   },
   "files": ["dist"],

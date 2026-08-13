@@ -5,7 +5,6 @@ import {
   index,
   integer,
   pgTable,
-  text,
   timestamp,
   uniqueIndex,
   uuid,
@@ -51,7 +50,13 @@ export const leads = pgTable(
 
     status: leadStatusEnum("status").notNull(),
 
+    weightVersion: integer("weight_version").notNull(),
+    scoredAt: timestamp("scored_at", { withTimezone: true }).notNull().defaultNow(),
+
     isExample: boolean("is_example").notNull().default(false),
+
+    weightVersion: integer("weight_version").notNull(),
+    scoredAt: timestamp("scored_at", { withTimezone: true }).notNull(),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -80,6 +85,7 @@ export const leads = pgTable(
     index("leads_priority_idx").on(table.priority),
     index("leads_lead_score_idx").on(table.leadScore.desc()),
     index("leads_status_idx").on(table.status),
+    index("leads_weight_version_idx").on(table.weightVersion),
   ],
 );
 

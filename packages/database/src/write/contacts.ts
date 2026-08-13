@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -136,4 +136,18 @@ export async function deleteContactsForCompany(
   companyId: string,
 ): Promise<void> {
   await executor.delete(contacts).where(eq(contacts.companyId, companyId));
+}
+
+/**
+ * The most recent contacts for a company, or an empty array when none exist.
+ */
+export async function getLatestContacts(
+  executor: Executor,
+  companyId: string,
+): Promise<readonly ContactRow[]> {
+  return executor
+    .select()
+    .from(contacts)
+    .where(eq(contacts.companyId, companyId))
+    .orderBy(desc(contacts.createdAt), desc(contacts.id));
 }
