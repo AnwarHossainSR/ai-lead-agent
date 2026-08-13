@@ -1,16 +1,11 @@
-import { eq } from "drizzle-orm";
 import { Test } from "@nestjs/testing";
-import { type INestApplication } from "@nestjs/common";
-import request from "supertest";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AIService } from "@mela/ai";
+import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
-import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
-import { createTestApp } from "../testing/app";
 
 describe("recordOutreachSent", () => {
   let harness: TestDatabase;
@@ -67,7 +62,12 @@ describe("recordOutreachSent", () => {
 
   it("refuses a send for an unapproved outreach", async () => {
     const unapproved = await insertOutreachDraft(harness.database, {
-      leadId: (await insertLead(harness.database, leadInput((await insertCompany(harness.database, companyInput())).id))).id,
+      leadId: (
+        await insertLead(
+          harness.database,
+          leadInput((await insertCompany(harness.database, companyInput())).id),
+        )
+      ).id,
       channel: "email",
       messageBody: "Unapproved draft.",
       isExample: false,

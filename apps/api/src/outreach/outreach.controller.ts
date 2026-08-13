@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -8,15 +9,11 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
-  BadRequestException,
 } from "@nestjs/common";
 
 import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
-import {
-  OutreachDraftingService,
-  type ClassifyResponseResult,
-} from "./outreach-drafting.service";
+import type { OutreachDraftingService } from "./outreach-drafting.service";
 
 const draftOutreachSchema = z.object({
   contactId: z.string().uuid(),
@@ -73,10 +70,7 @@ export class OutreachController {
 
   @Post("leads/:id/outreach/draft")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async draftOutreach(
-    @Param("id") leadId: string,
-    @Body() body: DraftOutreachRequestDto,
-  ) {
+  async draftOutreach(@Param("id") leadId: string, @Body() body: DraftOutreachRequestDto) {
     return this.outreachDraftingService.draftOutreach({
       leadId,
       contactId: body.contactId,
@@ -91,10 +85,7 @@ export class OutreachController {
 
   @Patch("outreach/:id")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateOutreach(
-    @Param("id") outreachId: string,
-    @Body() body: UpdateOutreachRequestDto,
-  ) {
+  async updateOutreach(@Param("id") outreachId: string, @Body() body: UpdateOutreachRequestDto) {
     return this.outreachDraftingService.updateOutreach(outreachId, body);
   }
 
@@ -110,83 +101,68 @@ export class OutreachController {
 
   @Post("outreach/:id/reject")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async rejectOutreach(
-    @Param("id") outreachId: string,
-    @Body() body: RejectOutreachRequestDto,
-  ) {
+  async rejectOutreach(@Param("id") outreachId: string, @Body() body: RejectOutreachRequestDto) {
     return this.outreachDraftingService.rejectOutreach(outreachId, body.reason);
   }
 
-   @Post("outreach/:id/sent")
-   @UsePipes(new ValidationPipe({ transform: true }))
-   async recordOutreachSent(
-     @Param("id") outreachId: string,
-     @Body() body: RecordOutreachSentDto,
-   ) {
-     try {
-       return this.outreachDraftingService.recordOutreachSent(outreachId, body);
-     } catch (error) {
-       if (error instanceof Error && error.name === "WriteValidationError") {
-         throw new BadRequestException(error.message);
-       }
-       throw error;
-     }
-   }
-
-    @Post("outreach/:id/responses/classify")
-    async classifyResponse(
-      @Param("id") outreachId: string,
-      @Body() body: ClassifyResponseDto,
-    ) {
-      try {
-        return this.outreachDraftingService.classifyResponse(outreachId, body.replyText);
-      } catch (error) {
-        if (error instanceof Error && error.name === "WriteValidationError") {
-          throw new BadRequestException(error.message);
-        }
-        throw error;
+  @Post("outreach/:id/sent")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async recordOutreachSent(@Param("id") outreachId: string, @Body() body: RecordOutreachSentDto) {
+    try {
+      return this.outreachDraftingService.recordOutreachSent(outreachId, body);
+    } catch (error) {
+      if (error instanceof Error && error.name === "WriteValidationError") {
+        throw new BadRequestException(error.message);
       }
+      throw error;
     }
+  }
 
-    @Post("outreach/:id/responses")
-    @UsePipes(new ValidationPipe({ transform: true }))
-    async recordResponse(
-      @Param("id") outreachId: string,
-      @Body() body: RecordResponseDto,
-    ) {
-      try {
-        return this.outreachDraftingService.recordResponse(outreachId, {
-          categoryId: body.categoryId,
-          receivedAt: body.receivedAt,
-          body: body.body,
-          proposedCategoryId: body.proposedCategoryId,
-          aiInvocationId: body.aiInvocationId,
-        });
-      } catch (error) {
-        if (error instanceof Error && error.name === "WriteValidationError") {
-          throw new BadRequestException(error.message);
-        }
-        throw error;
+  @Post("outreach/:id/responses/classify")
+  async classifyResponse(@Param("id") outreachId: string, @Body() body: ClassifyResponseDto) {
+    try {
+      return this.outreachDraftingService.classifyResponse(outreachId, body.replyText);
+    } catch (error) {
+      if (error instanceof Error && error.name === "WriteValidationError") {
+        throw new BadRequestException(error.message);
       }
+      throw error;
     }
+  }
 
-    @Post("outreach/:id/no-response")
-    @UsePipes(new ValidationPipe({ transform: true }))
-    async recordNoResponse(
-      @Param("id") outreachId: string,
-      @Body() body: RecordNoResponseDto,
-    ) {
-      try {
-        return this.outreachDraftingService.recordNoResponse(outreachId, body.receivedAt);
-      } catch (error) {
-        if (error instanceof Error && error.name === "WriteValidationError") {
-          throw new BadRequestException(error.message);
-        }
-        throw error;
+  @Post("outreach/:id/responses")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async recordResponse(@Param("id") outreachId: string, @Body() body: RecordResponseDto) {
+    try {
+      return this.outreachDraftingService.recordResponse(outreachId, {
+        categoryId: body.categoryId,
+        receivedAt: body.receivedAt,
+        body: body.body,
+        proposedCategoryId: body.proposedCategoryId,
+        aiInvocationId: body.aiInvocationId,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "WriteValidationError") {
+        throw new BadRequestException(error.message);
       }
+      throw error;
     }
+  }
 
-     @Post("outreach/:id/cancel")
+  @Post("outreach/:id/no-response")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async recordNoResponse(@Param("id") outreachId: string, @Body() body: RecordNoResponseDto) {
+    try {
+      return this.outreachDraftingService.recordNoResponse(outreachId, body.receivedAt);
+    } catch (error) {
+      if (error instanceof Error && error.name === "WriteValidationError") {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Post("outreach/:id/cancel")
   async cancelOutreach(@Param("id") outreachId: string) {
     return this.outreachDraftingService.cancelOutreach(outreachId);
   }

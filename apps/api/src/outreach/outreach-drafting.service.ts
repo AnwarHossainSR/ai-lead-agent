@@ -1,10 +1,18 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { eq } from "drizzle-orm";
 import type { AIService } from "@mela/ai";
 import type { OutreachDraftingOutput } from "@mela/ai";
+import { outreachResponseClassificationInputSchema } from "@mela/ai";
+import type { OutreachResponseClassificationOutput } from "@mela/ai";
+import {
+  DEFAULT_RESPONSE_CATEGORIES,
+  NO_RESPONSE_INTERVAL_DAYS,
+  OUTREACH_CHANNELS,
+  type OutreachChannelId,
+} from "@mela/config";
 import type { Database, OutreachRow } from "@mela/database";
 import {
+  type LeadRow,
   applyLeadStatusChange,
   approveOutreach,
   cancelOutreach,
@@ -16,19 +24,14 @@ import {
   rejectOutreach,
   submitOutreachForApproval,
   updateOutreachText,
-  type LeadRow,
 } from "@mela/database";
-import { outreachResponseClassificationInputSchema } from "@mela/ai";
-import type { OutreachResponseClassificationOutput } from "@mela/ai";
-import {
-  DEFAULT_RESPONSE_CATEGORIES,
-  NO_RESPONSE_INTERVAL_DAYS,
-  OUTREACH_CHANNELS,
-  type OutreachChannelId,
-} from "@mela/config";
+import { eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
-import { type OutreachDraftingFacts, assembleOutreachDraftingInput } from "./outreach-drafting.input";
 import { screenOutreachDraft } from "./outreach-drafting.grounding";
+import {
+  type OutreachDraftingFacts,
+  assembleOutreachDraftingInput,
+} from "./outreach-drafting.input";
 
 export interface DraftOutreachInput {
   readonly leadId: string;
@@ -99,9 +102,7 @@ export class OutreachDraftingService {
     }
 
     const hasChannelDetail =
-      (channel.subjectApplies && contact.email) ||
-      contact.phone ||
-      contact.linkedinUrl;
+      (channel.subjectApplies && contact.email) || contact.phone || contact.linkedinUrl;
 
     if (!hasChannelDetail) {
       return {
@@ -268,15 +269,13 @@ export class OutreachDraftingService {
     const basisText = output.basisText.trim();
     const isGrounded = basisText.length > 0 && replyText.includes(basisText);
 
-    const category = isGrounded
-      ? output.categoryId
-      : "unclassified";
+    const category = isGrounded ? output.categoryId : "unclassified";
     const finalBasis = isGrounded
       ? basisText
       : "The proposed basis text was not found in the reply.";
 
     const proposedTransition = isGrounded
-      ? DEFAULT_RESPONSE_CATEGORIES.find((c) => c.id === category)?.proposedTransition ?? null
+      ? (DEFAULT_RESPONSE_CATEGORIES.find((c) => c.id === category)?.proposedTransition ?? null)
       : null;
 
     return {
@@ -288,13 +287,16 @@ export class OutreachDraftingService {
     };
   }
 
-  async recordResponse(outreachId: string, body: {
-    categoryId: string;
-    receivedAt: Date;
-    body?: string;
-    proposedCategoryId?: string;
-    aiInvocationId?: string;
-  }): Promise<{ outreachId: string; responseId: string; leadStatus: string }> {
+  async recordResponse(
+    outreachId: string,
+    body: {
+      categoryId: string;
+      receivedAt: Date;
+      body?: string;
+      proposedCategoryId?: string;
+      aiInvocationId?: string;
+    },
+  ): Promise<{ outreachId: string; responseId: string; leadStatus: string }> {
     const [outreach] = await this.database
       .select()
       .from(require("@mela/database").outreach)
@@ -320,7 +322,11 @@ export class OutreachDraftingService {
       aiInvocationId: body.aiInvocationId ?? null,
     });
 
-    const lead = await applyLeadStatusChange(this.database, outreach.leadId, category.proposedTransition as any);
+    const lead = await applyLeadStatusChange(
+      this.database,
+      outreach.leadId,
+      category.proposedTransition as any,
+    );
 
     return {
       outreachId,
@@ -329,7 +335,10 @@ export class OutreachDraftingService {
     };
   }
 
-  async recordNoResponse(outreachId: string, receivedAt: Date): Promise<{ outreachId: string; responseId: string }> {
+  async recordNoResponse(
+    outreachId: string,
+    receivedAt: Date,
+  ): Promise<{ outreachId: string; responseId: string }> {
     const [outreach] = await this.database
       .select()
       .from(require("@mela/database").outreach)

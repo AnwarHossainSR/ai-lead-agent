@@ -1,11 +1,17 @@
 import { Test } from "@nestjs/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AIService } from "@mela/ai";
+import type { AIService } from "@mela/ai";
 import { hydrateEnvironment } from "@mela/config/env";
+import {
+  applyLeadStatusChange,
+  insertCompany,
+  insertLead,
+  insertOutreachDraft,
+  recordOutreachSend,
+} from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
-import { applyLeadStatusChange, insertCompany, insertLead, insertOutreachDraft, recordOutreachSend } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 
@@ -90,7 +96,10 @@ describe("outreach-drafting service", () => {
         promptVersion: 1,
       });
 
-      const result = await service.classifyResponse(outreachId, "I'm interested in learning more about your services.");
+      const result = await service.classifyResponse(
+        outreachId,
+        "I'm interested in learning more about your services.",
+      );
 
       expect(result.categoryId).toBe("interested");
       expect(result.basisText).toBe("interested in learning more");
@@ -109,7 +118,10 @@ describe("outreach-drafting service", () => {
         promptVersion: 1,
       });
 
-      const result = await service.classifyResponse(outreachId, "The reply text says something completely different.");
+      const result = await service.classifyResponse(
+        outreachId,
+        "The reply text says something completely different.",
+      );
 
       expect(result.categoryId).toBe("unclassified");
       expect(result.isClassified).toBe(false);
@@ -149,30 +161,34 @@ describe("outreach-drafting service", () => {
         isExample: false,
       });
       outreachId = draft.id;
-      await service.approveOutreach(outreachId);
-      const approved = await recordOutreachSend(harness.database, {
+      const approval = await service.approveOutreach(outreachId);
+      await recordOutreachSend(harness.database, {
         outreachId,
-        sentAt: new Date(approved.approvedAt!.getTime() + 1_000),
+        sentAt: new Date(approval.approvedAt!.getTime() + 1_000),
         means: "gmail",
       });
+      await applyLeadStatusChange(harness.database, leadId, "verified");
+      await applyLeadStatusChange(harness.database, leadId, "analyzing");
+      await applyLeadStatusChange(harness.database, leadId, "qualified");
+      await applyLeadStatusChange(harness.database, leadId, "high_priority");
       await applyLeadStatusChange(harness.database, leadId, "contacted");
     });
 
     it("records the response and applies the lead transition", async () => {
       const result = await service.recordResponse(outreachId, {
-        categoryId: "interested",
-        receivedAt: new Date(),
-        body: "Yes, tell me more.",
+        categoryId: "not_interested",
+        receivedAt: new Date(Date.now() + 60_000),
+        body: "Not interested.",
       });
 
       expect(result.outreachId).toBe(outreachId);
-      expect(result.leadStatus).toBe("interested");
+      expect(result.leadStatus).toBe("not_interested");
     });
 
     it("allows overriding the proposed category", async () => {
       const result = await service.recordResponse(outreachId, {
         categoryId: "not_interested",
-        receivedAt: new Date(),
+        receivedAt: new Date(Date.now() + 60_000),
         body: "Not interested.",
       });
 
@@ -183,9 +199,64 @@ describe("outreach-drafting service", () => {
       await expect(
         service.recordResponse(outreachId, {
           categoryId: "unknown",
-          receivedAt: new Date(),
+          receivedAt: new Date(Date.now() + 60_000),
         }),
       ).rejects.toThrow("Unknown response category");
+    });
+
+    it("refuses an impermissible transition", async () => {
+      await expect(
+        service.recordResponse(outreachId, {
+          categoryId: "interested",
+          receivedAt: new Date(Date.now() + 60_000),
+        }),
+      ).rejects.toThrow("Cannot move a lead from");
+    });
+  });
+
+  describe("workflow", () => {
+    it("approves, sends, classifies, confirms and moves the lead", async () => {
+      const lead = await insertLead(harness.database, leadInput(companyId));
+      const draft = await insertOutreachDraft(harness.database, {
+        leadId: lead.id,
+        channel: "email",
+        messageBody: "Example draft.",
+        isExample: false,
+      });
+
+      await service.approveOutreach(draft.id);
+      await recordOutreachSend(harness.database, {
+        outreachId: draft.id,
+        sentAt: new Date(Date.now() + 60_000),
+        means: "gmail",
+      });
+      await applyLeadStatusChange(harness.database, lead.id, "verified");
+      await applyLeadStatusChange(harness.database, lead.id, "analyzing");
+      await applyLeadStatusChange(harness.database, lead.id, "qualified");
+      await applyLeadStatusChange(harness.database, lead.id, "high_priority");
+      await applyLeadStatusChange(harness.database, lead.id, "contacted");
+
+      vi.mocked(service as any).aiService.run = vi.fn().mockResolvedValue({
+        value: {
+          categoryId: "not_interested",
+          basisText: "not interested",
+          isClassified: true,
+        },
+        invocationId: "invocation-1",
+        promptVersion: 1,
+      });
+
+      const classification = await service.classifyResponse(draft.id, "Not interested, thanks.");
+      expect(classification.categoryId).toBe("unclassified");
+
+      const response = await service.recordResponse(draft.id, {
+        categoryId: "not_interested",
+        receivedAt: new Date(Date.now() + 120_000),
+        body: "Not interested, thanks.",
+        proposedCategoryId: "not_interested",
+      });
+
+      expect(response.leadStatus).toBe("not_interested");
     });
   });
 
@@ -210,16 +281,19 @@ describe("outreach-drafting service", () => {
     });
 
     it("records a no-response after the interval", async () => {
-      const result = await service.recordNoResponse(outreachId, new Date(Date.now() + 15 * 24 * 60 * 60 * 1000));
+      const result = await service.recordNoResponse(
+        outreachId,
+        new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      );
 
       expect(result.outreachId).toBe(outreachId);
       expect(result.responseId).toBeDefined();
     });
 
     it("refuses a no-response before the interval", async () => {
-      await expect(
-        service.recordNoResponse(outreachId, new Date()),
-      ).rejects.toThrow("No-response can only be recorded after 14 days.");
+      await expect(service.recordNoResponse(outreachId, new Date())).rejects.toThrow(
+        "No-response can only be recorded after 14 days.",
+      );
     });
   });
 });
