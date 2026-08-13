@@ -5,6 +5,7 @@ import {
   type Database,
   companies,
   leads,
+  opportunities,
   opportunityAnalysisRuns,
   websiteAnalysis,
 } from "@mela/database";
@@ -165,6 +166,20 @@ export class CompaniesService {
       latestOpportunityAnalysis: latestOpportunityByCompany.get(row.id) ?? null,
       lead: leadByCompany.get(row.id) ?? null,
     }));
+  }
+
+  /**
+   * Accepted opportunities for a company, newest first. There was previously
+   * no way to read these except as the side effect of triggering a new
+   * analysis run — the lead and company detail views need them without
+   * re-running anything.
+   */
+  async listOpportunities(companyId: string) {
+    return this.database
+      .select()
+      .from(opportunities)
+      .where(eq(opportunities.companyId, companyId))
+      .orderBy(desc(opportunities.createdAt));
   }
 }
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 
 import { COMPANY_VERIFICATION_STATES, type CompanyVerificationState } from "@mela/database";
 import { z } from "zod";
@@ -7,7 +7,10 @@ import { CompaniesService } from "./companies.service";
 
 const listCompaniesQuerySchema = z.object({
   verificationState: z
-    .enum([...COMPANY_VERIFICATION_STATES] as [CompanyVerificationState, ...CompanyVerificationState[]])
+    .enum([...COMPANY_VERIFICATION_STATES] as [
+      CompanyVerificationState,
+      ...CompanyVerificationState[],
+    ])
     .optional(),
   countryId: z.string().min(1).optional(),
   cityId: z.string().min(1).optional(),
@@ -34,5 +37,10 @@ export class CompaniesController {
       limit: query.limit,
       offset: query.offset,
     });
+  }
+
+  @Get(":id/opportunities")
+  async listOpportunities(@Param("id") id: string) {
+    return this.companiesService.listOpportunities(id);
   }
 }
