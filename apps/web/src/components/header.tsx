@@ -9,6 +9,12 @@ export function Header() {
         </Link>
         <nav className="ml-auto flex items-center gap-4">
           <span className="text-sm text-muted-foreground">Middle East Lead Agent</span>
+          <Link
+            href="/api-status"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            API Status
+          </Link>
         </nav>
       </div>
     </header>
