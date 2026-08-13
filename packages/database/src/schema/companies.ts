@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { discoveryRuns } from "./discovery";
 import { companyVerificationStateEnum } from "./enums";
@@ -70,6 +79,9 @@ export const companies = pgTable(
     // for researched data.
     isExample: boolean("is_example").notNull().default(false),
 
+    doNotContactAt: timestamp("do_not_contact_at", { withTimezone: true }),
+    doNotContactReason: text("do_not_contact_reason"),
+
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -90,6 +102,11 @@ export const companies = pgTable(
     // know about that column.  It is created via raw SQL in the migration.
     // Supports "who else is called this?" when neither record has a website.
     index("companies_normalized_name_idx").on(table.normalizedName),
+
+    check(
+      "companies_do_not_contact_requires_reason",
+      sql`${table.doNotContactAt} IS NULL OR length(btrim(${table.doNotContactReason})) > 0`,
+    ),
   ],
 );
 

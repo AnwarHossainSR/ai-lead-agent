@@ -9,7 +9,8 @@ import {
   CONTACT_EXTRACTION_METHODS,
   MAIL_DELIVERABILITY_STATES,
 } from "../schema/enums";
-import { parseInput } from "./errors";
+import { databaseNow } from "./clock";
+import { RecordNotFoundError, parseInput } from "./errors";
 
 /**
  * The write API for contacts.
@@ -150,4 +151,61 @@ export async function getLatestContacts(
     .from(contacts)
     .where(eq(contacts.companyId, companyId))
     .orderBy(desc(contacts.createdAt), desc(contacts.id));
+}
+
+export const setContactDoNotContactInputSchema = z.object({
+  contactId: z.string().uuid("Expected the contact identifier."),
+  reason: z.string().trim().min(1, "Expected a non-blank reason."),
+});
+
+export type SetContactDoNotContactInput = z.input<typeof setContactDoNotContactInputSchema>;
+
+/**
+ * Marks a contact as not to be contacted, recording the time and reason.
+ */
+export async function setContactDoNotContact(
+  executor: Executor,
+  input: SetContactDoNotContactInput,
+): Promise<ContactRow> {
+  const value = parseInput("The do-not-contact marker", setContactDoNotContactInputSchema, input);
+
+  const [row] = await executor
+    .update(contacts)
+    .set({
+      doNotContactAt: databaseNow(),
+      doNotContactReason: value.reason,
+      updatedAt: databaseNow(),
+    })
+    .where(eq(contacts.id, value.contactId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("contact", value.contactId);
+  }
+
+  return row;
+}
+
+/**
+ * Clears the do-not-contact marker on a contact.
+ */
+export async function clearContactDoNotContact(
+  executor: Executor,
+  contactId: string,
+): Promise<ContactRow> {
+  const [row] = await executor
+    .update(contacts)
+    .set({
+      doNotContactAt: null,
+      doNotContactReason: null,
+      updatedAt: databaseNow(),
+    })
+    .where(eq(contacts.id, contactId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("contact", contactId);
+  }
+
+  return row;
 }

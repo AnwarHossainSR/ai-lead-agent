@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { outreach } from "../schema/outreach";
+import { outreachResponses } from "../schema/outreach-responses";
 import { expectConstraintViolation } from "../testing/constraints";
 import { companyInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
@@ -13,6 +14,7 @@ import { insertLead } from "./leads";
 import {
   approveOutreach,
   insertOutreachDraft,
+  insertOutreachResponse,
   markOutreachSent,
   recordOutreachResponse,
   rejectOutreach,
@@ -126,7 +128,7 @@ describe("an approved record", () => {
     expect(approved.status).toBe("approved");
     expect(approved.approvedAt).toBeInstanceOf(Date);
 
-    const sent = await markOutreachSent(harness.database, draft.id);
+    const sent = await markOutreachSent(harness.database, draft.id, "email");
     expect(sent.status).toBe("sent");
     expect(sent.sentAt).toBeInstanceOf(Date);
     expect(sent.approvedAt).toBeInstanceOf(Date);
@@ -160,7 +162,7 @@ describe("an approved record", () => {
     });
 
     await approveOutreach(harness.database, draft.id);
-    await markOutreachSent(harness.database, draft.id);
+    await markOutreachSent(harness.database, draft.id, "email");
     const replied = await recordOutreachResponse(harness.database, draft.id);
 
     expect(replied.status).toBe("replied");
@@ -334,5 +336,149 @@ describe("database constraints", () => {
       }),
       "outreach_generated_requires_invocation",
     );
+  });
+});
+
+describe("sending records its means", () => {
+  it("stores the means when a send is recorded", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    const approved = await approveOutreach(harness.database, draft.id);
+    const sent = await markOutreachSent(harness.database, approved.id, "gmail");
+
+    expect(sent.sentMeans).toBe("gmail");
+  });
+
+  it("refuses a send without means via the database", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await approveOutreach(harness.database, draft.id);
+
+    await expect(
+      harness.database
+        .update(outreach)
+        .set({ status: "sent", sentAt: new Date(), sentMeans: null })
+        .where(eq(outreach.id, draft.id)),
+    ).rejects.toThrow(/outreach_sent_means_required/);
+  });
+});
+
+describe("recording responses", () => {
+  it("stores a response with its kind and time", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await approveOutreach(harness.database, draft.id);
+    const sent = await markOutreachSent(harness.database, draft.id, "email");
+
+    const response = await insertOutreachResponse(harness.database, {
+      outreachId: draft.id,
+      kind: "replied",
+      receivedAt: new Date(sent.sentAt!.getTime() + 1_000),
+      body: "Thanks for reaching out.",
+      confirmedCategoryId: "interested",
+    });
+
+    expect(response.kind).toBe("replied");
+    expect(response.body).toBe("Thanks for reaching out.");
+    expect(response.confirmedCategoryId).toBe("interested");
+  });
+
+  it("refuses a response for an unsent outreach", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await expect(
+      insertOutreachResponse(harness.database, {
+        outreachId: draft.id,
+        kind: "replied",
+        receivedAt: new Date(),
+        confirmedCategoryId: "interested",
+      }),
+    ).rejects.toThrow(/recordable only from sent/);
+  });
+
+  it("refuses a response before the send time via the database", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await approveOutreach(harness.database, draft.id);
+    const sent = await markOutreachSent(harness.database, draft.id, "email");
+
+    const beforeSend = new Date(sent.sentAt!.getTime() - 60_000);
+
+    await expect(
+      harness.database.insert(outreachResponses).values({
+        id: randomUUID(),
+        outreachId: draft.id,
+        kind: "replied",
+        receivedAt: beforeSend,
+        confirmedCategoryId: "interested",
+      }),
+    ).rejects.toThrow(/reject_response_before_send/);
+  });
+
+  it("refuses an unrecognised response kind via the database", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await approveOutreach(harness.database, draft.id);
+    await markOutreachSent(harness.database, draft.id, "email");
+
+    await expect(
+      harness.database.insert(outreachResponses).values({
+        id: randomUUID(),
+        outreachId: draft.id,
+        kind: "unknown_kind" as "replied",
+        receivedAt: new Date(),
+        confirmedCategoryId: "interested",
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("removes responses when the outreach is deleted", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await approveOutreach(harness.database, draft.id);
+    const sent = await markOutreachSent(harness.database, draft.id, "email");
+    await insertOutreachResponse(harness.database, {
+      outreachId: draft.id,
+      kind: "replied",
+      receivedAt: new Date(sent.sentAt!.getTime() + 1_000),
+      confirmedCategoryId: "interested",
+    });
+
+    await harness.database.delete(outreach).where(eq(outreach.id, draft.id));
+
+    const responses = await harness.database
+      .select()
+      .from(outreachResponses)
+      .where(eq(outreachResponses.outreachId, draft.id));
+
+    expect(responses).toHaveLength(0);
   });
 });

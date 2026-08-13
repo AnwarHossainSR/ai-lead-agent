@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import type { Executor } from "../client";
 import { type OutreachRow, outreach } from "../schema/outreach";
+import { type OutreachResponseInsert, outreachResponses } from "../schema/outreach-responses";
 import { type Assignments, databaseNow } from "./clock";
 import { RecordNotFoundError, WriteValidationError, parseInput } from "./errors";
 
@@ -210,10 +211,12 @@ export async function updateOutreachText(
 export async function markOutreachSent(
   executor: Executor,
   outreachId: string,
+  means: string,
 ): Promise<OutreachRow> {
   return transition(executor, outreachId, ["approved"], {
     status: "sent",
     sentAt: databaseNow(),
+    sentMeans: means,
   });
 }
 
@@ -283,6 +286,128 @@ export async function listOutreach(
       : undefined;
 
   return executor.select().from(outreach).where(whereClause);
+}
+
+export const recordOutreachSendInputSchema = z.object({
+  outreachId: z.string().uuid("Expected the outreach identifier."),
+  sentAt: z.coerce.date("Expected the send time."),
+  means: z.string().trim().min(1, "Expected the send means."),
+});
+
+export type RecordOutreachSendInput = z.input<typeof recordOutreachSendInputSchema>;
+
+/**
+ * Records that an approved message was transmitted, with the time and means
+ * supplied by the caller.
+ *
+ * This does not transmit it. The record must already be approved — enforced
+ * here, and again by a CHECK constraint, so a hand-written UPDATE cannot mark
+ * an unapproved message as sent either.
+ */
+export async function recordOutreachSend(
+  executor: Executor,
+  input: RecordOutreachSendInput,
+): Promise<OutreachRow> {
+  const value = parseInput("The outreach send", recordOutreachSendInputSchema, input);
+
+  const [current] = await executor
+    .select({ status: outreach.status, approvedAt: outreach.approvedAt })
+    .from(outreach)
+    .where(eq(outreach.id, value.outreachId))
+    .limit(1);
+
+  if (current === undefined) {
+    throw new RecordNotFoundError("outreach", value.outreachId);
+  }
+
+  if (current.status !== "approved") {
+    throw new WriteValidationError("Recording an outreach send", [
+      `Outreach ${value.outreachId} is "${current.status}"; sending is reachable only from approved.`,
+    ]);
+  }
+
+  const [row] = await executor
+    .update(outreach)
+    .set({
+      status: "sent",
+      sentAt: value.sentAt,
+      sentMeans: value.means,
+      updatedAt: databaseNow(),
+    })
+    .where(eq(outreach.id, value.outreachId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("outreach", value.outreachId);
+  }
+
+  return row;
+}
+
+export const insertOutreachResponseInputSchema = z.object({
+  outreachId: z.string().uuid("Expected the outreach identifier."),
+  kind: z.enum(["replied", "bounced", "unsubscribed", "no_response"]),
+  receivedAt: z.coerce.date("Expected the response time."),
+  body: z.string().trim().min(1, "Expected the response text or nothing at all.").nullish(),
+  proposedCategoryId: z
+    .string()
+    .trim()
+    .min(1, "Expected a category identifier or nothing.")
+    .nullish(),
+  confirmedCategoryId: z.string().trim().min(1, "Expected the confirmed category."),
+  aiInvocationId: z.string().uuid("Expected the AI invocation identifier.").nullish(),
+});
+
+export type InsertOutreachResponseInput = z.input<typeof insertOutreachResponseInputSchema>;
+
+/**
+ * Records a response event against a sent outreach message.
+ *
+ * The response kind, time and optional text are stored in `outreach_responses`.
+ * The outreach record itself is not moved to `replied` here; that transition
+ * happens separately when the confirmed category is applied.
+ */
+export async function insertOutreachResponse(
+  executor: Executor,
+  input: InsertOutreachResponseInput,
+): Promise<OutreachResponseInsert> {
+  const value = parseInput("The outreach response", insertOutreachResponseInputSchema, input);
+
+  const [current] = await executor
+    .select({ status: outreach.status, sentAt: outreach.sentAt })
+    .from(outreach)
+    .where(eq(outreach.id, value.outreachId))
+    .limit(1);
+
+  if (current === undefined) {
+    throw new RecordNotFoundError("outreach", value.outreachId);
+  }
+
+  if (current.status !== "sent") {
+    throw new WriteValidationError("Recording an outreach response", [
+      `Outreach ${value.outreachId} is "${current.status}"; a response is recordable only from sent.`,
+    ]);
+  }
+
+  const [row] = await executor
+    .insert(outreachResponses)
+    .values({
+      id: uuidv7(),
+      outreachId: value.outreachId,
+      kind: value.kind,
+      receivedAt: value.receivedAt,
+      body: value.body ?? null,
+      proposedCategoryId: value.proposedCategoryId ?? null,
+      confirmedCategoryId: value.confirmedCategoryId,
+      aiInvocationId: value.aiInvocationId ?? null,
+    })
+    .returning();
+
+  if (row === undefined) {
+    throw new Error("The outreach response insert returned no row.");
+  }
+
+  return row;
 }
 
 type OutreachChanges = Assignments<typeof outreach.$inferInsert> & {

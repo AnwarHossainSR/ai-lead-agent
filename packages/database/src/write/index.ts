@@ -17,26 +17,34 @@ export {
 export {
   applyVerificationResult,
   applyVerificationResultInputSchema,
+  clearCompanyDoNotContact,
   deriveVerificationState,
   findCompanyByNormalizedDomain,
   findCompanyByNormalizedName,
   insertCompany,
   insertCompanyInputSchema,
   listStaleCompanies,
+  setCompanyDoNotContact,
+  setCompanyDoNotContactInputSchema,
   updateCompany,
   updateCompanyInputSchema,
   type ApplyVerificationResultInput,
   type InsertCompanyInput,
+  type SetCompanyDoNotContactInput,
   type UpdateCompanyInput,
   type VerificationCheckResult,
 } from "./companies";
 
 export {
+  clearContactDoNotContact,
   deleteContactsForCompany,
   getLatestContacts,
   insertContact,
   insertContactInputSchema,
+  setContactDoNotContact,
+  setContactDoNotContactInputSchema,
   type InsertContactInput,
+  type SetContactDoNotContactInput,
 } from "./contacts";
 
 export {
@@ -91,13 +99,19 @@ export {
   cancelOutreach,
   insertOutreachDraft,
   insertOutreachInputSchema,
+  insertOutreachResponse,
+  insertOutreachResponseInputSchema,
   listOutreach,
   markOutreachSent,
   recordOutreachResponse,
+  recordOutreachSend,
+  recordOutreachSendInputSchema,
   rejectOutreach,
   submitOutreachForApproval,
   updateOutreachText,
   type InsertOutreachInput,
+  type InsertOutreachResponseInput,
+  type RecordOutreachSendInput,
 } from "./outreach";
 
 export {

@@ -226,6 +226,20 @@ export type MailDeliverability = (typeof MAIL_DELIVERABILITY_STATES)[number];
 export const mailDeliverabilityEnum = pgEnum("mail_deliverability", MAIL_DELIVERABILITY_STATES);
 
 /**
+ * Kind of an outreach response.
+ */
+export const OUTREACH_RESPONSE_KINDS = [
+  "replied",
+  "bounced",
+  "unsubscribed",
+  "no_response",
+] as const;
+
+export type OutreachResponseKind = (typeof OUTREACH_RESPONSE_KINDS)[number];
+
+export const outreachResponseKindEnum = pgEnum("outreach_response_kind", OUTREACH_RESPONSE_KINDS);
+
+/**
  * Contact research run outcome.
  */
 export const CONTACT_RESEARCH_OUTCOMES = [

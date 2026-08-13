@@ -53,6 +53,7 @@ export const outreach = pgTable(
 
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
+    sentMeans: text("sent_means"),
     respondedAt: timestamp("responded_at", { withTimezone: true }),
     approvalRevokedAt: timestamp("approval_revoked_at", { withTimezone: true }),
     approvedTextHash: text("approved_text_hash"),
@@ -91,6 +92,11 @@ export const outreach = pgTable(
     check(
       "outreach_sent_at_requires_approved_at",
       sql`${table.sentAt} IS NULL OR ${table.approvedAt} IS NOT NULL`,
+    ),
+
+    check(
+      "outreach_sent_means_required",
+      sql`${table.sentAt} IS NULL OR ${table.sentMeans} IS NOT NULL`,
     ),
 
     check(
