@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ConfigurationError,
   DEFAULT_PROHIBITED_CLAIM_CATEGORIES,
   findProhibitedClaimCategory,
   parseProhibitedClaimCategories,
   prohibitedClaimCategoriesSchema,
   resolveProhibitedClaimCategory,
-  ConfigurationError,
 } from "./research-summary";
 
 describe("prohibited claim categories", () => {
@@ -38,9 +38,7 @@ describe("prohibited claim categories", () => {
 
   it("rejects a category without patterns", () => {
     expect(() =>
-      parseProhibitedClaimCategories([
-        { id: "finance", name: "Finance", patterns: [] },
-      ]),
+      parseProhibitedClaimCategories([{ id: "finance", name: "Finance", patterns: [] }]),
     ).toThrow(/expected array to have >=1 items/);
   });
 
@@ -57,14 +55,7 @@ describe("prohibited claim categories", () => {
   it("exposes the default categories", () => {
     expect(DEFAULT_PROHIBITED_CLAIM_CATEGORIES).toHaveLength(6);
     const ids = DEFAULT_PROHIBITED_CLAIM_CATEGORIES.map((category) => category.id);
-    expect(ids).toEqual([
-      "finance",
-      "size",
-      "hiring",
-      "trajectory",
-      "plans",
-      "customers",
-    ]);
+    expect(ids).toEqual(["finance", "size", "hiring", "trajectory", "plans", "customers"]);
   });
 
   it("has no empty pattern strings in defaults", () => {

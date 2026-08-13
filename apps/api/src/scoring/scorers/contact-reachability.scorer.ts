@@ -33,7 +33,8 @@ export const contactReachabilityScorer: Scorer = {
 
     const scoredContacts = contacts.map((c) => ({
       id: c.id,
-      rank: seniorityRank(c.seniorityId) + (DELIVERABLE_RANK[c.mailDeliverability ?? "unknown"] ?? 0),
+      rank:
+        seniorityRank(c.seniorityId) + (DELIVERABLE_RANK[c.mailDeliverability ?? "unknown"] ?? 0),
     }));
 
     const bestRank = Math.max(...scoredContacts.map((c) => c.rank));

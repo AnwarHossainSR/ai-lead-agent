@@ -5,10 +5,7 @@ export interface UnknownFacts {
   readonly facts: readonly string[];
 }
 
-export function deriveUnknownFacts(
-  company: CompanyEvidence,
-  _lead: LeadRow,
-): UnknownFacts {
+export function deriveUnknownFacts(company: CompanyEvidence, _lead: LeadRow): UnknownFacts {
   const facts: string[] = [];
 
   if (!company.company.description) {

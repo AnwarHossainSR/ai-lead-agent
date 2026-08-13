@@ -1,23 +1,14 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 import { eq } from "drizzle-orm";
 
-import { DATABASE } from "../database/database.module";
-import type { Database, CompanyEvidence } from "@mela/database";
 import type { AIService } from "@mela/ai";
-import {
-  assembleResearchSummaryInput,
-  type ResearchSummaryFacts,
-} from "./input";
-import {
-  screenResearchSummaryOutput,
-  type Rejection,
-} from "./grounding";
+import type { CompanyEvidence, Database } from "@mela/database";
+import { getCurrentLeadResearchSummary, insertLeadResearchSummary } from "@mela/database";
+import { DATABASE } from "../database/database.module";
+import { type Rejection, screenResearchSummaryOutput } from "./grounding";
+import { type ResearchSummaryFacts, assembleResearchSummaryInput } from "./input";
 import { deriveUnknownFacts } from "./unknowns";
-import {
-  getCurrentLeadResearchSummary,
-  insertLeadResearchSummary,
-} from "@mela/database";
 
 export interface GenerateResearchSummaryInput {
   readonly leadId: string;
@@ -39,7 +30,9 @@ export class ResearchSummaryService {
     @Inject("AI_SERVICE") private readonly aiService: AIService,
   ) {}
 
-  async generateSummary(input: GenerateResearchSummaryInput): Promise<GenerateResearchSummaryResult> {
+  async generateSummary(
+    input: GenerateResearchSummaryInput,
+  ): Promise<GenerateResearchSummaryResult> {
     const [lead] = await this.database
       .select()
       .from(require("@mela/database").leads)
@@ -64,7 +57,10 @@ export class ResearchSummaryService {
       throw new Error(`Company ${companyId} not found.`);
     }
 
-    const companyEvidence = await require("@mela/database").gatherCompanyEvidence(this.database, companyId) as any;
+    const companyEvidence = (await require("@mela/database").gatherCompanyEvidence(
+      this.database,
+      companyId,
+    )) as any;
 
     const facts: ResearchSummaryFacts = {
       company: companyEvidence as CompanyEvidence,
@@ -83,11 +79,13 @@ export class ResearchSummaryService {
 
     const screening = screenResearchSummaryOutput(aiResult.value);
 
-    if (screening.output.business.length === 0 &&
-        screening.output.webPresence.length === 0 &&
-        screening.output.opportunities.length === 0 &&
-        screening.output.people.length === 0 &&
-        screening.output.approach.length === 0) {
+    if (
+      screening.output.business.length === 0 &&
+      screening.output.webPresence.length === 0 &&
+      screening.output.opportunities.length === 0 &&
+      screening.output.people.length === 0 &&
+      screening.output.approach.length === 0
+    ) {
       return {
         leadId: input.leadId,
         summaryId: "",

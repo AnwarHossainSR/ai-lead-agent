@@ -11,9 +11,7 @@ export interface Rejection {
   readonly count: number;
 }
 
-export function screenResearchSummaryOutput(
-  output: ResearchSummaryOutput,
-): ScreeningResult {
+export function screenResearchSummaryOutput(output: ResearchSummaryOutput): ScreeningResult {
   const rejections: Rejection[] = [];
 
   const screened: ResearchSummaryOutput = {
@@ -112,9 +110,7 @@ export function assertAllCitationsResolved(
     for (const claim of section) {
       for (const citation of claim.cites) {
         if (!knownCitations.has(citation)) {
-          throw new Error(
-            `Citation "${citation}" does not reference any supplied fact.`,
-          );
+          throw new Error(`Citation "${citation}" does not reference any supplied fact.`);
         }
       }
     }

@@ -10,9 +10,9 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 
-import { ScoringService } from "./scoring.service";
 import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
+import { ScoringService } from "./scoring.service";
 
 const scoreCompanySchema = z.object({
   weightVersion: z.number().int().min(1),

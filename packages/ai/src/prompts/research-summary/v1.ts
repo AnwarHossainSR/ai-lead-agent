@@ -146,7 +146,11 @@ Rules:
   lines.push(`\nLead score:`);
   lines.push(`- total: ${input.score.total}`);
   lines.push(`- priority: ${input.score.priority}`);
-  lines.push(`- components: ${Object.entries(input.score.components).map(([k, v]) => `${k}=${v}`).join(", ")}`);
+  lines.push(
+    `- components: ${Object.entries(input.score.components)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(", ")}`,
+  );
   lines.push(`- explanation: ${input.score.explanation}`);
 
   if (input.observations.length > 0) {
@@ -159,21 +163,33 @@ Rules:
   if (input.detections.length > 0) {
     lines.push(`\nTechnology detections:`);
     for (const detection of input.detections) {
-      lines.push(`- [${detection.ref}] ${detection.name} (${detection.category}): ${detection.detail} (at ${detection.url})`);
+      lines.push(
+        `- [${detection.ref}] ${detection.name} (${detection.category}): ${detection.detail} (at ${detection.url})`,
+      );
     }
   }
 
   if (input.opportunities.length > 0) {
     lines.push(`\nOpportunities:`);
     for (const opportunity of input.opportunities) {
-      lines.push(`- [${opportunity.ref}] ${opportunity.title}: ${opportunity.description} Impact: ${opportunity.impact} (cites: ${opportunity.citedEvidence.join(", ")})`);
+      lines.push(
+        `- [${opportunity.ref}] ${opportunity.title}: ${opportunity.description} Impact: ${opportunity.impact} (cites: ${opportunity.citedEvidence.join(", ")})`,
+      );
     }
   }
 
   if (input.contacts.length > 0) {
     lines.push(`\nContacts:`);
     for (const contact of input.contacts) {
-      const details = [contact.name, contact.jobTitle, contact.email, contact.phone, contact.linkedinUrl].filter(Boolean).join(", ");
+      const details = [
+        contact.name,
+        contact.jobTitle,
+        contact.email,
+        contact.phone,
+        contact.linkedinUrl,
+      ]
+        .filter(Boolean)
+        .join(", ");
       lines.push(`- [${contact.ref}] ${details}`);
     }
   }

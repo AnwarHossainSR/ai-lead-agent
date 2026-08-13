@@ -1,23 +1,24 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
-import { DATABASE } from "../database/database.module";
+import { type LeadPriority } from "@mela/config";
 import {
-  gatherCompanyEvidence,
-  identifyEvidence,
+  type Database,
   NoEvidenceForScoringError,
   assertEvidenceForScoring,
-  type Database,
+  gatherCompanyEvidence,
+  identifyEvidence,
 } from "@mela/database";
-import { composeScores, type ScoringInput } from "./composer";
-import { formatExplanation } from "./formatter";
+import { type LeadRow, insertLead, updateLeadScore } from "@mela/database";
 import {
-  insertLead,
-  updateLeadScore,
-  type LeadRow,
+  compareSnapshots,
+  insertLeadScoreSnapshot,
+  leadScoreSnapshots,
+  leads,
 } from "@mela/database";
-import { type LeadPriority } from "@mela/config";
-import { insertLeadScoreSnapshot, compareSnapshots, leadScoreSnapshots, leads } from "@mela/database";
 import { and, eq } from "drizzle-orm";
+import { DATABASE } from "../database/database.module";
+import { type ScoringInput, composeScores } from "./composer";
+import { formatExplanation } from "./formatter";
 
 export interface ScoreCompanyInput {
   readonly companyId: string;
@@ -84,9 +85,13 @@ export class ScoringService {
 
     const componentScores = {
       business_fit: result.components.find((c) => c.componentId === "company_quality")!.value,
-      technical_opportunity: result.components.find((c) => c.componentId === "technical_opportunity")!.value,
-      business_opportunity: result.components.find((c) => c.componentId === "business_opportunity")!.value,
-      decision_maker_found: result.components.find((c) => c.componentId === "decision_maker_found")!.value,
+      technical_opportunity: result.components.find(
+        (c) => c.componentId === "technical_opportunity",
+      )!.value,
+      business_opportunity: result.components.find((c) => c.componentId === "business_opportunity")!
+        .value,
+      decision_maker_found: result.components.find((c) => c.componentId === "decision_maker_found")!
+        .value,
       company_quality: result.components.find((c) => c.componentId === "company_quality")!.value,
     };
 
@@ -175,7 +180,10 @@ export class ScoringService {
           results.push({ companyId, error: error.message });
           refused += 1;
         } else {
-          results.push({ companyId, error: error instanceof Error ? error.message : "Unknown error" });
+          results.push({
+            companyId,
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
           errored += 1;
         }
       }
@@ -185,11 +193,7 @@ export class ScoringService {
   }
 
   async recomputeScore(leadId: string): Promise<RecomputeResult> {
-    const [lead] = await this.database
-      .select()
-      .from(leads)
-      .where(eq(leads.id, leadId))
-      .limit(1);
+    const [lead] = await this.database.select().from(leads).where(eq(leads.id, leadId)).limit(1);
 
     if (lead === undefined) {
       throw new Error(`Lead ${leadId} not found.`);
@@ -221,17 +225,23 @@ export class ScoringService {
     const changedEvidence: string[] = [];
 
     if (!recordedIds.analysisId) missingEvidence.push("analysis");
-    if (recordedIds.analysisId && recordedIds.analysisId !== currentIds.analysisId) changedEvidence.push("analysis");
+    if (recordedIds.analysisId && recordedIds.analysisId !== currentIds.analysisId)
+      changedEvidence.push("analysis");
 
-    if (!recordedIds.detectionIds || recordedIds.detectionIds.length === 0) missingEvidence.push("detections");
+    if (!recordedIds.detectionIds || recordedIds.detectionIds.length === 0)
+      missingEvidence.push("detections");
     else if (JSON.stringify(recordedIds.detectionIds) !== JSON.stringify(currentIds.detectionIds))
       changedEvidence.push("detections");
 
-    if (!recordedIds.opportunityIds || recordedIds.opportunityIds.length === 0) missingEvidence.push("opportunities");
-    else if (JSON.stringify(recordedIds.opportunityIds) !== JSON.stringify(currentIds.opportunityIds))
+    if (!recordedIds.opportunityIds || recordedIds.opportunityIds.length === 0)
+      missingEvidence.push("opportunities");
+    else if (
+      JSON.stringify(recordedIds.opportunityIds) !== JSON.stringify(currentIds.opportunityIds)
+    )
       changedEvidence.push("opportunities");
 
-    if (!recordedIds.contactIds || recordedIds.contactIds.length === 0) missingEvidence.push("contacts");
+    if (!recordedIds.contactIds || recordedIds.contactIds.length === 0)
+      missingEvidence.push("contacts");
     else if (JSON.stringify(recordedIds.contactIds) !== JSON.stringify(currentIds.contactIds))
       changedEvidence.push("contacts");
 
@@ -260,7 +270,10 @@ export class ScoringService {
       .where(eq(leadScoreSnapshots.leadId, leadId))
       .orderBy(leadScoreSnapshots.createdAt);
 
-    const history: Array<{ snapshot: typeof leadScoreSnapshots.$inferSelect; diff?: ReturnType<typeof compareSnapshots> }> = [];
+    const history: Array<{
+      snapshot: typeof leadScoreSnapshots.$inferSelect;
+      diff?: ReturnType<typeof compareSnapshots>;
+    }> = [];
 
     for (let index = 0; index < snapshots.length; index += 1) {
       const current = snapshots[index]!;

@@ -25,7 +25,10 @@ export { CloudflareProvider, type CloudflareCredentials } from "./provider/cloud
 export { resolvePrompt, listPrompts } from "./prompts/registry";
 export type { PromptDefinition, RenderedPrompt } from "./prompts/prompt";
 export { renderPrompt, isInputConfinedToBlock } from "./prompts/render";
-export { opportunityAnalysisInputSchema, opportunityAnalysisOutputSchema } from "./prompts/opportunity-analysis/v1";
+export {
+  opportunityAnalysisInputSchema,
+  opportunityAnalysisOutputSchema,
+} from "./prompts/opportunity-analysis/v1";
 export {
   researchSummaryInputSchema,
   researchSummaryOutputSchema,

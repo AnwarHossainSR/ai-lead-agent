@@ -1,16 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  UsePipes,
-  ValidationPipe,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UsePipes, ValidationPipe } from "@nestjs/common";
 
-import { ResearchSummaryService } from "./research-summary.service";
 import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
+import { ResearchSummaryService } from "./research-summary.service";
 
 const generateSummarySchema = z.object({});
 

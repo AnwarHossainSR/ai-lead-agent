@@ -7,7 +7,8 @@ import { identifierSchema } from "../internal/identifier";
 
 const SUBJECT = "Research summary prohibited claims";
 
-const CATASTROPHIC_BACKTRACKING_PATTERN = /(\.\*\+|\.\*\+|\([^)]*[+*][^)]*\)[+*]|[+*][+*]|\(\.\+\)\+)/;
+const CATASTROPHIC_BACKTRACKING_PATTERN =
+  /(\.\*\+|\.\*\+|\([^)]*[+*][^)]*\)[+*]|[+*][+*]|\(\.\+\)\+)/;
 const UNCLOSED_CHARACTER_CLASS_PATTERN = /(^|[^\\])\[[^\]\n]*(?![^[]*])/;
 
 function validatePatterns(patterns: readonly string[]): void {
@@ -88,15 +89,12 @@ const DEFAULT_CATEGORIES = [
   },
 ] as const;
 
-export const DEFAULT_PROHIBITED_CLAIM_CATEGORIES = parseProhibitedClaimCategories(
-  DEFAULT_CATEGORIES,
-);
+export const DEFAULT_PROHIBITED_CLAIM_CATEGORIES =
+  parseProhibitedClaimCategories(DEFAULT_CATEGORIES);
 
 export type ProhibitedClaimCategoryId = (typeof DEFAULT_CATEGORIES)[number]["id"];
 
-export function findProhibitedClaimCategory(
-  id: string,
-): ProhibitedClaimCategory | undefined {
+export function findProhibitedClaimCategory(id: string): ProhibitedClaimCategory | undefined {
   return DEFAULT_PROHIBITED_CLAIM_CATEGORIES.find((category) => category.id === id);
 }
 

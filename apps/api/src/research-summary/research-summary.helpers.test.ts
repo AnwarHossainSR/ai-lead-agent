@@ -56,7 +56,11 @@ describe("research-summary helpers", () => {
           observations: [
             {
               statement: "Site is modern",
-              evidence: { detail: "Modern UI", url: "https://test.co", observedAt: new Date().toISOString() },
+              evidence: {
+                detail: "Modern UI",
+                url: "https://test.co",
+                observedAt: new Date().toISOString(),
+              },
               certainty: "observed",
             },
           ],
