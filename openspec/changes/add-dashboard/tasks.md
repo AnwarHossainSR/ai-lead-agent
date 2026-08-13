@@ -32,7 +32,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 4.2 Build the lead detail view: score with component breakdown and explanation, opportunities with cited evidence, detections with matched text, contacts with sources
 - [x] 4.3 Render the research summary through `<Generated>` with its unknown list
 - [x] 4.4 Add tests: an inferred value carries its marker, an unknown field renders the word, every source URL is a link
-- [ ] 4.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
+- [x] 4.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
 
 ## 5. Outreach review queue
 
