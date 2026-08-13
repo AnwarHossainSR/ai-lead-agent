@@ -28,7 +28,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 4. Lead views
 
-- [ ] 4.1 Build the lead list ordered by score with filters for priority, status, industry, city, service and staleness
+- [x] 4.1 Build the lead list ordered by score with filters for priority, status, industry, city, service and staleness
 - [ ] 4.2 Build the lead detail view: score with component breakdown and explanation, opportunities with cited evidence, detections with matched text, contacts with sources
 - [ ] 4.3 Render the research summary through `<Generated>` with its unknown list
 - [ ] 4.4 Add tests: an inferred value carries its marker, an unknown field renders the word, every source URL is a link
