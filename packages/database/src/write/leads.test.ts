@@ -97,7 +97,9 @@ describe("a lead without an explanation", () => {
         companyQualityScore: 10,
         scoreExplanation: "   ",
         status: "discovered",
-      }),
+        weightVersion: 1,
+        scoredAt: new Date(),
+      } as any),
       "leads_score_explanation_not_blank",
     );
   });

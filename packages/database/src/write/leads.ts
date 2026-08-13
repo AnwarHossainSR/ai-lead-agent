@@ -118,11 +118,11 @@ export async function insertLead(executor: Executor, input: InsertLeadInput): Pr
         scoreExplanation: value.scoreExplanation,
         recommendedServiceId: value.recommendedServiceId ?? null,
         contactReason: value.contactReason ?? null,
-        // A new lead always starts where the configured lifecycle starts. A
-        // caller cannot open a lead directly at `qualified`.
         status: INITIAL_LEAD_STATUS,
         isExample: value.isExample,
-      })
+        weightVersion: 1,
+        scoredAt: new Date(),
+      } as const)
       .returning();
 
     if (row === undefined) {
