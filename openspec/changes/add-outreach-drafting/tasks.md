@@ -31,10 +31,10 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 4. The drafting prompt
 
-- [ ] 4.1 Add a drafting prompt per configured channel to `packages/ai` at version 1, returning a subject where applicable, a body, and the list of claims it makes with their citations
-- [ ] 4.2 Instruct the model to make no promise, state no price or timeline, and claim no prior contact
-- [ ] 4.3 Add unit tests: rendering keeps instructions and input separate, and summary text containing instruction-like content stays inside the input block
-- [ ] 4.4 Verify: `pnpm --filter @mela/ai lint typecheck test` passes
+- [x] 4.1 Add a drafting prompt per configured channel to `packages/ai` at version 1, returning a subject where applicable, a body, and the list of claims it makes with their citations
+- [x] 4.2 Instruct the model to make no promise, state no price or timeline, and claim no prior contact
+- [x] 4.3 Add unit tests: rendering keeps instructions and input separate, and summary text containing instruction-like content stays inside the input block
+- [x] 4.4 Verify: `pnpm --filter @mela/ai lint typecheck test` passes
 
 ## 5. Drafting and grounding
 
