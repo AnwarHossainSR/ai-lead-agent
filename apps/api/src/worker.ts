@@ -4,8 +4,8 @@ import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { Client } from "@upstash/qstash";
 
-import { loadApiEnv } from "@mela/config/env";
 import { QUEUE_CONFIGS } from "@mela/config";
+import { loadApiEnv } from "@mela/config/env";
 import { AppModule } from "./app.module";
 import { createLogger } from "./logging/create-logger";
 import { QueueService } from "./worker/queue.service";
@@ -31,9 +31,7 @@ async function bootstrap(): Promise<void> {
     await qstash.logs({ count: 1 });
     workerLogger.log("QStash reachable.");
   } catch (error) {
-    workerLogger.error(
-      `QStash is unreachable at ${env.QSTASH_URL}. Check the token or network.`,
-    );
+    workerLogger.error(`QStash is unreachable at ${env.QSTASH_URL}. Check the token or network.`);
     await app.close();
     process.exit(1);
   }
@@ -53,9 +51,7 @@ async function bootstrap(): Promise<void> {
     try {
       await Promise.race([queueService.shutdown(), timeoutPromise]);
     } catch (error) {
-      workerLogger.error(
-        error instanceof Error ? error.message : String(error),
-      );
+      workerLogger.error(error instanceof Error ? error.message : String(error));
     }
 
     await app.close();

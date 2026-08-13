@@ -84,10 +84,7 @@ function screenProhibitedContent(
   return kept;
 }
 
-function screenProhibitedContentInBody(
-  body: string,
-  rejections: Rejection[],
-): boolean {
+function screenProhibitedContentInBody(body: string, rejections: Rejection[]): boolean {
   const matched = matchProhibitedCategories(body);
 
   if (matched.length > 0) {

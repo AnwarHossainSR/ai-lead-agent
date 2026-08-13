@@ -2,9 +2,9 @@ import { Test } from "@nestjs/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AIService } from "@mela/ai";
+import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
-import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 

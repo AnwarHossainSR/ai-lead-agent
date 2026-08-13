@@ -167,18 +167,14 @@ export const apiEnvSchema = z.object({
     .trim()
     .min(1)
     .optional()
-    .describe(
-      "Current QStash signing key used to verify inbound webhook signatures.",
-    ),
+    .describe("Current QStash signing key used to verify inbound webhook signatures."),
 
   QSTASH_NEXT_SIGNING_KEY: z
     .string()
     .trim()
     .min(1)
     .optional()
-    .describe(
-      "Next QStash signing key for rotation. Verified when present, ignored otherwise.",
-    ),
+    .describe("Next QStash signing key for rotation. Verified when present, ignored otherwise."),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

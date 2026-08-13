@@ -47,13 +47,7 @@ const FORBIDDEN_ENV_KEY_PATTERNS = [
   /send.*api_key/i,
 ];
 
-const FORBIDDEN_CONTROLLER_METHODS = [
-  "send",
-  "transmit",
-  "deliver",
-  "dispatch",
-  "schedule",
-];
+const FORBIDDEN_CONTROLLER_METHODS = ["send", "transmit", "deliver", "dispatch", "schedule"];
 
 describe("the outreach module contains no transport", () => {
   it("has no mail, messaging or social client in its dependency closure", () => {

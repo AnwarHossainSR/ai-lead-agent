@@ -9,15 +9,15 @@ import {
   insertCompany,
   insertContact,
   insertLead,
-  insertOutreachDraft,
   insertLeadResearchSummary,
+  insertOutreachDraft,
   recordOutreachSend,
   setCompanyDoNotContact,
   setContactDoNotContact,
 } from "@mela/database";
-import { eq } from "drizzle-orm";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, contactInput, leadInput } from "@mela/database/testing/fixtures";
+import { eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 
@@ -312,7 +312,13 @@ describe("outreach-drafting service", () => {
       });
 
       const lead = await insertLead(harness.database, leadInput(company.id));
-      const contact = await insertContact(harness.database, contactInput(company.id, { email: "test@example.com", sourceUrl: "https://example.com/contact" }));
+      const contact = await insertContact(
+        harness.database,
+        contactInput(company.id, {
+          email: "test@example.com",
+          sourceUrl: "https://example.com/contact",
+        }),
+      );
       const aiInvocation = await insertAIInvocation(harness.database, {
         promptName: "test",
         promptVersion: 1,
@@ -345,7 +351,13 @@ describe("outreach-drafting service", () => {
 
     it("refuses drafting for a marked contact", async () => {
       const company = await insertCompany(harness.database, companyInput());
-      const contact = await insertContact(harness.database, contactInput(company.id, { email: "test@example.com", sourceUrl: "https://example.com/contact" }));
+      const contact = await insertContact(
+        harness.database,
+        contactInput(company.id, {
+          email: "test@example.com",
+          sourceUrl: "https://example.com/contact",
+        }),
+      );
       await setContactDoNotContact(harness.database, {
         contactId: contact.id,
         reason: "Unsubscribe request",
