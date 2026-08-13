@@ -1,9 +1,15 @@
 import { Test } from "@nestjs/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import {
+  approveOutreach,
+  insertCompany,
+  insertLead,
+  insertOutreachDraft,
+  recordOutreachSend,
+} from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
-import { approveOutreach, insertCompany, insertLead, insertOutreachDraft, recordOutreachSend } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { AnalyticsService } from "./analytics.service";
 

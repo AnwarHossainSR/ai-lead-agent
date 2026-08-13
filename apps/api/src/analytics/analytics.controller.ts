@@ -1,7 +1,6 @@
 import { Controller, Get, Query } from "@nestjs/common";
 
-import { AnalyticsService } from "./analytics.service";
-import { type AnalyticsQuery } from "./analytics.service";
+import type { AnalyticsQuery, AnalyticsService } from "./analytics.service";
 
 @Controller("analytics")
 export class AnalyticsController {

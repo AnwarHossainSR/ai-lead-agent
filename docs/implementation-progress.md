@@ -16,7 +16,7 @@
 | [x]  | 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
 | [x]  | 9   | `add-research-summary`        | 8          | 43    |
 | [x]  | 10  | `add-outreach-drafting`       | 9          | 43    |
-| [ ]  | 11  | `add-outreach-tracking`       | 10         | 51    |
+| [x]  | 11  | `add-outreach-tracking`       | 10         | 51    |
 
 ### Infrastructure and surface
 
@@ -171,9 +171,21 @@ Drafts personalised outreach messages grounded in lead evidence, with human appr
 
 Delivered: Outreach-drafting v1 prompt with per-channel tone and length constraints; prohibited content configuration with 5 default categories and safe pattern validation; input assembly from lead evidence, opportunities, contact and service catalogue; deterministic citation and content screening; `OutreachDraftingService` orchestrating model call, grounding and draft persistence; workflow endpoints for draft, submit, approve, reject, cancel and edit; database migration adding provenance columns and 7 CHECK constraints; absence-of-transport tests; full API test suite passes.
 
+### add-outreach-tracking — completed 2026-08-13
+
+Records outreach send events, classifies replies, and advances the lead lifecycle through configured transitions.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `outreach-tracking`     | send recording, response classification, lifecycle transitions, do-not-contact enforcement, analytics aggregates, API endpoints |
+| `product-configuration` | response categories with transitions, no-response interval, minimum reporting sample size, outreach channels |
+| `lead-data-model`       | outreach_responses table, do-not-contact columns on companies and contacts, CHECK constraints for send/response timing, database trigger for DNC enforcement |
+
+Delivered: `POST /api/outreach/:id/sent` recording manual sends with backdate protection; `POST /api/outreach/:id/responses/classify` proposing categories via AI with grounding checks; `POST /api/outreach/:id/responses` confirming responses and applying lead transitions; `POST /api/outreach/:id/no-response` recording non-responses after the configured interval; do-not-contact drafting guards at service and database layers; unsubscribe marking both company and contact; company/contact DNC management endpoints; analytics service computing response rates by segment with minimum-sample-size flags; full test suite passes with 19 outreach/analytics tests.
+
 ## Next Module
 
-**`add-outreach-tracking` (Change #11)** — Tracks outreach message status and responses. Depends on `add-outreach-drafting` (10), now complete. Ready to start.
+**`add-background-jobs` (Change #12)** — Background job processing. Depends on `add-outreach-tracking` (11), now complete. Ready to start.
 
 After that: `add-background-jobs` (12).
 
@@ -206,9 +218,9 @@ Each change also carries deltas against the three existing capabilities where it
 | `@mela/shared`   | 3          | 66    | passing |
 | `@mela/database` | 13         | 180   | passing |
 | `@mela/ai`       | 10         | 93    | passing |
-| `@mela/api`      | 44         | 359   | passing |
+| `@mela/api`      | 46         | 379   | passing |
 | `@mela/web`      | 5          | 5     | passing |
 
 ## Next step
 
-Apply a change with `/opsx:apply <change-name>`. `add-outreach-drafting` is now unblocked.
+Apply a change with `/opsx:apply <change-name>`. `add-background-jobs` is now unblocked.

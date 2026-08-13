@@ -1,16 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { eq, sql } from "drizzle-orm";
-import type { Database } from "@mela/database";
-import {
-  companies,
-  leads,
-  opportunities,
-  outreach,
-  outreachResponses,
-} from "@mela/database";
-import { DATABASE } from "../database/database.module";
 import { MINIMUM_REPORTING_SAMPLE_SIZE } from "@mela/config";
+import type { Database } from "@mela/database";
+import { companies, leads, opportunities, outreach, outreachResponses } from "@mela/database";
+import { eq, sql } from "drizzle-orm";
+import { DATABASE } from "../database/database.module";
 
 export interface OutreachAggregate {
   readonly segment: string;
@@ -23,7 +17,12 @@ export interface OutreachAggregate {
 }
 
 export interface AnalyticsQuery {
-  readonly segment?: "industry" | "service" | "opportunityCategory" | "priorityBand" | "scoreDecile";
+  readonly segment?:
+    | "industry"
+    | "service"
+    | "opportunityCategory"
+    | "priorityBand"
+    | "scoreDecile";
   readonly value?: string;
 }
 
@@ -48,7 +47,10 @@ export class AnalyticsService {
       .leftJoin(
         opportunities,
         eq(opportunities.companyId, companies.id) &&
-          eq(opportunities.runId, sql`(SELECT id FROM opportunity_analysis_runs WHERE company_id = ${companies.id} ORDER BY created_at DESC LIMIT 1)`),
+          eq(
+            opportunities.runId,
+            sql`(SELECT id FROM opportunity_analysis_runs WHERE company_id = ${companies.id} ORDER BY created_at DESC LIMIT 1)`,
+          ),
       )
       .where(eq(outreach.status, "sent"));
 
