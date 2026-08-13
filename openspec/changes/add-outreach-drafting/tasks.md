@@ -24,10 +24,10 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 3. The absence of a transport
 
-- [ ] 3.1 Add a test asserting the outreach module's dependency closure contains no mail, messaging or social client package
-- [ ] 3.2 Add a test asserting the API environment schema declares no sending credential
-- [ ] 3.3 Add a test asserting no controller in the module reports transmission and no scheduling mechanism exists
-- [ ] 3.4 Verify: all three fail if a transport dependency is added, by adding one temporarily and confirming the failure before removing it
+- [x] 3.1 Add a test asserting the outreach module's dependency closure contains no mail, messaging or social client package
+- [x] 3.2 Add a test asserting the API environment schema declares no sending credential
+- [x] 3.3 Add a test asserting no controller in the module reports transmission and no scheduling mechanism exists
+- [x] 3.4 Verify: all three fail if a transport dependency is added, by adding one temporarily and confirming the failure before removing it
 
 ## 4. The drafting prompt
 
