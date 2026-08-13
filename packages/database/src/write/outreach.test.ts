@@ -362,13 +362,18 @@ describe("sending records its means", () => {
 
     await approveOutreach(harness.database, draft.id);
 
-    await expectConstraintViolation(
-      harness.database
-        .update(outreach)
-        .set({ status: "sent", sentAt: new Date(), sentMeans: null })
-        .where(eq(outreach.id, draft.id)),
-      "outreach_sent_means_required",
-    );
+    try {
+      await expectConstraintViolation(
+        harness.database
+          .update(outreach)
+          .set({ status: "sent", sentAt: new Date(), sentMeans: null })
+          .where(eq(outreach.id, draft.id)),
+        "outreach_sent_means_required",
+      );
+    } catch (error) {
+      console.log("Actual error:", JSON.stringify(error, null, 2));
+      throw error;
+    }
   });
 });
 

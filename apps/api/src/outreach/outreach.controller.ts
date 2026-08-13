@@ -34,6 +34,13 @@ const rejectOutreachSchema = z.object({
 
 class RejectOutreachRequestDto extends createZodDto(rejectOutreachSchema) {}
 
+const recordOutreachSentSchema = z.object({
+  sentAt: z.coerce.date(),
+  means: z.string().trim().min(1, "Expected the send means."),
+});
+
+class RecordOutreachSentDto extends createZodDto(recordOutreachSentSchema) {}
+
 @Controller()
 export class OutreachController {
   constructor(private readonly outreachDraftingService: OutreachDraftingService) {}
@@ -84,7 +91,16 @@ export class OutreachController {
     return this.outreachDraftingService.rejectOutreach(outreachId, body.reason);
   }
 
-  @Post("outreach/:id/cancel")
+  @Post("outreach/:id/sent")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async recordOutreachSent(
+    @Param("id") outreachId: string,
+    @Body() body: RecordOutreachSentDto,
+  ) {
+    return this.outreachDraftingService.recordOutreachSent(outreachId, body);
+  }
+
+   @Post("outreach/:id/cancel")
   async cancelOutreach(@Param("id") outreachId: string) {
     return this.outreachDraftingService.cancelOutreach(outreachId);
   }

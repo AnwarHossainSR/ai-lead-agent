@@ -10,6 +10,7 @@ import {
   getCurrentLeadResearchSummary,
   insertOutreachDraft,
   listOutreach,
+  recordOutreachSend,
   rejectOutreach,
   submitOutreachForApproval,
   updateOutreachText,
@@ -206,5 +207,13 @@ export class OutreachDraftingService {
 
   async cancelOutreach(outreachId: string) {
     return cancelOutreach(this.database, outreachId);
+  }
+
+  async recordOutreachSent(outreachId: string, body: { sentAt: Date; means: string }) {
+    return recordOutreachSend(this.database, {
+      outreachId,
+      sentAt: body.sentAt,
+      means: body.means,
+    });
   }
 }

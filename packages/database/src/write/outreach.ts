@@ -326,6 +326,12 @@ export async function recordOutreachSend(
     ]);
   }
 
+  if (current.approvedAt !== null && value.sentAt < current.approvedAt) {
+    throw new WriteValidationError("Recording an outreach send", [
+      `Outreach ${value.outreachId} send time ${value.sentAt.toISOString()} is earlier than approval time ${current.approvedAt.toISOString()}.`,
+    ]);
+  }
+
   const [row] = await executor
     .update(outreach)
     .set({
