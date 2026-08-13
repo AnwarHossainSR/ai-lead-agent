@@ -1,5 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 
+import { eq } from "drizzle-orm";
+
 import { DATABASE } from "../database/database.module";
 import type { Database, CompanyEvidence } from "@mela/database";
 import type { AIService } from "@mela/ai";
@@ -41,7 +43,7 @@ export class ResearchSummaryService {
     const [lead] = await this.database
       .select()
       .from(require("@mela/database").leads)
-      .where(require("@mela/database").eq(require("@mela/database").leads.id, input.leadId))
+      .where(eq(require("@mela/database").leads.id, input.leadId))
       .limit(1);
 
     if (lead === undefined) {
@@ -50,16 +52,12 @@ export class ResearchSummaryService {
 
     const leadRow = lead as unknown as import("@mela/database").LeadRow;
 
-    if (lead === undefined) {
-      throw new Error(`Lead ${input.leadId} not found.`);
-    }
-
     const companyId = leadRow.companyId;
 
     const [company] = await this.database
       .select()
       .from(require("@mela/database").companies)
-      .where(require("@mela/database").eq(require("@mela/database").companies.id, companyId))
+      .where(eq(require("@mela/database").companies.id, companyId))
       .limit(1);
 
     if (company === undefined) {
