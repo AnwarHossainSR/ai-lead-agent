@@ -62,6 +62,7 @@ export const OUTREACH_STATUSES = [
   "draft",
   "pending_approval",
   "approved",
+  "rejected",
   "sent",
   "replied",
   "bounced",

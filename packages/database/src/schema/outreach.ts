@@ -1,6 +1,17 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
+import { aiInvocations } from "./ai-invocations";
 import { outreachChannelEnum, outreachStatusEnum } from "./enums";
 import { leads } from "./leads";
 
@@ -27,12 +38,27 @@ export const outreach = pgTable(
       .references(() => leads.id, { onDelete: "cascade" }),
 
     channel: outreachChannelEnum("channel").notNull(),
+    subject: text("subject"),
     messageBody: text("message_body").notNull(),
     status: outreachStatusEnum("status").notNull().default("draft"),
+
+    generatedSubject: text("generated_subject"),
+    generatedBody: text("generated_body"),
+    isHumanEdited: boolean("is_human_edited").notNull().default(false),
+    promptVersion: integer("prompt_version"),
+    aiInvocationId: uuid("ai_invocation_id").references(() => aiInvocations.id, {
+      onDelete: "restrict",
+    }),
+    citedFacts: jsonb("cited_facts").notNull().default("[]"),
 
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
     respondedAt: timestamp("responded_at", { withTimezone: true }),
+    approvalRevokedAt: timestamp("approval_revoked_at", { withTimezone: true }),
+    approvedTextHash: text("approved_text_hash"),
+
+    rejectionReason: text("rejection_reason"),
+    rejectedAt: timestamp("rejected_at", { withTimezone: true }),
 
     notes: text("notes"),
 
@@ -42,6 +68,13 @@ export const outreach = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
+    // A generated message must carry an invocation reference; a manually
+    // created draft (no AI call) has no generated body.
+    check(
+      "outreach_generated_requires_invocation",
+      sql`${table.generatedBody} IS NULL OR ${table.aiInvocationId} IS NOT NULL`,
+    ),
+
     // A sent message must carry both the approval and the send. Statuses that
     // follow sending (`replied`, `bounced`) are covered too: they can only be
     // reached from `sent`, and a record that reaches them without the
@@ -68,6 +101,19 @@ export const outreach = pgTable(
     check(
       "outreach_responded_at_requires_sent_at",
       sql`${table.respondedAt} IS NULL OR ${table.sentAt} IS NOT NULL`,
+    ),
+
+    // An approved record's text hash must match the hash of its current text.
+    // This catches hand-written UPDATEs that change an approved message.
+    check(
+      "outreach_approved_text_hash_matches",
+      sql`${table.status} <> 'approved' OR (${table.approvedTextHash} IS NOT NULL AND ${table.approvedTextHash} = md5(coalesce(${table.subject}, '') || E'\n' || ${table.messageBody}))`,
+    ),
+
+    // A rejection must carry a non-blank reason.
+    check(
+      "outreach_rejection_requires_reason",
+      sql`${table.rejectedAt} IS NULL OR length(btrim(${table.rejectionReason})) > 0`,
     ),
 
     index("outreach_lead_status_idx").on(table.leadId, table.status),

@@ -4,23 +4,23 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Channel and content configuration
 
-- [ ] 1.1 Add per-channel drafting constraints to `packages/config`: maximum subject length, maximum body length, whether a subject applies, and tone
-- [ ] 1.2 Add the prohibited-content categories and patterns: invented fact, promised outcome, false relationship, commercial terms, urgency pressure
-- [ ] 1.3 Add load-time validation for invalid patterns, and a test asserting no channel can be configured with automated sending permitted
-- [ ] 1.4 Add unit tests with positive and negative cases per prohibited category
-- [ ] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes
+- [x] 1.1 Add per-channel drafting constraints to `packages/config`: maximum subject length, maximum body length, whether a subject applies, and tone
+- [x] 1.2 Add the prohibited-content categories and patterns: invented fact, promised outcome, false relationship, commercial terms, urgency pressure
+- [x] 1.3 Add load-time validation for invalid patterns, and a test asserting no channel can be configured with automated sending permitted
+- [x] 1.4 Add unit tests with positive and negative cases per prohibited category
+- [x] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes
 
 ## 2. Schema
 
-- [ ] 2.1 Add the subject, generated subject and body, human-edited flag, prompt version, invocation reference and cited facts columns to `outreach`
-- [ ] 2.2 Add the rejection reason and time, the approval revocation time, the approved text hash and the generated current text hash columns
-- [ ] 2.3 Add the `CHECK` requiring an invocation for generated text, the `CHECK` requiring a non-blank rejection reason, and the `CHECK` requiring an approved record's hash to match its current text
-- [ ] 2.4 Update `insertOutreachDraft` for the new provenance fields, confirming it still has no status, approval or sent parameter
-- [ ] 2.5 Add `updateOutreachText` clearing the approval, returning the record to draft and recording the revocation when text changes on an approved record
-- [ ] 2.6 Add `rejectOutreach` requiring a reason
-- [ ] 2.7 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.8 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including a raw `UPDATE` changing an approved record's body
-- [ ] 2.9 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the subject, generated subject and body, human-edited flag, prompt version, invocation reference and cited facts columns to `outreach`
+- [x] 2.2 Add the rejection reason and time, the approval revocation time, the approved text hash and the generated current text hash columns
+- [x] 2.3 Add the `CHECK` requiring an invocation for generated text, the `CHECK` requiring a non-blank rejection reason, and the `CHECK` requiring an approved record's hash to match its current text
+- [x] 2.4 Update `insertOutreachDraft` for the new provenance fields, confirming it still has no status, approval or sent parameter
+- [x] 2.5 Add `updateOutreachText` clearing the approval, returning the record to draft and recording the revocation when text changes on an approved record
+- [x] 2.6 Add `rejectOutreach` requiring a reason
+- [x] 2.7 Generate and commit the migration; confirm `pnpm db:check` reports no drift
+- [x] 2.8 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including a raw `UPDATE` changing an approved record's body
+- [x] 2.9 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
 
 ## 3. The absence of a transport
 

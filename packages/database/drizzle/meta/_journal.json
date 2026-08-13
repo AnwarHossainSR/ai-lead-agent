@@ -64,6 +64,27 @@
       "when": 1786596213017,
       "tag": "0008_sour_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786600180198,
+      "tag": "0009_equal_gamma_corps",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786602054717,
+      "tag": "0010_great_toxin",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786602211322,
+      "tag": "0011_empty_lethal_legion",
+      "breakpoints": true
     }
   ]
 }
