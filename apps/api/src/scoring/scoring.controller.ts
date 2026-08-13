@@ -10,6 +10,7 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 
+import { type LeadPriority } from "@mela/config";
 import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
 import { ScoringService } from "./scoring.service";
@@ -76,7 +77,7 @@ export class ScoringController {
     @Query("offset") offset?: string,
   ) {
     return this.scoringService.listLeads({
-      priority,
+      priority: priority as LeadPriority | undefined,
       minScore: minScore !== undefined ? Number(minScore) : undefined,
       maxScore: maxScore !== undefined ? Number(maxScore) : undefined,
       limit: limit !== undefined ? Number(limit) : undefined,

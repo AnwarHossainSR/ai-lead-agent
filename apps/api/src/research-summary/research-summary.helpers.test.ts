@@ -6,14 +6,6 @@ import { deriveUnknownFacts } from "./unknowns";
 
 describe("research-summary helpers", () => {
   it("screens prohibited claims from output", () => {
-    const input = {
-      observations: [],
-      detections: [],
-      opportunities: [],
-      contacts: [],
-      score: { total: 80, priority: "high", components: {}, explanation: "" },
-    };
-
     const output = {
       business: [{ text: "Company has revenue of $1M", cites: ["o1"] }],
       webPresence: [],
@@ -33,6 +25,7 @@ describe("research-summary helpers", () => {
   it("assembleResearchSummaryInput maps company evidence to prompt input", () => {
     const facts = {
       company: {
+        companyId: "company-1",
         company: {
           name: "Test Co",
           industryId: "tech",
@@ -92,12 +85,12 @@ describe("research-summary helpers", () => {
       },
     };
 
-    const input = assembleResearchSummaryInput(facts);
+    const summaryInput = assembleResearchSummaryInput(facts as any);
 
-    expect(input.company.name).toBe("Test Co");
-    expect(input.observations).toHaveLength(1);
-    expect(input.observations[0]?.ref).toBe("o1");
-    expect(input.score.total).toBe(80);
+    expect(summaryInput.company.name).toBe("Test Co");
+    expect(summaryInput.observations).toHaveLength(1);
+    expect(summaryInput.observations[0]?.ref).toBe("o1");
+    expect(summaryInput.score.total).toBe(80);
   });
 
   it("deriveUnknownFacts reports missing evidence", () => {
