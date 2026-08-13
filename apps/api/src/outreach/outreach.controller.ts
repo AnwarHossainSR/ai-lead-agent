@@ -24,7 +24,7 @@ const draftOutreachSchema = z.object({
 class DraftOutreachRequestDto extends createZodDto(draftOutreachSchema) {}
 
 const listOutreachQuerySchema = z.object({
-  status: z.enum(OUTREACH_STATUSES as [OutreachStatus, ...OutreachStatus[]]).optional(),
+  status: z.enum([...OUTREACH_STATUSES] as [OutreachStatus, ...OutreachStatus[]]).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
@@ -187,30 +187,36 @@ export class OutreachController {
     }
   }
 
-   @Post("outreach/:id/cancel")
-   async cancelOutreach(@Param("id") outreachId: string) {
-     return this.outreachDraftingService.cancelOutreach(outreachId);
-   }
+  @Post("outreach/:id/cancel")
+  async cancelOutreach(@Param("id") outreachId: string) {
+    return this.outreachDraftingService.cancelOutreach(outreachId);
+  }
 
-   @Post("companies/:id/do-not-contact")
-   @UsePipes(new ValidationPipe({ transform: true }))
-   async setCompanyDoNotContact(@Param("id") companyId: string, @Body() body: SetCompanyDoNotContactDto) {
-     return this.outreachDraftingService.setCompanyDoNotContact(companyId, body.reason);
-   }
+  @Post("companies/:id/do-not-contact")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async setCompanyDoNotContact(
+    @Param("id") companyId: string,
+    @Body() body: SetCompanyDoNotContactDto,
+  ) {
+    return this.outreachDraftingService.setCompanyDoNotContact(companyId, body.reason);
+  }
 
-   @Post("companies/:id/clear-do-not-contact")
-   async clearCompanyDoNotContact(@Param("id") companyId: string) {
-     return this.outreachDraftingService.clearCompanyDoNotContact(companyId);
-   }
+  @Post("companies/:id/clear-do-not-contact")
+  async clearCompanyDoNotContact(@Param("id") companyId: string) {
+    return this.outreachDraftingService.clearCompanyDoNotContact(companyId);
+  }
 
-   @Post("contacts/:id/do-not-contact")
-   @UsePipes(new ValidationPipe({ transform: true }))
-   async setContactDoNotContact(@Param("id") contactId: string, @Body() body: SetContactDoNotContactDto) {
-     return this.outreachDraftingService.setContactDoNotContact(contactId, body.reason);
-   }
+  @Post("contacts/:id/do-not-contact")
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async setContactDoNotContact(
+    @Param("id") contactId: string,
+    @Body() body: SetContactDoNotContactDto,
+  ) {
+    return this.outreachDraftingService.setContactDoNotContact(contactId, body.reason);
+  }
 
-   @Post("contacts/:id/clear-do-not-contact")
-   async clearContactDoNotContact(@Param("id") contactId: string) {
-     return this.outreachDraftingService.clearContactDoNotContact(contactId);
-   }
+  @Post("contacts/:id/clear-do-not-contact")
+  async clearContactDoNotContact(@Param("id") contactId: string) {
+    return this.outreachDraftingService.clearContactDoNotContact(contactId);
+  }
 }

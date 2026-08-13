@@ -8,7 +8,7 @@ import {
   opportunityAnalysisRuns,
   websiteAnalysis,
 } from "@mela/database";
-import { and, asc, desc, eq, inArray, type SQL } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, inArray } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 
 export interface ListCompaniesOptions {
@@ -92,7 +92,8 @@ export class CompaniesService {
       conditions.push(eq(companies.industryId, options.industryId));
     }
 
-    const orderColumn = options.order === "name_asc" ? asc(companies.name) : desc(companies.createdAt);
+    const orderColumn =
+      options.order === "name_asc" ? asc(companies.name) : desc(companies.createdAt);
 
     const rows = await this.database
       .select()

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { type LeadPriority, type LeadStatus } from "@mela/config";
+import type { LeadPriority, LeadStatus } from "@mela/config";
 import {
   type Database,
   NoEvidenceForScoringError,
@@ -16,7 +16,7 @@ import {
   leadScoreSnapshots,
   leads,
 } from "@mela/database";
-import { and, asc, desc, eq, gte, lt, lte, type SQL } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { type ScoringInput, composeScores } from "./composer";
 import { formatExplanation } from "./formatter";
@@ -356,7 +356,8 @@ export class ScoringService {
       conditions.push(gte(leads.scoredAt, staleCutoff));
     }
 
-    const orderColumn = options.order === "score_asc" ? asc(leads.leadScore) : desc(leads.leadScore);
+    const orderColumn =
+      options.order === "score_asc" ? asc(leads.leadScore) : desc(leads.leadScore);
 
     const rows = await this.database
       .select({

@@ -296,11 +296,7 @@ export async function listOutreach(
         : and(...conditions)
       : undefined;
 
-  let query = executor
-    .select()
-    .from(outreach)
-    .where(whereClause)
-    .orderBy(desc(outreach.createdAt));
+  let query = executor.select().from(outreach).where(whereClause).orderBy(desc(outreach.createdAt));
 
   if (filters?.limit !== undefined) {
     query = query.limit(filters.limit) as typeof query;

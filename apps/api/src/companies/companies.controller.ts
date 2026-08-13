@@ -7,7 +7,7 @@ import { CompaniesService } from "./companies.service";
 
 const listCompaniesQuerySchema = z.object({
   verificationState: z
-    .enum(COMPANY_VERIFICATION_STATES as [CompanyVerificationState, ...CompanyVerificationState[]])
+    .enum([...COMPANY_VERIFICATION_STATES] as [CompanyVerificationState, ...CompanyVerificationState[]])
     .optional(),
   countryId: z.string().min(1).optional(),
   cityId: z.string().min(1).optional(),
