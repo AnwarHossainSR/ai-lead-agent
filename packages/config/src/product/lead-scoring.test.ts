@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   CONFIGURED_TECHNOLOGIES,
+  type ComponentRules,
+  ConfigurationError,
   DEFAULT_BUSINESS_FIT_PROFILE,
   DEFAULT_WEIGHT_VERSION,
   SCORE_COMPONENTS,
-  ConfigurationError,
   computeFingerprint,
   parseBusinessFitProfile,
   parseComponentRules,
   parseScoreComponents,
-  parseWeightVersion,
-  validateComponentRules,
+  resolveScoreComponent,
   validateWeightVersion,
 } from "./lead-scoring";
 
@@ -31,7 +31,10 @@ describe("scoring weights carry a version", () => {
     ]);
 
     expect(() =>
-      validateWeightVersion({ version: 1, fingerprint: computeFingerprint(SCORE_COMPONENTS) }, modified),
+      validateWeightVersion(
+        { version: 1, fingerprint: computeFingerprint(SCORE_COMPONENTS) },
+        modified,
+      ),
     ).toThrow(/does not match/);
   });
 
@@ -46,39 +49,28 @@ describe("scoring weights carry a version", () => {
 });
 
 describe("every configured weight has an implemented scorer", () => {
-  it("maps every configured component to a known scorer identifier", () => {
-    const knownScorers = [
-      "website_quality",
-      "technology_fit",
-      "opportunity_strength",
-      "contact_reachability",
+  it("has exactly five configured components matching the product definition", () => {
+    expect(SCORE_COMPONENTS).toHaveLength(5);
+    const ids = SCORE_COMPONENTS.map((component) => component.id);
+    expect(ids).toEqual([
       "business_fit",
-    ];
-
-    for (const component of SCORE_COMPONENTS) {
-      expect(knownScorers).toContain(component.id);
-    }
+      "technical_opportunity",
+      "business_opportunity",
+      "decision_maker_found",
+      "company_quality",
+    ]);
   });
 
-  it("has no scorer without a configured weight", () => {
-    const configuredIds = new Set(SCORE_COMPONENTS.map((component) => component.id));
-    const knownScorers = [
-      "website_quality",
-      "technology_fit",
-      "opportunity_strength",
-      "contact_reachability",
-      "business_fit",
-    ];
-
-    for (const scorer of knownScorers) {
-      expect(configuredIds.has(scorer)).toBe(true);
+  it("has no component without a configured weight", () => {
+    for (const component of SCORE_COMPONENTS) {
+      expect(component.maximum).toBeGreaterThan(0);
     }
   });
 });
 
 describe("per-component scoring rules", () => {
   it("validates overlapping bands", () => {
-    const load = (): ComponentRules =>
+    const load = (): ComponentRules[] =>
       parseComponentRules([
         {
           thresholds: [
@@ -92,8 +84,8 @@ describe("per-component scoring rules", () => {
     expect(load).toThrow(/overlapping thresholds/);
   });
 
-  it("validates a rule that cannot reach a valid value", () => {
-    const load = (): ComponentRules =>
+  it("validates a rule that can produce a value above 100", () => {
+    const load = (): ComponentRules[] =>
       parseComponentRules([
         {
           thresholds: [
@@ -104,11 +96,11 @@ describe("per-component scoring rules", () => {
         },
       ]);
 
-    expect(load).toThrow(/outside 0 to 100/);
+    expect(load).toThrow(/Too big: expected number to be <=100/);
   });
 
   it("validates gaps in coverage", () => {
-    const load = (): ComponentRules =>
+    const load = (): ComponentRules[] =>
       parseComponentRules([
         {
           thresholds: [
@@ -166,7 +158,7 @@ describe("target business profile configuration", () => {
         preferredCompanySizes: [],
       });
 
-    expect(load).toThrow(/Expected a lower_snake_case identifier/);
+    expect(load).toThrow(/Unknown target industry/);
   });
 
   it("allows zero target cities", () => {

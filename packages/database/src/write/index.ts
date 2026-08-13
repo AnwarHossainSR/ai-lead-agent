@@ -33,6 +33,7 @@ export {
 
 export {
   deleteContactsForCompany,
+  getLatestContacts,
   insertContact,
   insertContactInputSchema,
   type InsertContactInput,
@@ -64,19 +65,18 @@ export {
   applyLeadStatusChange,
   insertLead,
   insertLeadInputSchema,
-  updateLeadScore,
-  updateLeadScoreInputSchema,
-  listStaleLeads,
   type InsertLeadInput,
-  type UpdateLeadScoreInput,
 } from "./leads";
 
 export {
+  compareSnapshots,
   insertLeadScoreSnapshot,
-  insertLeadScoreSnapshotInputSchema,
-  getLeadScoreSnapshots,
-  type InsertLeadScoreSnapshotInput,
-} from "./lead-score-snapshots";
+  listStaleLeads,
+  updateLeadScore,
+  updateLeadScoreInputSchema,
+  type LeadScoreSnapshotWithDiff,
+  type UpdateLeadScoreInput,
+} from "./scoring";
 
 export {
   approveOutreach,
@@ -128,3 +128,12 @@ export {
   getLatestOpportunities,
   getRunHistory,
 } from "./opportunity-read-helpers";
+
+export {
+  assertEvidenceForScoring,
+  gatherCompanyEvidence,
+  identifyEvidence,
+  NoEvidenceForScoringError,
+  type CompanyEvidence,
+  type CompanyEvidenceIdentifiers,
+} from "./company-evidence";

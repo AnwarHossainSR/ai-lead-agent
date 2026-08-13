@@ -1,9 +1,13 @@
 import { z } from "zod";
 
-import { ConfigurationError, assertUniqueIdentifiers, parseOrThrow } from "../internal/errors";
+import { ConfigurationError } from "../internal/errors";
+export { ConfigurationError } from "../internal/errors";
+import { assertUniqueIdentifiers, parseOrThrow } from "../internal/errors";
 import { deepFreeze } from "../internal/freeze";
 import { displayNameSchema, identifierSchema } from "../internal/identifier";
+import { INDUSTRIES, findIndustry } from "./industries";
 import { MAXIMUM_LEAD_SCORE, MINIMUM_LEAD_SCORE } from "./lead-priority";
+import { CITIES, COUNTRIES, findCity, findCountry } from "./markets";
 
 const SUBJECT = "Lead scoring configuration";
 
@@ -66,8 +70,14 @@ export function parseScoreComponents(raw: unknown): readonly ScoreComponent[] {
   return deepFreeze(components);
 }
 
-export function parseComponentRules(raw: unknown): readonly ComponentRules {
-  return parseOrThrow(SUBJECT, z.array(componentRulesSchema).min(1), raw);
+export function parseComponentRules(raw: unknown): ComponentRules[] {
+  const rules = parseOrThrow(SUBJECT, z.array(componentRulesSchema).min(1), raw);
+
+  for (let index = 0; index < rules.length; index += 1) {
+    validateComponentRules(`component_${index}`, rules[index]!);
+  }
+
+  return rules;
 }
 
 export function parseWeightVersion(raw: unknown): WeightVersion {
@@ -75,7 +85,36 @@ export function parseWeightVersion(raw: unknown): WeightVersion {
 }
 
 export function parseBusinessFitProfile(raw: unknown): BusinessFitProfile {
-  return parseOrThrow(SUBJECT, businessFitProfileSchema, raw);
+  const profile = parseOrThrow(SUBJECT, businessFitProfileSchema, raw);
+
+  for (const industryId of profile.targetIndustryIds) {
+    if (findIndustry(industryId) === undefined) {
+      throw new ConfigurationError(
+        SUBJECT,
+        `Unknown target industry "${industryId}". Configured industries: ${INDUSTRIES.map((entry) => entry.id).join(", ")}.`,
+      );
+    }
+  }
+
+  for (const countryId of profile.targetCountryIds) {
+    if (findCountry(countryId) === undefined) {
+      throw new ConfigurationError(
+        SUBJECT,
+        `Unknown target country "${countryId}". Configured countries: ${COUNTRIES.map((entry) => entry.id).join(", ")}.`,
+      );
+    }
+  }
+
+  for (const cityId of profile.targetCityIds) {
+    if (findCity(cityId) === undefined) {
+      throw new ConfigurationError(
+        SUBJECT,
+        `Unknown target city "${cityId}". Configured cities: ${CITIES.map((entry) => entry.id).join(", ")}.`,
+      );
+    }
+  }
+
+  return profile;
 }
 
 export function validateComponentRules(componentId: string, rules: ComponentRules): void {
@@ -183,11 +222,20 @@ export function resolveScoreComponent(id: string): ScoreComponent {
   return component;
 }
 
-export const DEFAULT_WEIGHT_VERSION = parseWeightVersion({ version: 1, fingerprint: computeFingerprint(SCORE_COMPONENT_DATA) });
+export const DEFAULT_WEIGHT_VERSION = parseWeightVersion({
+  version: 1,
+  fingerprint: computeFingerprint(SCORE_COMPONENT_DATA),
+});
 
 export const DEFAULT_BUSINESS_FIT_PROFILE = deepFreeze(
   parseBusinessFitProfile({
-    targetIndustryIds: ["real_estate", "logistics", "hospitality", "ecommerce", "business_services"],
+    targetIndustryIds: [
+      "real_estate",
+      "logistics",
+      "hospitality",
+      "ecommerce",
+      "business_services",
+    ],
     targetCountryIds: ["uae", "saudi_arabia"],
     targetCityIds: ["dubai", "abu_dhabi", "riyadh", "jeddah"],
     preferredCompanySizes: ["11-50", "51-200", "201-500"],
@@ -215,3 +263,69 @@ export const CONFIGURED_TECHNOLOGIES = deepFreeze([
 ] as const);
 
 export type ConfiguredTechnologyId = (typeof CONFIGURED_TECHNOLOGIES)[number];
+
+const DEFAULT_COMPONENT_RULES_RAW = [
+  {
+    thresholds: [
+      { minimum: 0, maximum: 20, points: 5 },
+      { minimum: 21, maximum: 40, points: 10 },
+      { minimum: 41, maximum: 60, points: 15 },
+      { minimum: 61, maximum: 80, points: 22 },
+      { minimum: 81, maximum: 100, points: 30 },
+    ],
+    unknownCeiling: 10,
+  },
+  {
+    thresholds: [
+      { minimum: 0, maximum: 20, points: 5 },
+      { minimum: 21, maximum: 40, points: 10 },
+      { minimum: 41, maximum: 60, points: 15 },
+      { minimum: 61, maximum: 80, points: 22 },
+      { minimum: 81, maximum: 100, points: 30 },
+    ],
+    unknownCeiling: 10,
+  },
+  {
+    thresholds: [
+      { minimum: 0, maximum: 20, points: 4 },
+      { minimum: 21, maximum: 40, points: 8 },
+      { minimum: 41, maximum: 60, points: 12 },
+      { minimum: 61, maximum: 80, points: 16 },
+      { minimum: 81, maximum: 100, points: 20 },
+    ],
+    unknownCeiling: 7,
+  },
+  {
+    thresholds: [
+      { minimum: 0, maximum: 20, points: 2 },
+      { minimum: 21, maximum: 40, points: 4 },
+      { minimum: 41, maximum: 60, points: 6 },
+      { minimum: 61, maximum: 80, points: 8 },
+      { minimum: 81, maximum: 100, points: 10 },
+    ],
+    unknownCeiling: 3,
+  },
+  {
+    thresholds: [
+      { minimum: 0, maximum: 20, points: 2 },
+      { minimum: 21, maximum: 40, points: 4 },
+      { minimum: 41, maximum: 60, points: 6 },
+      { minimum: 61, maximum: 80, points: 8 },
+      { minimum: 81, maximum: 100, points: 10 },
+    ],
+    unknownCeiling: 3,
+  },
+] as const;
+
+export const DEFAULT_COMPONENT_RULES = deepFreeze(parseComponentRules(DEFAULT_COMPONENT_RULES_RAW));
+
+export function getComponentRules(componentId: string): ComponentRules {
+  const index = SCORE_COMPONENTS.findIndex((c) => c.id === componentId);
+  if (index === -1) {
+    throw new ConfigurationError(
+      SUBJECT,
+      `Unknown score component "${componentId}". Configured components: ${SCORE_COMPONENTS.map((c) => c.id).join(", ")}.`,
+    );
+  }
+  return DEFAULT_COMPONENT_RULES[index]!;
+}
