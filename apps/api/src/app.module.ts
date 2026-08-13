@@ -7,6 +7,7 @@ import { DatabaseModule } from "./database/database.module";
 import { DiscoveryModule } from "./discovery/discovery.module";
 import { HealthModule } from "./health/health.module";
 import { OpportunityModule } from "./opportunity/opportunity.module";
+import { OutreachModule } from "./outreach/outreach.module";
 import { RedisModule } from "./redis/redis.module";
 import { ResearchSummaryModule } from "./research-summary/research-summary.module";
 import { VerificationModule } from "./verification/verification.module";
@@ -29,6 +30,7 @@ import { VerificationModule } from "./verification/verification.module";
     AnalysisModule,
     OpportunityModule,
     ResearchSummaryModule,
+    OutreachModule,
   ],
 })
 export class AppModule {}

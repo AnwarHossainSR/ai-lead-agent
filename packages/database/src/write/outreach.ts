@@ -1,5 +1,5 @@
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
@@ -190,9 +190,9 @@ export async function updateOutreachText(
     return row;
   }
 
-  const permittedFrom = textIsChanging
-    ? ["draft", "pending_approval", "rejected"]
-    : ["draft", "pending_approval", "rejected", "approved"];
+  const permittedFrom: readonly OutreachRow["status"][] = textIsChanging
+    ? (["draft", "pending_approval", "rejected"] as const)
+    : (["draft", "pending_approval", "rejected", "approved"] as const);
 
   return transition(executor, outreachId, permittedFrom, {
     ...changes,
@@ -260,8 +260,25 @@ export async function rejectOutreach(
   });
 }
 
+export async function listOutreach(
+  executor: Executor,
+  filters?: { status?: OutreachRow["status"]; leadId?: string },
+): Promise<OutreachRow[]> {
+  const conditions: (ReturnType<typeof eq<typeof outreach.status>> | ReturnType<typeof eq<typeof outreach.leadId>>)[] = [];
+  if (filters?.status !== undefined) {
+    conditions.push(eq(outreach.status, filters.status));
+  }
+  if (filters?.leadId !== undefined) {
+    conditions.push(eq(outreach.leadId, filters.leadId));
+  }
+
+  const whereClause = conditions.length > 0 ? (conditions.length === 1 ? conditions[0] : and(...conditions)) : undefined;
+
+  return executor.select().from(outreach).where(whereClause);
+}
+
 type OutreachChanges = Assignments<typeof outreach.$inferInsert> & {
-  readonly status: OutreachRow["status"];
+  readonly status?: OutreachRow["status"];
 };
 
 async function transition(

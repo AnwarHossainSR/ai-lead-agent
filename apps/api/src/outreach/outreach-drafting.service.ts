@@ -2,10 +2,16 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import { eq } from "drizzle-orm";
 import type { AIService } from "@mela/ai";
-import type { Database } from "@mela/database";
+import type { Database, OutreachRow } from "@mela/database";
 import {
+  approveOutreach,
+  cancelOutreach,
   getCurrentLeadResearchSummary,
   insertOutreachDraft,
+  listOutreach,
+  rejectOutreach,
+  submitOutreachForApproval,
+  updateOutreachText,
   type LeadRow,
 } from "@mela/database";
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
@@ -191,5 +197,34 @@ export class OutreachDraftingService {
 
   private async gatherEvidence(companyId: string) {
     return require("@mela/database").gatherCompanyEvidence(this.database, companyId);
+  }
+
+  async listOutreach(filters?: { status?: string; leadId?: string }) {
+    const status = filters?.status as OutreachRow["status"] | undefined;
+    const rows = await listOutreach(this.database, {
+      status,
+      leadId: filters?.leadId,
+    });
+    return rows;
+  }
+
+  async updateOutreach(outreachId: string, changes: { subject?: string; messageBody?: string }) {
+    return updateOutreachText(this.database, outreachId, changes);
+  }
+
+  async submitOutreach(outreachId: string) {
+    return submitOutreachForApproval(this.database, outreachId);
+  }
+
+  async approveOutreach(outreachId: string) {
+    return approveOutreach(this.database, outreachId);
+  }
+
+  async rejectOutreach(outreachId: string, reason: string) {
+    return rejectOutreach(this.database, outreachId, reason);
+  }
+
+  async cancelOutreach(outreachId: string) {
+    return cancelOutreach(this.database, outreachId);
   }
 }

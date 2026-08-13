@@ -91,9 +91,12 @@ export {
   cancelOutreach,
   insertOutreachDraft,
   insertOutreachInputSchema,
+  listOutreach,
   markOutreachSent,
   recordOutreachResponse,
+  rejectOutreach,
   submitOutreachForApproval,
+  updateOutreachText,
   type InsertOutreachInput,
 } from "./outreach";
 
