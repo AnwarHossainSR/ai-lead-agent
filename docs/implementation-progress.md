@@ -13,7 +13,7 @@
 | [x]  | 5   | `add-technology-detection`    | 4          | 65    |
 | [x]  | 6   | `add-opportunity-analysis`    | 1, 5       | 44    |
 | [x]  | 7   | `add-decision-maker-research` | 3, 4       | 49    |
-| [ ]  | 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
+| [x]  | 8   | `add-lead-scoring-engine`     | 5, 6, 7    | 49    |
 | [ ]  | 9   | `add-research-summary`        | 8          | 43    |
 | [ ]  | 10  | `add-outreach-drafting`       | 9          | 43    |
 | [ ]  | 11  | `add-outreach-tracking`       | 10         | 51    |
@@ -135,11 +135,23 @@ Contact research finds people at companies who could be contacted.
 
 Delivered: Seniority classification with Arabic/English patterns; deterministic extraction (mailto, tel, structured data); model extraction with grounding check; MX-based deliverability via DNS-over-HTTPS; ResearchService orchestrating extraction and persistence; API endpoints for research, listing, and deletion; documentation.
 
+### add-lead-scoring-engine — completed 2026-08-13
+
+Turns gathered evidence into weighted, explained, reproducible scores and priorities.
+
+| Capability              | What it covers                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `lead-scoring`          | evidence gathering, five deterministic scorers, composer, explanation formatter, scoring service, API controller           |
+| `product-configuration` | scoring weights, per-component threshold bands, business fit profile, configured technologies, weight versioning            |
+| `lead-data-model`       | lead score columns, lead_score_snapshots table with CHECK constraints, weight_version and scored_at columns                |
+
+Delivered: `CompanyEvidence` read helper assembling analysis, detections, opportunities, contacts and company attributes; five pure scorers with load-time validation; weighted composition with missing-evidence capping; deterministic explanation formatter; `ScoringService` creating/updating leads and snapshots; API endpoints for single/batch scoring, lead listing, score history and recompute; no-model-call purity test; full test suite passes (928 tests).
+
 ## Next Module
 
-**`add-lead-scoring-engine` (Change #8)** — Turns gathered evidence into weighted, explained, reproducible scores and priorities. Depends on `add-website-analysis` (4), `add-technology-detection` (5), `add-opportunity-analysis` (6) and `add-decision-maker-research` (7), all complete. Ready to start.
+**`add-research-summary` (Change #9)** — Synthesizes gathered evidence into a concise summary for outreach. Depends on `add-lead-scoring-engine` (8), now complete. Ready to start.
 
-After that: `add-research-summary` (9) → `add-outreach-drafting` (10) → `add-outreach-tracking` (11).
+After that: `add-outreach-drafting` (10) → `add-outreach-tracking` (11).
 
 ## New capabilities these changes introduce
 
@@ -166,13 +178,13 @@ Each change also carries deltas against the three existing capabilities where it
 
 | Package          | Test files | Tests | Status  |
 | ---------------- | ---------- | ----- | ------- |
-| `@mela/config`   | 16         | 235   | passing |
+| `@mela/config`   | 16         | 239   | passing |
 | `@mela/shared`   | 3          | 66    | passing |
-| `@mela/database` | 10         | 154   | passing |
+| `@mela/database` | 12         | 173   | passing |
 | `@mela/ai`       | 9          | 89    | passing |
-| `@mela/api`      | 40         | 321   | passing |
-| `@mela/web`      | 5          | —     | passing |
+| `@mela/api`      | 43         | 356   | passing |
+| `@mela/web`      | 5          | 5     | passing |
 
 ## Next step
 
-Apply a change with `/opsx:apply <change-name>`. `add-lead-scoring-engine` now unblocked.
+Apply a change with `/opsx:apply <change-name>`. `add-research-summary` is now unblocked.
