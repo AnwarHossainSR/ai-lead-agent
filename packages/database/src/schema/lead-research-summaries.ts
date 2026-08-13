@@ -23,7 +23,9 @@ export const leadResearchSummaries = pgTable(
       .notNull()
       .references(() => companies.id, { onDelete: "cascade" }),
 
-    sections: jsonb("sections").notNull(),
+    sections: jsonb("sections")
+      .notNull()
+      .$type<Record<string, Array<{ text: string; cites: string[] }>>>(),
     citedFacts: jsonb("cited_facts").notNull(),
     unknownFacts: jsonb("unknown_facts").notNull().default("[]"),
     rejections: jsonb("rejections").notNull().default("[]"),

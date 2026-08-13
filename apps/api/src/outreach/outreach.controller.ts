@@ -13,7 +13,7 @@ import {
 
 import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
-import type { OutreachDraftingService } from "./outreach-drafting.service";
+import { OutreachDraftingService } from "./outreach-drafting.service";
 
 const draftOutreachSchema = z.object({
   contactId: z.string().uuid(),

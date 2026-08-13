@@ -19,6 +19,7 @@ allowBuilds:
   protobufjs: true
   unrs-resolver: true
   '@biomejs/biome': true
+  msgpackr-extract: true
 
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
@@ -51,6 +52,7 @@ catalog:
   drizzle-kit: 0.31.10
   postgres: 3.4.9
   uuidv7: 1.2.1
+  qstash: 2.11.3
 
   # API
   # 11.1.29 was published today; pnpm's minimum release age gate exists to keep

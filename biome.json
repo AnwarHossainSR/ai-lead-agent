@@ -62,7 +62,7 @@
       "coverage",
       "drizzle",
       "**/tsconfig*.json",
-      "packages/ai/src/provider/gemini.ts"
+      "**/provider/gemini.ts"
     ]
   },
   "overrides": [

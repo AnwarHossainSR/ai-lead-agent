@@ -143,6 +143,12 @@ export const apiEnvSchema = z.object({
     .describe(
       "Maximum allowed page weight in bytes. Exceeding this ends the analysis with a weight limit reason.",
     ),
+
+  WORKER_SHUTDOWN_TIMEOUT_MS: positiveInteger
+    .default(30_000)
+    .describe(
+      "Maximum time in milliseconds the worker waits for active jobs to finish during graceful shutdown.",
+    ),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

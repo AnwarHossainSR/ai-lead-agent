@@ -246,3 +246,15 @@ export {
   type ResponseCategory,
   type OutreachTrackingConfig,
 } from "./outreach-tracking";
+
+export {
+  findQueueConfig,
+  parseQueueConfigs,
+  queueConfigsSchema,
+  QUEUE_CONFIGS,
+  type QueueConfig,
+  type QueueConfigs,
+  type QueueName,
+  resolveQueueConfig,
+  validateConcurrency,
+} from "./background-jobs";
