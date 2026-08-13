@@ -22,7 +22,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 - [x] 3.1 Expand the shell into the workspace layout with navigation to leads, companies, outreach review, analytics and operations
 - [x] 3.2 Move filters into URL search params so a filtered view is a shareable link
-- [ ] 3.3 Add per-panel Suspense and error boundaries using the existing bounded-timeout fetch helper
+- [x] 3.3 Add per-panel Suspense and error boundaries using the existing bounded-timeout fetch helper
 - [ ] 3.4 Add tests: the API stopped renders the condition, a single failing endpoint degrades only its panel
 - [ ] 3.5 Verify: `pnpm --filter @mela/web lint typecheck test build` passes
 
