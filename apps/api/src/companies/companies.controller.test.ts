@@ -8,13 +8,14 @@ import {
   companies,
   insertAIInvocation,
   insertCompany,
+  insertLead,
   insertOpportunity,
   insertOpportunityAnalysisRun,
   insertTechnologyDetection,
   insertWebsiteAnalysis,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { aiInvocationInput, companyInput } from "@mela/database/testing/fixtures";
+import { aiInvocationInput, companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { createTestApp } from "../testing/app";
 
 /**
@@ -138,6 +139,42 @@ describe("GET /api/companies", () => {
       (row: { id: string }) => row.id === neverAnalysed.id,
     );
     expect(neverAnalysedRow.latestAnalysis).toBeNull();
+  });
+});
+
+describe("GET /api/companies/:id", () => {
+  it("returns the company with a null lead when it has not been scored", async () => {
+    const company = await insertCompany(harness.database, companyInput({ name: "Solo Co" }));
+
+    const response = await request(app?.getHttpServer())
+      .get(`/api/companies/${company.id}`)
+      .expect(200);
+
+    expect(response.body.id).toBe(company.id);
+    expect(response.body.name).toBe("Solo Co");
+    expect(response.body.lead).toBeNull();
+  });
+
+  it("includes the lead summary when the company has been scored", async () => {
+    const company = await insertCompany(harness.database, companyInput({ name: "Scored Co" }));
+    const lead = await insertLead(harness.database, leadInput(company.id));
+
+    const response = await request(app?.getHttpServer())
+      .get(`/api/companies/${company.id}`)
+      .expect(200);
+
+    expect(response.body.lead).toEqual({
+      id: lead.id,
+      status: lead.status,
+      priority: lead.priority,
+      leadScore: lead.leadScore,
+    });
+  });
+
+  it("returns 404 for a company that does not exist", async () => {
+    await request(app?.getHttpServer())
+      .get("/api/companies/00000000-0000-0000-0000-000000000000")
+      .expect(404);
   });
 });
 

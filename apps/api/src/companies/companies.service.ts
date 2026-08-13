@@ -48,6 +48,24 @@ interface LeadSummary {
   readonly leadScore: number;
 }
 
+export interface CompanyDetail {
+  readonly id: string;
+  readonly name: string;
+  readonly countryId: string;
+  readonly cityId: string | null;
+  readonly industryId: string;
+  readonly website: string | null;
+  readonly verificationState: string;
+  readonly verifiedAt: Date | null;
+  readonly discoverySource: string;
+  readonly discoverySourceUrl: string;
+  readonly doNotContactAt: Date | null;
+  readonly doNotContactReason: string | null;
+  readonly createdAt: Date;
+  /** Null means the company has not been scored into a lead. */
+  readonly lead: LeadSummary | null;
+}
+
 export interface ListedCompany {
   readonly id: string;
   readonly name: string;
@@ -189,6 +207,51 @@ export class CompaniesService {
       latestOpportunityAnalysis: latestOpportunityByCompany.get(row.id) ?? null,
       lead: leadByCompany.get(row.id) ?? null,
     }));
+  }
+
+  /**
+   * A single company with its lead (if scored), for the company detail
+   * view. Mirrors `ScoringService.getLead` — same "look it up directly,
+   * don't force a caller to fetch the whole list" reasoning.
+   */
+  async getCompany(companyId: string): Promise<CompanyDetail | null> {
+    const [row] = await this.database
+      .select()
+      .from(companies)
+      .where(eq(companies.id, companyId))
+      .limit(1);
+
+    if (row === undefined) {
+      return null;
+    }
+
+    const [lead] = await this.database
+      .select({
+        id: leads.id,
+        status: leads.status,
+        priority: leads.priority,
+        leadScore: leads.leadScore,
+      })
+      .from(leads)
+      .where(eq(leads.companyId, companyId))
+      .limit(1);
+
+    return {
+      id: row.id,
+      name: row.name,
+      countryId: row.countryId,
+      cityId: row.cityId,
+      industryId: row.industryId,
+      website: row.website,
+      verificationState: row.verificationState,
+      verifiedAt: row.verifiedAt,
+      discoverySource: row.discoverySource,
+      discoverySourceUrl: row.discoverySourceUrl,
+      doNotContactAt: row.doNotContactAt,
+      doNotContactReason: row.doNotContactReason,
+      createdAt: row.createdAt,
+      lead: lead ?? null,
+    };
   }
 
   /**

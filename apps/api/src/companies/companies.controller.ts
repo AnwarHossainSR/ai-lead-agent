@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from "@nestjs/common";
+import { Controller, Get, NotFoundException, Param, Query } from "@nestjs/common";
 
 import { COMPANY_VERIFICATION_STATES, type CompanyVerificationState } from "@mela/database";
 import { z } from "zod";
@@ -47,6 +47,19 @@ export class CompaniesController {
   async countCompanies(@Query() query: CountCompaniesQueryDto) {
     const value = await this.companiesService.countCompanies(query);
     return { count: value };
+  }
+
+  // Registered after "count": a route parameter registered earlier would
+  // swallow that literal path segment as an :id.
+  @Get(":id")
+  async getCompany(@Param("id") id: string) {
+    const company = await this.companiesService.getCompany(id);
+
+    if (company === null) {
+      throw new NotFoundException(`Company "${id}" not found.`);
+    }
+
+    return company;
   }
 
   @Get(":id/opportunities")
