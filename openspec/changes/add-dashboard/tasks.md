@@ -36,14 +36,14 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 5. Outreach review queue
 
-- [ ] 5.1 Build the review view showing one message at a time beside the facts it cites, each with its source and certainty
-- [ ] 5.2 Disable approval until the message body has been rendered in the viewport
-- [ ] 5.3 Add approve, edit, reject-with-required-reason and cancel actions as Server Actions
-- [ ] 5.4 Show that an edit to an approved message revoked its approval and returned it to the queue
-- [ ] 5.5 Confirm the view offers no bulk approval, no multi-select and no send control
-- [ ] 5.6 Add the Playwright workflow test: open, read, approve, edit, assert back in the queue; and a rejection requiring a reason
-- [ ] 5.7 Add a Playwright test asserting no bulk-approval or send control exists anywhere in the outreach views
-- [ ] 5.8 Verify: `pnpm --filter @mela/web lint typecheck test build` passes
+- [x] 5.1 Build the review view showing one message at a time beside the facts it cites, each with its source and certainty
+- [x] 5.2 Disable approval until the message body has been rendered in the viewport
+- [x] 5.3 Add approve, edit, reject-with-required-reason and cancel actions as Server Actions
+- [x] 5.4 Show that an edit to an approved message revoked its approval and returned it to the queue
+- [x] 5.5 Confirm the view offers no bulk approval, no multi-select and no send control
+- [~] 5.6 ~~Add the Playwright workflow test: open, read, approve, edit, assert back in the queue; and a rejection requiring a reason~~ — skipped per user instruction (no new Playwright tests this session). Covered instead by vitest component tests on `MessageReviewCard` (viewport-gated approve, required rejection reason, revoke-on-edit notice).
+- [~] 5.7 ~~Add a Playwright test asserting no bulk-approval or send control exists anywhere in the outreach views~~ — skipped per user instruction. Covered instead by a vitest assertion that no bulk-approve, multi-select or send control renders.
+- [x] 5.8 Verify: `pnpm --filter @mela/web lint typecheck test` passes (Playwright portion of the `test` script intentionally not exercised for this section's new surface, per the same instruction) plus `build`
 
 ## 6. Company and pipeline views
 
