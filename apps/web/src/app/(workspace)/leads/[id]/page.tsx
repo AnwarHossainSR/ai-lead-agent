@@ -2,6 +2,7 @@ import { findCity, findIndustry } from "@mela/config";
 
 import { Evidence } from "@/components/evidence";
 import { Fact } from "@/components/fact";
+import { Generated } from "@/components/generated";
 import { Panel } from "@/components/panel";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -11,8 +12,17 @@ import type {
   LatestAnalysis,
   LeadDetail,
   OpportunityWithEvidence,
+  ResearchSummary,
   TechnologyDetection,
 } from "@/lib/lead-detail";
+
+const SECTION_LABELS: readonly { key: string; label: string }[] = [
+  { key: "business", label: "Business" },
+  { key: "webPresence", label: "Web Presence" },
+  { key: "opportunities", label: "Opportunities" },
+  { key: "people", label: "People" },
+  { key: "approach", label: "Suggested Approach" },
+];
 
 const SCORE_COMPONENTS: readonly { key: keyof LeadDetail; label: string }[] = [
   { key: "businessFitScore", label: "Business Fit" },
@@ -157,6 +167,57 @@ async function TechnologiesPanel({ companyId }: { companyId: string }) {
         );
       })}
     </ul>
+  );
+}
+
+async function ResearchSummaryPanel({ leadId }: { leadId: string }) {
+  const url = apiUrl(`/leads/${leadId}/research-summary`);
+  const result =
+    url === null
+      ? ({ status: "unreachable", error: "API_URL is not configured." } as const)
+      : await fetchWithTimeout<{ summary: ResearchSummary | null }>(url);
+
+  if (result.status !== "ok") {
+    return <Unavailable title="Research summary" error={result.error} />;
+  }
+
+  const summary = result.data.summary;
+
+  if (summary === null) {
+    return <p className="text-sm text-muted-foreground">No research summary generated yet.</p>;
+  }
+
+  const sections = SECTION_LABELS.filter(({ key }) => (summary.sections[key]?.length ?? 0) > 0);
+
+  return (
+    <Generated>
+      <div className="space-y-4">
+        {sections.map(({ key, label }) => (
+          <div key={key}>
+            <h3 className="text-sm font-medium">{label}</h3>
+            <ul className="mt-1 list-disc space-y-1 pl-5">
+              {summary.sections[key]?.map((claim) => (
+                <li key={claim.text} className="text-sm text-muted-foreground">
+                  {claim.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        {summary.unknownFacts.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium">Not established</h3>
+            <ul className="mt-1 space-y-1">
+              {summary.unknownFacts.map((fact) => (
+                <li key={fact} className="text-sm">
+                  {fact}: <Fact fact={{ certainty: "unknown" }} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </Generated>
   );
 }
 
@@ -318,6 +379,13 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
         <pre className="mt-1 overflow-x-auto whitespace-pre-wrap text-sm text-muted-foreground">
           {lead.scoreExplanation}
         </pre>
+      </div>
+
+      <div>
+        <h2 className="mb-2 font-medium">Research summary</h2>
+        <Panel title="Research summary">
+          <ResearchSummaryPanel leadId={lead.id} />
+        </Panel>
       </div>
 
       <div>

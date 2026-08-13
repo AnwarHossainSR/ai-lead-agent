@@ -67,6 +67,20 @@ export interface LatestAnalysis {
   readonly createdAt: string | null;
 }
 
+/** One AI-generated claim within a research summary section, with its citations. */
+export interface ResearchSummaryClaim {
+  readonly text: string;
+  readonly cites: readonly string[];
+}
+
+/** The current research summary — `GET /api/leads/:id/research-summary`. */
+export interface ResearchSummary {
+  readonly id: string;
+  readonly sections: Record<string, readonly ResearchSummaryClaim[]>;
+  readonly unknownFacts: readonly string[];
+  readonly createdAt: string;
+}
+
 /** A contact — `GET /api/companies/:id/contacts`. */
 export interface Contact {
   readonly id: string;
