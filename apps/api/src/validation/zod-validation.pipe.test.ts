@@ -61,6 +61,10 @@ async function createPipeApp(): Promise<INestApplication> {
     ANALYSIS_RUN_TIMEOUT_MS: 120000,
     ANALYSIS_MAX_PAGE_BYTES: 10485760,
     WORKER_SHUTDOWN_TIMEOUT_MS: 30000,
+    QSTASH_URL: "https://qstash-eu-central-1.upstash.io",
+    QSTASH_TOKEN: "test-qstash-token",
+    QSTASH_CURRENT_SIGNING_KEY: "sig_test",
+    QSTASH_NEXT_SIGNING_KEY: "sig_test_next",
   } satisfies ApiEnv);
 
   await app.init();

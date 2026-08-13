@@ -99,7 +99,8 @@ export const JOB_DEFINITIONS: readonly JobDefinition[] = [
     queueName: "discovery",
     queueConfig: QUEUE_CONFIGS.discovery as QueueConfig,
     payloadSchema: discoveryJobPayloadSchema,
-    getSubjectId: (payload) => `${(payload as DiscoveryJobPayload).countryId}:${(payload as DiscoveryJobPayload).industryId}`,
+    getSubjectId: (payload) =>
+      `${(payload as DiscoveryJobPayload).countryId}:${(payload as DiscoveryJobPayload).industryId}`,
   },
   {
     name: "verification",

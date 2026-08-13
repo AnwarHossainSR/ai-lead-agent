@@ -210,11 +210,18 @@ export class OutreachDraftingService {
     return require("@mela/database").gatherCompanyEvidence(this.database, companyId);
   }
 
-  async listOutreach(filters?: { status?: string; leadId?: string }) {
+  async listOutreach(filters?: {
+    status?: string;
+    leadId?: string;
+    limit?: number;
+    offset?: number;
+  }) {
     const status = filters?.status as OutreachRow["status"] | undefined;
     const rows = await listOutreach(this.database, {
       status,
       leadId: filters?.leadId,
+      limit: filters?.limit,
+      offset: filters?.offset,
     });
     return rows;
   }

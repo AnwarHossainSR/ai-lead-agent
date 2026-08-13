@@ -1,9 +1,8 @@
-import { type OnApplicationShutdown } from "@nestjs/common";
+import type { OnApplicationShutdown } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
-import { Job } from "bullmq";
 
-import { resolveJobDefinition, type JobName, type JobPayload } from "./jobs.registry";
-import { QueueService } from "./queue.service";
+import { type JobName, type JobPayload, resolveJobDefinition } from "./jobs.registry";
+import type { QueueService } from "./queue.service";
 
 export class JobService implements OnApplicationShutdown {
   private readonly logger = new Logger("JobService");
@@ -22,39 +21,24 @@ export class JobService implements OnApplicationShutdown {
     return result.data as JobPayload<T>;
   }
 
-  async enqueue<T extends JobName>(name: T, payload: unknown, jobId?: string): Promise<Job> {
+  async enqueue<T extends JobName>(
+    name: T,
+    payload: unknown,
+    options?: { delay?: number; cron?: string },
+  ): Promise<void> {
     const definition = resolveJobDefinition(name);
     const parsed = this.validatePayload(name, payload);
-    const managedQueue = this.queueService.getQueue(definition.queueName);
-
-    if (managedQueue === undefined) {
-      throw new Error(`Queue "${definition.queueName}" is not registered.`);
-    }
-
-    const subjectId = definition.getSubjectId(parsed);
-    const deterministicJobId = jobId ?? `${name}-${subjectId}`;
-
-    this.logger.log(`Enqueuing job "${name}" with id "${deterministicJobId}".`);
-    return managedQueue.queue.add(name, parsed, { jobId: deterministicJobId });
+    await this.queueService.publish(definition.queueName, parsed, options);
   }
 
   wrapProcessor<T extends JobName>(
     name: T,
-    processor: (payload: JobPayload<T>, job: Job) => Promise<Skipped | void>,
-  ): (job: Job) => Promise<void> {
-    return async (job: Job): Promise<void> => {
-      if (!job.data || typeof job.data !== "object") {
-        throw new ValidationError(name, "(root) — expected an object payload.");
-      }
-
+    processor: (payload: JobPayload<T>) => Promise<Skipped | undefined>,
+  ): (payload: JobPayload<T>) => Promise<Skipped | undefined> {
+    return async (payload: JobPayload<T>): Promise<Skipped | undefined> => {
       try {
-        const payload = this.validatePayload(name, job.data);
-        const result = await processor(payload, job);
-
-        if (result instanceof Skipped) {
-          this.logger.log(`Job "${name}" skipped: ${result.reason}`);
-          return;
-        }
+        const validated = this.validatePayload(name, payload);
+        return await processor(validated);
       } catch (error) {
         if (error instanceof ValidationError) {
           this.logger.error(`Validation failed: ${error.message}`);

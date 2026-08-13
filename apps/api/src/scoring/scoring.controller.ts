@@ -10,7 +10,7 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 
-import { type LeadPriority } from "@mela/config";
+import { LEAD_PRIORITIES, LEAD_STATUSES, type LeadPriority, type LeadStatus } from "@mela/config";
 import { z } from "zod";
 import { createZodDto } from "../validation/zod-dto";
 import { ScoringService } from "./scoring.service";
@@ -26,6 +26,23 @@ const batchScoreSchema = z.object({
 
 class ScoreCompanyRequestDto extends createZodDto(scoreCompanySchema) {}
 class BatchScoreRequestDto extends createZodDto(batchScoreSchema) {}
+
+const listLeadsQuerySchema = z.object({
+  priority: z.enum(LEAD_PRIORITIES as [LeadPriority, ...LeadPriority[]]).optional(),
+  status: z.enum(LEAD_STATUSES as [LeadStatus, ...LeadStatus[]]).optional(),
+  industryId: z.string().min(1).optional(),
+  cityId: z.string().min(1).optional(),
+  serviceId: z.string().min(1).optional(),
+  minScore: z.coerce.number().int().min(0).max(100).optional(),
+  maxScore: z.coerce.number().int().min(0).max(100).optional(),
+  stale: z.coerce.boolean().optional(),
+  staleAfterDays: z.coerce.number().int().min(1).optional(),
+  order: z.enum(["score_asc", "score_desc"]).default("score_desc"),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+class ListLeadsQueryDto extends createZodDto(listLeadsQuerySchema) {}
 
 @Controller()
 export class ScoringController {
@@ -69,19 +86,20 @@ export class ScoringController {
   }
 
   @Get("leads")
-  async listLeads(
-    @Query("priority") priority?: string,
-    @Query("minScore") minScore?: string,
-    @Query("maxScore") maxScore?: string,
-    @Query("limit") limit?: string,
-    @Query("offset") offset?: string,
-  ) {
+  async listLeads(@Query() query: ListLeadsQueryDto) {
     return this.scoringService.listLeads({
-      priority: priority as LeadPriority | undefined,
-      minScore: minScore !== undefined ? Number(minScore) : undefined,
-      maxScore: maxScore !== undefined ? Number(maxScore) : undefined,
-      limit: limit !== undefined ? Number(limit) : undefined,
-      offset: offset !== undefined ? Number(offset) : undefined,
+      priority: query.priority,
+      status: query.status,
+      industryId: query.industryId,
+      cityId: query.cityId,
+      serviceId: query.serviceId,
+      minScore: query.minScore,
+      maxScore: query.maxScore,
+      stale: query.stale,
+      staleAfterDays: query.staleAfterDays,
+      order: query.order,
+      limit: query.limit,
+      offset: query.offset,
     });
   }
 }

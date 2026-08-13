@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -263,9 +263,20 @@ export async function rejectOutreach(
   });
 }
 
+export interface ListOutreachFilters {
+  readonly status?: OutreachRow["status"];
+  readonly leadId?: string;
+  readonly limit?: number;
+  readonly offset?: number;
+}
+
+/**
+ * Newest first: the review queue works through what needs attention now, and
+ * a stale draft sitting at the bottom of an ascending list is easy to forget.
+ */
 export async function listOutreach(
   executor: Executor,
-  filters?: { status?: OutreachRow["status"]; leadId?: string },
+  filters?: ListOutreachFilters,
 ): Promise<OutreachRow[]> {
   const conditions: (
     | ReturnType<typeof eq<typeof outreach.status>>
@@ -285,7 +296,20 @@ export async function listOutreach(
         : and(...conditions)
       : undefined;
 
-  return executor.select().from(outreach).where(whereClause);
+  let query = executor
+    .select()
+    .from(outreach)
+    .where(whereClause)
+    .orderBy(desc(outreach.createdAt));
+
+  if (filters?.limit !== undefined) {
+    query = query.limit(filters.limit) as typeof query;
+  }
+  if (filters?.offset !== undefined) {
+    query = query.offset(filters.offset) as typeof query;
+  }
+
+  return query;
 }
 
 export const recordOutreachSendInputSchema = z.object({

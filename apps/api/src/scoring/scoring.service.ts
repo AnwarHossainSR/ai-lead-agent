@@ -1,21 +1,22 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { type LeadPriority } from "@mela/config";
+import { type LeadPriority, type LeadStatus } from "@mela/config";
 import {
   type Database,
   NoEvidenceForScoringError,
   assertEvidenceForScoring,
+  companies,
   gatherCompanyEvidence,
   identifyEvidence,
 } from "@mela/database";
-import { type LeadRow, insertLead, updateLeadScore } from "@mela/database";
+import { insertLead, updateLeadScore } from "@mela/database";
 import {
   compareSnapshots,
   insertLeadScoreSnapshot,
   leadScoreSnapshots,
   leads,
 } from "@mela/database";
-import { and, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, lte, type SQL } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { type ScoringInput, composeScores } from "./composer";
 import { formatExplanation } from "./formatter";
@@ -60,11 +61,44 @@ export interface RecomputeResult {
 
 export interface ListLeadsOptions {
   readonly priority?: LeadPriority;
+  readonly status?: LeadStatus;
+  readonly industryId?: string;
+  readonly cityId?: string;
+  readonly serviceId?: string;
   readonly minScore?: number;
   readonly maxScore?: number;
+  /** A lead is stale once its score is older than this many days. */
+  readonly staleAfterDays?: number;
+  /** When set, keeps only stale (`true`) or only fresh (`false`) leads. */
+  readonly stale?: boolean;
+  readonly order?: "score_asc" | "score_desc";
   readonly limit?: number;
   readonly offset?: number;
 }
+
+/** A lead row joined with the company context the lead list views need. */
+export interface ListedLead {
+  readonly id: string;
+  readonly companyId: string;
+  readonly companyName: string;
+  readonly industryId: string;
+  readonly cityId: string | null;
+  readonly leadScore: number;
+  readonly priority: string;
+  readonly status: string;
+  readonly businessFitScore: number;
+  readonly technicalOpportunityScore: number;
+  readonly businessOpportunityScore: number;
+  readonly decisionMakerFoundScore: number;
+  readonly companyQualityScore: number;
+  readonly scoreExplanation: string;
+  readonly recommendedServiceId: string | null;
+  readonly contactReason: string | null;
+  readonly scoredAt: Date;
+  readonly isStale: boolean;
+}
+
+const DEFAULT_STALE_AFTER_DAYS = 30;
 
 @Injectable()
 export class ScoringService {
@@ -288,33 +322,72 @@ export class ScoringService {
     return history;
   }
 
-  async listLeads(options: ListLeadsOptions = {}): Promise<LeadRow[]> {
-    const conditions: ReturnType<typeof eq>[] = [];
+  async listLeads(options: ListLeadsOptions = {}): Promise<ListedLead[]> {
+    const conditions: SQL[] = [];
 
     if (options.priority) {
       conditions.push(eq(leads.priority, options.priority));
     }
-
+    if (options.status) {
+      conditions.push(eq(leads.status, options.status));
+    }
+    if (options.industryId) {
+      conditions.push(eq(companies.industryId, options.industryId));
+    }
+    if (options.cityId) {
+      conditions.push(eq(companies.cityId, options.cityId));
+    }
+    if (options.serviceId) {
+      conditions.push(eq(leads.recommendedServiceId, options.serviceId));
+    }
     if (options.minScore !== undefined) {
-      conditions.push(eq(leads.leadScore, options.minScore));
+      conditions.push(gte(leads.leadScore, options.minScore));
+    }
+    if (options.maxScore !== undefined) {
+      conditions.push(lte(leads.leadScore, options.maxScore));
     }
 
-    let query = this.database.select().from(leads);
+    const staleAfterDays = options.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS;
+    const staleCutoff = new Date(Date.now() - staleAfterDays * 24 * 60 * 60 * 1000);
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+    if (options.stale === true) {
+      conditions.push(lt(leads.scoredAt, staleCutoff));
+    } else if (options.stale === false) {
+      conditions.push(gte(leads.scoredAt, staleCutoff));
     }
 
-    query = query.orderBy(leads.leadScore) as any;
+    const orderColumn = options.order === "score_asc" ? asc(leads.leadScore) : desc(leads.leadScore);
 
-    if (options.limit) {
-      query = query.limit(options.limit) as any;
-    }
+    const rows = await this.database
+      .select({
+        id: leads.id,
+        companyId: leads.companyId,
+        companyName: companies.name,
+        industryId: companies.industryId,
+        cityId: companies.cityId,
+        leadScore: leads.leadScore,
+        priority: leads.priority,
+        status: leads.status,
+        businessFitScore: leads.businessFitScore,
+        technicalOpportunityScore: leads.technicalOpportunityScore,
+        businessOpportunityScore: leads.businessOpportunityScore,
+        decisionMakerFoundScore: leads.decisionMakerFoundScore,
+        companyQualityScore: leads.companyQualityScore,
+        scoreExplanation: leads.scoreExplanation,
+        recommendedServiceId: leads.recommendedServiceId,
+        contactReason: leads.contactReason,
+        scoredAt: leads.scoredAt,
+      })
+      .from(leads)
+      .innerJoin(companies, eq(leads.companyId, companies.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(orderColumn)
+      .limit(options.limit ?? 50)
+      .offset(options.offset ?? 0);
 
-    if (options.offset) {
-      query = query.offset(options.offset) as any;
-    }
-
-    return query as any;
+    return rows.map((row) => ({
+      ...row,
+      isStale: row.scoredAt < staleCutoff,
+    }));
   }
 }
