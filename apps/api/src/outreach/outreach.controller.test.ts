@@ -1,36 +1,20 @@
 import { Test } from "@nestjs/testing";
-import { type INestApplication } from "@nestjs/common";
-import request from "supertest";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AIService } from "@mela/ai";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
-import { createTestApp } from "../testing/app";
 
-describe("POST /api/outreach/:id/sent", () => {
+describe("recordOutreachSent", () => {
   let harness: TestDatabase;
-  let app: INestApplication | undefined;
   let service: OutreachDraftingService;
   let outreachId: string;
 
-  beforeAll(async () => {
-    harness = await setupTestDatabase();
-  });
-
-  afterEach(async () => {
-    await app?.close();
-    app = undefined;
-  });
-
-  afterAll(async () => {
-    await harness?.close();
-  });
-
   beforeEach(async () => {
-    await harness.truncate();
+    harness = await setupTestDatabase();
 
     const company = await insertCompany(harness.database, companyInput());
     const lead = await insertLead(harness.database, leadInput(company.id));
@@ -59,22 +43,22 @@ describe("POST /api/outreach/:id/sent", () => {
 
     service = moduleRef.get(OutreachDraftingService);
     await service.approveOutreach(outreachId);
+  });
 
-    app = await createTestApp();
+  afterEach(async () => {
+    await harness.close();
   });
 
   it("records a send for an approved outreach", async () => {
-    const response = await request(app!.getHttpServer())
-      .post(`/api/outreach/${outreachId}/sent`)
-      .send({
-        sentAt: new Date().toISOString(),
-        means: "gmail",
-      })
-      .expect(200);
+    const approvedAt = new Date(Date.now() + 1_000);
+    const sent = await service.recordOutreachSent(outreachId, {
+      sentAt: approvedAt,
+      means: "gmail",
+    });
 
-    expect(response.body.status).toBe("sent");
-    expect(response.body.sentMeans).toBe("gmail");
-    expect(response.body.sentAt).toBeDefined();
+    expect(sent.status).toBe("sent");
+    expect(sent.sentMeans).toBe("gmail");
+    expect(sent.sentAt).toBeInstanceOf(Date);
   });
 
   it("refuses a send for an unapproved outreach", async () => {
@@ -85,29 +69,22 @@ describe("POST /api/outreach/:id/sent", () => {
       isExample: false,
     });
 
-    const response = await request(app!.getHttpServer())
-      .post(`/api/outreach/${unapproved.id}/sent`)
-      .send({
-        sentAt: new Date().toISOString(),
+    await expect(
+      service.recordOutreachSent(unapproved.id, {
+        sentAt: new Date(),
         means: "gmail",
-      })
-      .expect(400);
-
-    expect(response.body.message).toContain("sending is reachable only from approved");
+      }),
+    ).rejects.toThrow("sending is reachable only from approved");
   });
 
   it("refuses a backdated send", async () => {
-    const approved = await service.approveOutreach(outreachId);
-    const backdate = new Date(approved.approvedAt!.getTime() - 60_000);
+    const backdate = new Date("2020-01-01T00:00:00.000Z");
 
-    const response = await request(app!.getHttpServer())
-      .post(`/api/outreach/${outreachId}/sent`)
-      .send({
-        sentAt: backdate.toISOString(),
+    await expect(
+      service.recordOutreachSent(outreachId, {
+        sentAt: backdate,
         means: "gmail",
-      })
-      .expect(400);
-
-    expect(response.body.message).toContain("earlier than approval time");
+      }),
+    ).rejects.toThrow("earlier than approval time");
   });
 });

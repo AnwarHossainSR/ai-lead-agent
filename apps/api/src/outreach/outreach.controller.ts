@@ -8,6 +8,7 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
+  BadRequestException,
 } from "@nestjs/common";
 
 import { z } from "zod";
@@ -97,7 +98,14 @@ export class OutreachController {
     @Param("id") outreachId: string,
     @Body() body: RecordOutreachSentDto,
   ) {
-    return this.outreachDraftingService.recordOutreachSent(outreachId, body);
+    try {
+      return this.outreachDraftingService.recordOutreachSent(outreachId, body);
+    } catch (error) {
+      if (error instanceof Error && error.name === "WriteValidationError") {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
   }
 
    @Post("outreach/:id/cancel")
