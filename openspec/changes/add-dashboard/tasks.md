@@ -7,7 +7,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 1.1 Build `<Fact>` rendering observed, inferred and unknown as three distinct states, with no path producing a blank, a dash or a zero for a missing value
 - [x] 1.2 Build `<Evidence>` showing the source URL as a link, the time recorded, and the matched or cited text in a popover
 - [x] 1.3 Build `<Generated>` labelling model-produced prose persistently
-- [ ] 1.4 Add component tests for all three, including an unmeasured score not rendering as zero
+- [x] 1.4 Add component tests for all three, including an unmeasured score not rendering as zero
 - [ ] 1.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
 
 ## 2. Read endpoints
