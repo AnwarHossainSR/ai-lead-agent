@@ -1,8 +1,9 @@
 import { findCity, findIndustry } from "@mela/config";
 
-import { Evidence } from "@/components/evidence";
-import { Fact } from "@/components/fact";
-import { Generated } from "@/components/generated";
+import { ContactList } from "@/components/lead-detail/contact-list";
+import { OpportunityList } from "@/components/lead-detail/opportunity-list";
+import { ResearchSummaryView } from "@/components/lead-detail/research-summary-view";
+import { TechnologyList } from "@/components/lead-detail/technology-list";
 import { Panel } from "@/components/panel";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -15,14 +16,6 @@ import type {
   ResearchSummary,
   TechnologyDetection,
 } from "@/lib/lead-detail";
-
-const SECTION_LABELS: readonly { key: string; label: string }[] = [
-  { key: "business", label: "Business" },
-  { key: "webPresence", label: "Web Presence" },
-  { key: "opportunities", label: "Opportunities" },
-  { key: "people", label: "People" },
-  { key: "approach", label: "Suggested Approach" },
-];
 
 const SCORE_COMPONENTS: readonly { key: keyof LeadDetail; label: string }[] = [
   { key: "businessFitScore", label: "Business Fit" },
@@ -52,52 +45,7 @@ async function OpportunitiesPanel({ companyId }: { companyId: string }) {
     return <Unavailable title="Opportunities" error={result.error} />;
   }
 
-  if (result.data.length === 0) {
-    return <p className="text-sm text-muted-foreground">No opportunities identified.</p>;
-  }
-
-  return (
-    <ul className="space-y-4">
-      {result.data.map((opportunity) => (
-        <li key={opportunity.id} className="rounded-lg border border-border p-4">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-medium">{opportunity.title}</h3>
-            <span className="text-xs text-muted-foreground uppercase">
-              {formatLabel(opportunity.certainty)}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">{opportunity.description}</p>
-          <p className="mt-1 text-sm">
-            <span className="font-medium">Impact: </span>
-            {opportunity.impact}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {opportunity.resolvedEvidence.map((evidence, index) =>
-              evidence.url ? (
-                <Evidence
-                  key={`${evidence.ref}-${index}`}
-                  sourceUrl={evidence.url}
-                  recordedAt={opportunity.createdAt}
-                  detail={evidence.detail}
-                  className="text-xs"
-                >
-                  Cited evidence {index + 1}
-                </Evidence>
-              ) : (
-                <span
-                  key={`${evidence.ref}-${index}`}
-                  title={evidence.detail}
-                  className="text-xs text-muted-foreground italic"
-                >
-                  Cited evidence {index + 1}: unknown
-                </span>
-              ),
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+  return <OpportunityList opportunities={result.data} />;
 }
 
 async function TechnologiesPanel({ companyId }: { companyId: string }) {
@@ -117,57 +65,11 @@ async function TechnologiesPanel({ companyId }: { companyId: string }) {
     return <Unavailable title="Detected technologies" error={technologiesResult.error} />;
   }
 
-  const detections = technologiesResult.data.technologies;
   // A missing or failed analysis just means citations can't link to a source
   // page — the detections themselves still came back and are worth showing.
   const analysis = analysisResult.status === "ok" ? analysisResult.data : null;
-  const detectionById = new Map(detections.map((detection) => [detection.id, detection]));
 
-  if (detections.length === 0) {
-    return <p className="text-sm text-muted-foreground">No technologies detected.</p>;
-  }
-
-  return (
-    <ul className="space-y-2">
-      {detections.map((detection) => {
-        const label = `${detection.technologyId} (${detection.category})`;
-
-        if (detection.certainty === "observed" && detection.matchedText) {
-          return (
-            <li key={detection.id} className="text-sm">
-              {analysis?.analysedUrl && analysis.createdAt ? (
-                <Evidence
-                  sourceUrl={analysis.analysedUrl}
-                  recordedAt={analysis.createdAt}
-                  detail={`Matched "${detection.matchedText}"${detection.matchedIn ? ` in ${detection.matchedIn}` : ""}`}
-                >
-                  {label}
-                </Evidence>
-              ) : (
-                label
-              )}
-            </li>
-          );
-        }
-
-        const impliedByLabel = detection.impliedBy
-          ? detectionById.get(detection.impliedBy)?.technologyId
-          : undefined;
-
-        return (
-          <li key={detection.id} className="text-sm">
-            <Fact
-              fact={{
-                certainty: "inferred",
-                value: label,
-                inferredFrom: impliedByLabel ? `detecting ${impliedByLabel}` : undefined,
-              }}
-            />
-          </li>
-        );
-      })}
-    </ul>
-  );
+  return <TechnologyList detections={technologiesResult.data.technologies} analysis={analysis} />;
 }
 
 async function ResearchSummaryPanel({ leadId }: { leadId: string }) {
@@ -181,44 +83,7 @@ async function ResearchSummaryPanel({ leadId }: { leadId: string }) {
     return <Unavailable title="Research summary" error={result.error} />;
   }
 
-  const summary = result.data.summary;
-
-  if (summary === null) {
-    return <p className="text-sm text-muted-foreground">No research summary generated yet.</p>;
-  }
-
-  const sections = SECTION_LABELS.filter(({ key }) => (summary.sections[key]?.length ?? 0) > 0);
-
-  return (
-    <Generated>
-      <div className="space-y-4">
-        {sections.map(({ key, label }) => (
-          <div key={key}>
-            <h3 className="text-sm font-medium">{label}</h3>
-            <ul className="mt-1 list-disc space-y-1 pl-5">
-              {summary.sections[key]?.map((claim) => (
-                <li key={claim.text} className="text-sm text-muted-foreground">
-                  {claim.text}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        {summary.unknownFacts.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium">Not established</h3>
-            <ul className="mt-1 space-y-1">
-              {summary.unknownFacts.map((fact) => (
-                <li key={fact} className="text-sm">
-                  {fact}: <Fact fact={{ certainty: "unknown" }} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </Generated>
-  );
+  return <ResearchSummaryView summary={result.data.summary} />;
 }
 
 async function ContactsPanel({ companyId }: { companyId: string }) {
@@ -232,67 +97,7 @@ async function ContactsPanel({ companyId }: { companyId: string }) {
     return <Unavailable title="Contacts" error={result.error} />;
   }
 
-  const contacts = result.data.contacts;
-
-  if (contacts.length === 0) {
-    return <p className="text-sm text-muted-foreground">No contacts found.</p>;
-  }
-
-  return (
-    <ul className="space-y-3">
-      {contacts.map((contact) => (
-        <li key={contact.id} className="rounded-lg border border-border p-3">
-          <div className="flex items-center gap-2">
-            <Fact
-              fact={{ certainty: contact.certainty, value: contact.name }}
-              className="font-medium"
-            />
-            {contact.jobTitle && (
-              <span className="text-sm text-muted-foreground">{contact.jobTitle}</span>
-            )}
-          </div>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <span>
-              Email:{" "}
-              {contact.email ? (
-                contact.sourceUrl ? (
-                  <Evidence
-                    sourceUrl={contact.sourceUrl}
-                    recordedAt={contact.createdAt}
-                    detail={`Found via ${contact.researchSource}`}
-                  >
-                    {contact.email}
-                  </Evidence>
-                ) : (
-                  contact.email
-                )
-              ) : (
-                <Fact fact={{ certainty: "unknown" }} />
-              )}
-            </span>
-            <span>
-              Phone:{" "}
-              {contact.phone ? (
-                contact.sourceUrl ? (
-                  <Evidence
-                    sourceUrl={contact.sourceUrl}
-                    recordedAt={contact.createdAt}
-                    detail={`Found via ${contact.researchSource}`}
-                  >
-                    {contact.phone}
-                  </Evidence>
-                ) : (
-                  contact.phone
-                )
-              ) : (
-                <Fact fact={{ certainty: "unknown" }} />
-              )}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+  return <ContactList contacts={result.data.contacts} />;
 }
 
 interface LeadDetailPageProps {
