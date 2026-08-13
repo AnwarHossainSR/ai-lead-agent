@@ -209,3 +209,15 @@ export {
   type RolePattern,
   type SeniorityLevel,
 } from "./contact-research";
+
+export {
+  DEFAULT_PROHIBITED_CLAIM_CATEGORIES,
+  findProhibitedClaimCategory,
+  parseProhibitedClaimCategories,
+  prohibitedClaimCategoriesSchema,
+  prohibitedClaimCategorySchema,
+  resolveProhibitedClaimCategory,
+  type ProhibitedClaimCategory,
+  type ProhibitedClaimCategoryId,
+  type ProhibitedClaimCategories,
+} from "./research-summary";

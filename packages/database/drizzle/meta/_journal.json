@@ -57,6 +57,13 @@
       "when": 1786563342668,
       "tag": "0007_cool_kulan_gath",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786596213017,
+      "tag": "0008_sour_vargas",
+      "breakpoints": true
     }
   ]
 }

@@ -79,6 +79,14 @@ export {
 } from "./scoring";
 
 export {
+  getCurrentLeadResearchSummary,
+  getLeadResearchSummaryHistory,
+  insertLeadResearchSummary,
+  insertLeadResearchSummaryInputSchema,
+  type InsertLeadResearchSummaryInput,
+} from "./lead-research-summaries";
+
+export {
   approveOutreach,
   cancelOutreach,
   insertOutreachDraft,

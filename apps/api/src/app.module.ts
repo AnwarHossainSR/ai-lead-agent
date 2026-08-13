@@ -8,6 +8,7 @@ import { DiscoveryModule } from "./discovery/discovery.module";
 import { HealthModule } from "./health/health.module";
 import { OpportunityModule } from "./opportunity/opportunity.module";
 import { RedisModule } from "./redis/redis.module";
+import { ResearchSummaryModule } from "./research-summary/research-summary.module";
 import { VerificationModule } from "./verification/verification.module";
 
 /**
@@ -27,6 +28,7 @@ import { VerificationModule } from "./verification/verification.module";
     VerificationModule,
     AnalysisModule,
     OpportunityModule,
+    ResearchSummaryModule,
   ],
 })
 export class AppModule {}
