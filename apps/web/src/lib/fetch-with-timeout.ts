@@ -26,7 +26,12 @@ export async function fetchWithTimeout<T>(
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url, { ...init, signal: controller.signal });
+    // Every panel using this reads live operational state — a cached
+    // response would mean "the API was down" or "42 companies" gets baked
+    // into the page at build time and never changes again in production.
+    // Next's fetch cache is opt-out per call, not per app, so this is set
+    // explicitly rather than relying on a global default.
+    const response = await fetch(url, { cache: "no-store", ...init, signal: controller.signal });
 
     if (!response.ok) {
       return { status: "degraded", error: `${url} responded with ${response.status}.` };

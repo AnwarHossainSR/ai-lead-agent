@@ -24,7 +24,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 3.2 Move filters into URL search params so a filtered view is a shareable link
 - [x] 3.3 Add per-panel Suspense and error boundaries using the existing bounded-timeout fetch helper
 - [x] 3.4 Add tests: the API stopped renders the condition, a single failing endpoint degrades only its panel
-- [ ] 3.5 Verify: `pnpm --filter @mela/web lint typecheck test build` passes
+- [x] 3.5 Verify: `pnpm --filter @mela/web lint typecheck test build` passes
 
 ## 4. Lead views
 

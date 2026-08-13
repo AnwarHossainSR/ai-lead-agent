@@ -18,6 +18,7 @@ export async function getHealthStatus(): Promise<HealthStatus> {
     const timeout = setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
 
     const response = await fetch(`${apiUrl}/health`, {
+      cache: "no-store",
       signal: controller.signal,
     });
     clearTimeout(timeout);
