@@ -51,7 +51,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 6.2 Build the company detail view with its analyses, detections and contacts
 - [x] 6.3 Add the needs-attention view collecting blocked, failed and unreachable records with counts and ages
 - [x] 6.4 Add tests: a blocked analysis shows as blocked, unreachable is distinguishable from unverified, a below-threshold company states the reason
-- [ ] 6.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
+- [x] 6.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
 
 ## 7. Analytics
 
