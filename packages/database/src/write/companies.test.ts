@@ -6,6 +6,7 @@ import { companies } from "../schema/companies";
 import { contacts } from "../schema/contacts";
 import { leads } from "../schema/leads";
 import { verificationChecks } from "../schema/verification-checks";
+import { expectConstraintViolation } from "../testing/constraints";
 import { companyInput, contactInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
 import {
@@ -18,7 +19,6 @@ import {
   updateCompany,
 } from "./companies";
 import { insertContact } from "./contacts";
-import { expectConstraintViolation } from "./testing/constraints";
 import { DuplicateCompanyError, RecordNotFoundError, WriteValidationError } from "./errors";
 import { insertLead } from "./leads";
 
@@ -620,10 +620,13 @@ describe("do-not-contact markers", () => {
     const company = await insertCompany(harness.database, companyInput());
 
     await expectConstraintViolation(
-      harness.database.update(companies).set({
-        doNotContactAt: new Date(),
-        doNotContactReason: "   ",
-      }).where(eq(companies.id, company.id)),
+      harness.database
+        .update(companies)
+        .set({
+          doNotContactAt: new Date(),
+          doNotContactReason: "   ",
+        })
+        .where(eq(companies.id, company.id)),
       "companies_do_not_contact_requires_reason",
     );
   });

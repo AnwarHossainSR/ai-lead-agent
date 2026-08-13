@@ -281,10 +281,13 @@ describe("do-not-contact markers", () => {
     );
 
     await expectConstraintViolation(
-      harness.database.update(contacts).set({
-        doNotContactAt: new Date(),
-        doNotContactReason: "   ",
-      }).where(eq(contacts.id, contact.id)),
+      harness.database
+        .update(contacts)
+        .set({
+          doNotContactAt: new Date(),
+          doNotContactReason: "   ",
+        })
+        .where(eq(contacts.id, contact.id)),
       "contacts_do_not_contact_requires_reason",
     );
   });

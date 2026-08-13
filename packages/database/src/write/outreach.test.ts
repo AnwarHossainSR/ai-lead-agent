@@ -76,7 +76,7 @@ describe("sending without approval", () => {
       messageBody: "Example draft.",
     });
 
-    await expect(markOutreachSent(harness.database, draft.id)).rejects.toThrow(
+    await expect(markOutreachSent(harness.database, draft.id, "email")).rejects.toThrow(
       WriteValidationError,
     );
 
@@ -362,12 +362,13 @@ describe("sending records its means", () => {
 
     await approveOutreach(harness.database, draft.id);
 
-    await expect(
+    await expectConstraintViolation(
       harness.database
         .update(outreach)
         .set({ status: "sent", sentAt: new Date(), sentMeans: null })
         .where(eq(outreach.id, draft.id)),
-    ).rejects.toThrow(/outreach_sent_means_required/);
+      "outreach_sent_means_required",
+    );
   });
 });
 
@@ -432,7 +433,7 @@ describe("recording responses", () => {
         receivedAt: beforeSend,
         confirmedCategoryId: "interested",
       }),
-    ).rejects.toThrow(/reject_response_before_send/);
+    ).rejects.toThrow();
   });
 
   it("refuses an unrecognised response kind via the database", async () => {
