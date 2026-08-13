@@ -90,6 +90,20 @@ export {
   scoreComponentSchema,
   type ScoreComponent,
   type ScoreComponentId,
+  type ComponentRules,
+  type ConfiguredTechnologyId,
+  type BusinessFitProfile,
+  type ScoreThreshold,
+  type WeightVersion,
+  CONFIGURED_TECHNOLOGIES,
+  DEFAULT_BUSINESS_FIT_PROFILE,
+  DEFAULT_WEIGHT_VERSION,
+  computeFingerprint,
+  parseBusinessFitProfile,
+  parseComponentRules,
+  parseWeightVersion,
+  validateComponentRules,
+  validateWeightVersion,
 } from "./lead-scoring";
 
 export {

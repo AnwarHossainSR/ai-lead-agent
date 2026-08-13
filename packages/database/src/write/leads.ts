@@ -5,7 +5,7 @@ import {
   classifyPriority,
   resolveScoreComponent,
 } from "@mela/config";
-import { and, eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -118,6 +118,8 @@ export async function insertLead(executor: Executor, input: InsertLeadInput): Pr
         scoreExplanation: value.scoreExplanation,
         recommendedServiceId: value.recommendedServiceId ?? null,
         contactReason: value.contactReason ?? null,
+        weightVersion: 1,
+        scoredAt: databaseNow(),
         // A new lead always starts where the configured lifecycle starts. A
         // caller cannot open a lead directly at `qualified`.
         status: INITIAL_LEAD_STATUS,
@@ -178,4 +180,72 @@ export async function applyLeadStatusChange(
   }
 
   return row;
+}
+
+const updateLeadScoreInputSchema = z
+  .object({
+    scores: z.object({
+      business_fit: componentScore,
+      technical_opportunity: componentScore,
+      business_opportunity: componentScore,
+      decision_maker_found: componentScore,
+      company_quality: componentScore,
+    }),
+    scoreExplanation: z.string().trim().min(1, "Expected an explanation of how this score was reached."),
+    weightVersion: z.number().int().positive("Expected a positive weight version."),
+  })
+  .superRefine((value, ctx) => {
+    for (const key of Object.keys(SCORE_COLUMNS) as ScoreKey[]) {
+      const submitted = value.scores[key];
+      const { maximum, name } = resolveScoreComponent(key);
+
+      if (submitted > maximum) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["scores", key],
+          message: `${name} scored ${submitted}, but its configured maximum is ${maximum}.`,
+        });
+      }
+    }
+  });
+
+export type UpdateLeadScoreInput = z.input<typeof updateLeadScoreInputSchema>;
+
+export async function updateLeadScore(
+  executor: Executor,
+  leadId: string,
+  input: UpdateLeadScoreInput,
+): Promise<LeadRow> {
+  const value = parseInput("The lead score", updateLeadScoreInputSchema, input);
+
+  const total = Object.values(value.scores).reduce((sum, points) => sum + points, 0);
+  const priority = classifyPriority(total);
+
+  const [row] = await executor
+    .update(leads)
+    .set({
+      leadScore: total,
+      priority,
+      businessFitScore: value.scores.business_fit,
+      technicalOpportunityScore: value.scores.technical_opportunity,
+      businessOpportunityScore: value.scores.business_opportunity,
+      decisionMakerFoundScore: value.scores.decision_maker_found,
+      companyQualityScore: value.scores.company_quality,
+      scoreExplanation: value.scoreExplanation,
+      weightVersion: value.weightVersion,
+      scoredAt: databaseNow(),
+      updatedAt: databaseNow(),
+    })
+    .where(eq(leads.id, leadId))
+    .returning();
+
+  if (row === undefined) {
+    throw new RecordNotFoundError("lead", leadId);
+  }
+
+  return row;
+}
+
+export async function listStaleLeads(executor: Executor, currentWeightVersion: number): Promise<LeadRow[]> {
+  return executor.select().from(leads).where(lt(leads.weightVersion, currentWeightVersion));
 }

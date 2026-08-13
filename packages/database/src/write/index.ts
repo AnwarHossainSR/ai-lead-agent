@@ -64,8 +64,19 @@ export {
   applyLeadStatusChange,
   insertLead,
   insertLeadInputSchema,
+  updateLeadScore,
+  updateLeadScoreInputSchema,
+  listStaleLeads,
   type InsertLeadInput,
+  type UpdateLeadScoreInput,
 } from "./leads";
+
+export {
+  insertLeadScoreSnapshot,
+  insertLeadScoreSnapshotInputSchema,
+  getLeadScoreSnapshots,
+  type InsertLeadScoreSnapshotInput,
+} from "./lead-score-snapshots";
 
 export {
   approveOutreach,
