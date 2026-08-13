@@ -10,6 +10,7 @@ import {
   insertCompany,
   insertOpportunity,
   insertOpportunityAnalysisRun,
+  insertTechnologyDetection,
   insertWebsiteAnalysis,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
@@ -184,6 +185,83 @@ describe("GET /api/companies/:id/opportunities", () => {
       .expect(200);
 
     expect(response.body).toEqual([]);
+  });
+
+  it("resolves cited evidence refs to the observation and detection they point at", async () => {
+    const company = await insertCompany(harness.database, companyInput({ name: "Evidence Co" }));
+    const invocation = await insertAIInvocation(harness.database, aiInvocationInput());
+
+    const analysis = await insertWebsiteAnalysis(harness.database, {
+      companyId: company.id,
+      analysedUrl: "https://evidence.example.com",
+      observations: [
+        {
+          statement: "The homepage has no mobile navigation menu.",
+          evidence: {
+            detail: "No hamburger menu or nav element found at viewport width 375px.",
+            url: "https://evidence.example.com/",
+            observedAt: "2026-01-01T00:00:00Z",
+          },
+          certainty: "observed",
+        },
+      ],
+    });
+
+    await insertTechnologyDetection(harness.database, {
+      analysisId: analysis.id,
+      fingerprintId: "wordpress",
+      technologyId: "wordpress",
+      category: "cms",
+      certainty: "observed",
+      matchedIn: "html",
+      matchedText: '<meta name="generator" content="WordPress 5.2">',
+    });
+
+    const run = await insertOpportunityAnalysisRun(harness.database, {
+      companyId: company.id,
+      websiteAnalysisId: analysis.id,
+      promptVersion: 1,
+      outcome: "opportunities",
+      acceptedCount: 1,
+      aiInvocationId: invocation.id,
+    });
+
+    await insertOpportunity(harness.database, {
+      analysisRunId: run.id,
+      companyId: company.id,
+      categoryId: "modernization",
+      serviceId: "web_development",
+      title: "No mobile navigation",
+      description: "Visitors on a phone cannot reach the site's navigation.",
+      impact: "Mobile visitors bounce before finding what they came for.",
+      citedEvidence: ["o1", "t1", "unresolvable-ref"],
+      aiInvocationId: invocation.id,
+    });
+
+    const response = await request(app?.getHttpServer())
+      .get(`/api/companies/${company.id}/opportunities`)
+      .expect(200);
+
+    expect(response.body).toHaveLength(1);
+    const resolved = response.body[0].resolvedEvidence;
+
+    expect(resolved).toEqual([
+      {
+        ref: "o1",
+        detail: "No hamburger menu or nav element found at viewport width 375px.",
+        url: "https://evidence.example.com/",
+      },
+      {
+        ref: "t1",
+        detail: 'wordpress: "<meta name="generator" content="WordPress 5.2">"',
+        url: "https://evidence.example.com",
+      },
+      {
+        ref: "unresolvable-ref",
+        detail: "This citation could not be resolved to its source.",
+        url: null,
+      },
+    ]);
   });
 });
 

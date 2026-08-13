@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -121,5 +122,18 @@ export class ScoringController {
   async countLeads(@Query() query: CountLeadsQueryDto) {
     const value = await this.scoringService.countLeads(query);
     return { count: value };
+  }
+
+  // Registered after "leads/count": a route parameter registered earlier
+  // would swallow that literal path segment as an :id.
+  @Get("leads/:id")
+  async getLead(@Param("id") leadId: string) {
+    const lead = await this.scoringService.getLead(leadId);
+
+    if (lead === null) {
+      throw new NotFoundException(`Lead "${leadId}" not found.`);
+    }
+
+    return lead;
   }
 }

@@ -3,10 +3,13 @@ import { Inject, Injectable } from "@nestjs/common";
 import {
   type CompanyVerificationState,
   type Database,
+  type Observation,
+  type OpportunityRow,
   companies,
   leads,
   opportunities,
   opportunityAnalysisRuns,
+  technologyDetections,
   websiteAnalysis,
 } from "@mela/database";
 import { type SQL, and, asc, count, desc, eq, inArray } from "drizzle-orm";
@@ -189,18 +192,124 @@ export class CompaniesService {
   }
 
   /**
-   * Accepted opportunities for a company, newest first. There was previously
-   * no way to read these except as the side effect of triggering a new
-   * analysis run — the lead and company detail views need them without
-   * re-running anything.
+   * Accepted opportunities for a company, newest first, with their cited
+   * evidence resolved to a source URL and detail (design D2). There was
+   * previously no way to read these except as the side effect of triggering
+   * a new analysis run — the lead and company detail views need them
+   * without re-running anything.
    */
-  async listOpportunities(companyId: string) {
-    return this.database
+  async listOpportunities(companyId: string): Promise<OpportunityWithEvidence[]> {
+    const rows = await this.database
       .select()
       .from(opportunities)
       .where(eq(opportunities.companyId, companyId))
       .orderBy(desc(opportunities.createdAt));
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const runIds = [...new Set(rows.map((row) => row.runId))];
+    const runs = await this.database
+      .select({
+        id: opportunityAnalysisRuns.id,
+        websiteAnalysisId: opportunityAnalysisRuns.websiteAnalysisId,
+      })
+      .from(opportunityAnalysisRuns)
+      .where(inArray(opportunityAnalysisRuns.id, runIds));
+    const analysisIdByRun = new Map(runs.map((run) => [run.id, run.websiteAnalysisId]));
+
+    const analysisIds = [...new Set(runs.map((run) => run.websiteAnalysisId))].filter(
+      (id): id is string => id !== null,
+    );
+
+    const [analyses, detections] =
+      analysisIds.length > 0
+        ? await Promise.all([
+            this.database
+              .select()
+              .from(websiteAnalysis)
+              .where(inArray(websiteAnalysis.id, analysisIds)),
+            this.database
+              .select()
+              .from(technologyDetections)
+              .where(inArray(technologyDetections.analysisId, analysisIds)),
+          ])
+        : [[], []];
+
+    const analysisById = new Map(analyses.map((analysis) => [analysis.id, analysis]));
+    const detectionsByAnalysis = new Map<string, typeof detections>();
+    for (const detection of detections) {
+      const list = detectionsByAnalysis.get(detection.analysisId) ?? [];
+      list.push(detection);
+      detectionsByAnalysis.set(detection.analysisId, list);
+    }
+
+    return rows.map((row) => ({
+      ...row,
+      resolvedEvidence: resolveCitedEvidence(
+        row.citedEvidence as readonly string[],
+        analysisById.get(analysisIdByRun.get(row.runId) ?? "") ?? null,
+        detectionsByAnalysis.get(analysisIdByRun.get(row.runId) ?? "") ?? [],
+      ),
+    }));
   }
+}
+
+interface ResolvedEvidence {
+  readonly ref: string;
+  /** What was matched — an observation's detail, or a detected technology and its match. */
+  readonly detail: string;
+  /** Null when the analysis behind the citation could no longer be found. */
+  readonly url: string | null;
+}
+
+export interface OpportunityWithEvidence extends OpportunityRow {
+  readonly resolvedEvidence: readonly ResolvedEvidence[];
+}
+
+/**
+ * `opportunities.cited_evidence` stores refs like `o1`, `t2` — positions into
+ * the observations and detections that existed when the opportunity was
+ * generated (see `buildModelInput`), not resolved text. This reconstructs the
+ * same ref -> evidence mapping from the pinned analysis so the UI can show
+ * what was actually cited, rather than an opaque identifier.
+ *
+ * A ref that can't be resolved (the analysis was deleted, or refs predate
+ * `opportunity_analysis_runs.website_analysis_id` being recorded) renders as
+ * an explicit unresolved state (design D4) rather than being dropped.
+ */
+function resolveCitedEvidence(
+  refs: readonly string[],
+  analysis: { readonly analysedUrl: string; readonly observations: readonly Observation[] } | null,
+  detections: readonly { readonly technologyId: string; readonly matchedText: string | null }[],
+): ResolvedEvidence[] {
+  const refMap = new Map<string, { detail: string; url: string }>();
+
+  if (analysis !== null) {
+    analysis.observations.forEach((observation, index) => {
+      refMap.set(`o${index + 1}`, {
+        detail: observation.evidence.detail,
+        url: observation.evidence.url,
+      });
+    });
+
+    detections.forEach((detection, index) => {
+      refMap.set(`t${index + 1}`, {
+        detail: detection.matchedText
+          ? `${detection.technologyId}: "${detection.matchedText}"`
+          : detection.technologyId,
+        url: analysis.analysedUrl,
+      });
+    });
+  }
+
+  return refs.map((ref) => {
+    const resolved = refMap.get(ref);
+    return resolved
+      ? { ref, ...resolved }
+      : { ref, detail: "This citation could not be resolved to its source.", url: null };
+  });
 }
 
 /** Keeps the first row seen per `companyId`, given rows ordered newest first. */

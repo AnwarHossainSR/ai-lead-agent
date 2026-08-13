@@ -190,4 +190,42 @@ describe("GET /api/leads/count", () => {
     const all = await request(app?.getHttpServer()).get("/api/leads/count").expect(200);
     expect(all.body).toEqual({ count: 1 });
   });
+
+  it("registering leads/:id does not shadow the leads/count route", async () => {
+    const response = await request(app?.getHttpServer()).get("/api/leads/count").expect(200);
+    expect(response.body).toEqual({ count: 0 });
+  });
+});
+
+describe("GET /api/leads/:id", () => {
+  it("returns the lead's score breakdown, explanation and company context", async () => {
+    const company = await insertCompany(
+      harness.database,
+      companyInput({ name: "Detail Co", industryId: "logistics", cityId: "dubai" }),
+    );
+    const lead = await insertLead(
+      harness.database,
+      leadInput(company.id, { scores: VERY_HIGH_SCORES }),
+    );
+
+    const response = await request(app?.getHttpServer()).get(`/api/leads/${lead.id}`).expect(200);
+
+    expect(response.body.id).toBe(lead.id);
+    expect(response.body.priority).toBe("very_high");
+    expect(response.body.businessFitScore).toBe(VERY_HIGH_SCORES.business_fit);
+    expect(response.body.scoreExplanation).toBeTruthy();
+    expect(response.body.isStale).toBe(false);
+    expect(response.body.company).toMatchObject({
+      id: company.id,
+      name: "Detail Co",
+      industryId: "logistics",
+      cityId: "dubai",
+    });
+  });
+
+  it("404s for a lead that does not exist", async () => {
+    await request(app?.getHttpServer())
+      .get("/api/leads/00000000-0000-0000-0000-000000000000")
+      .expect(404);
+  });
 });
