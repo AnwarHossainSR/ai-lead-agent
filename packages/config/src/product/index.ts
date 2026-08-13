@@ -221,3 +221,15 @@ export {
   type ProhibitedClaimCategoryId,
   type ProhibitedClaimCategories,
 } from "./research-summary";
+
+export {
+  DEFAULT_PROHIBITED_CONTENT_CATEGORIES,
+  findProhibitedContentCategory,
+  parseProhibitedContentCategories,
+  prohibitedContentCategoriesSchema,
+  prohibitedContentCategorySchema,
+  resolveProhibitedContentCategory,
+  type ProhibitedContentCategory,
+  type ProhibitedContentCategoryId,
+  type ProhibitedContentCategories,
+} from "./outreach-drafting";
