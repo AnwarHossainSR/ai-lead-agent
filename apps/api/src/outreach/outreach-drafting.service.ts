@@ -128,7 +128,12 @@ export class OutreachDraftingService {
       contactId: input.contactId,
       channelId: input.channelId,
       summary: {
-        sections: summary.sections as readonly string[],
+        // `sections` is keyed by section name, each holding its own
+        // evidence-linked statements; the drafting prompt wants the prose,
+        // not the grouping or the citation refs.
+        sections: Object.values(summary.sections).flatMap((statements) =>
+          statements.map((statement) => statement.text),
+        ),
         citedFacts: summary.citedFacts as readonly string[],
       },
     };
