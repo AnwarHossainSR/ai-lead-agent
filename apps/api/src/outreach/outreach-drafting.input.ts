@@ -1,7 +1,7 @@
 import type { OutreachDraftingInput } from "@mela/ai";
+import { OUTREACH_CHANNELS, SERVICES } from "@mela/config";
 import type { CompanyEvidence } from "@mela/database";
 import type { LeadRow } from "@mela/database";
-import { OUTREACH_CHANNELS, SERVICES } from "@mela/config";
 
 const MAX_OPPORTUNITIES = 10;
 
@@ -16,9 +16,7 @@ export interface OutreachDraftingFacts {
   };
 }
 
-export function assembleOutreachDraftingInput(
-  facts: OutreachDraftingFacts,
-): OutreachDraftingInput {
+export function assembleOutreachDraftingInput(facts: OutreachDraftingFacts): OutreachDraftingInput {
   const channel = OUTREACH_CHANNELS.find((c) => c.id === facts.channelId);
   if (channel === undefined) {
     throw new Error(`Unknown outreach channel: ${facts.channelId}`);
@@ -30,9 +28,7 @@ export function assembleOutreachDraftingInput(
   }
 
   const hasChannelDetail =
-    (channel.subjectApplies && contact.email) ||
-    contact.phone ||
-    contact.linkedinUrl;
+    (channel.subjectApplies && contact.email) || contact.phone || contact.linkedinUrl;
 
   if (!hasChannelDetail) {
     throw new Error(

@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   JOB_DEFINITIONS,
+  type JobName,
   findJobDefinition,
   resolveJobDefinition,
-  type JobName,
 } from "./jobs.registry";
 
 describe("job registry", () => {
@@ -31,9 +31,7 @@ describe("job registry", () => {
   });
 
   it("throws for an unknown job type", () => {
-    expect(() => resolveJobDefinition("unknown")).toThrow(
-      /Unknown job type "unknown"/,
-    );
+    expect(() => resolveJobDefinition("unknown")).toThrow(/Unknown job type "unknown"/);
   });
 
   it("finds a known job type", () => {

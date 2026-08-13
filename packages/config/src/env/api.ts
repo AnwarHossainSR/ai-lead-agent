@@ -149,6 +149,32 @@ export const apiEnvSchema = z.object({
     .describe(
       "Maximum time in milliseconds the worker waits for active jobs to finish during graceful shutdown.",
     ),
+
+  QSTASH_URL: httpUrl
+    .default("https://qstash-eu-central-1.upstash.io")
+    .describe("QStash base URL for background job delivery."),
+
+  QSTASH_TOKEN: z
+    .string()
+    .trim()
+    .min(1, "Expected the QStash token.")
+    .describe(
+      "Upstash QStash bearer token. Secret — never logged, never returned in a health response, never present in an error message.",
+    ),
+
+  QSTASH_CURRENT_SIGNING_KEY: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .describe("Current QStash signing key used to verify inbound webhook signatures."),
+
+  QSTASH_NEXT_SIGNING_KEY: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .describe("Next QStash signing key for rotation. Verified when present, ignored otherwise."),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

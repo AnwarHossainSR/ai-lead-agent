@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 
 import { DatabaseModule } from "../database/database.module";
-import { OutreachController } from "./outreach.controller";
 import { OutreachDraftingService } from "./outreach-drafting.service";
+import { OutreachController } from "./outreach.controller";
 
 @Module({
   imports: [DatabaseModule],

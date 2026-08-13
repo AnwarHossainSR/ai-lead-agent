@@ -1,14 +1,12 @@
-import { type OnApplicationShutdown } from "@nestjs/common";
+import type { OnApplicationShutdown } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
+import type { Client } from "@upstash/qstash";
 
 import { QUEUE_CONFIGS, type QueueConfig } from "@mela/config";
-import type Redis from "ioredis";
-import { Queue } from "bullmq";
 
 export interface ManagedQueue {
   name: string;
   config: QueueConfig;
-  queue: Queue;
 }
 
 export class QueueService implements OnApplicationShutdown {
@@ -16,27 +14,62 @@ export class QueueService implements OnApplicationShutdown {
   private readonly queues = new Map<string, ManagedQueue>();
   private shuttingDown = false;
 
-  constructor(private readonly redis: Redis, private readonly prefix = "") {}
+  constructor(
+    private readonly qstash: Client,
+    private readonly baseUrl: string,
+  ) {}
 
   setup(): void {
     for (const [name, config] of Object.entries(QUEUE_CONFIGS)) {
-      const queue = new Queue(name, {
-        connection: this.redis,
-        prefix: this.prefix || undefined,
-        defaultJobOptions: {
-          attempts: config.attempts,
-          backoff: { type: "exponential", delay: config.backoff },
-        },
+      this.queues.set(name, {
+        name,
+        config,
       });
-
-      this.queues.set(name, { name, config, queue });
     }
 
-    this.logger.log(`Registered ${this.queues.size} queues: ${Array.from(this.queues.keys()).join(", ")}`);
+    this.logger.log(
+      `Registered ${this.queues.size} queues: ${Array.from(this.queues.keys()).join(", ")}`,
+    );
+    this.logger.log(`QStash base URL: ${this.baseUrl}`);
   }
 
   getQueue(name: string): ManagedQueue | undefined {
     return this.queues.get(name);
+  }
+
+  async publish(
+    name: string,
+    payload: unknown,
+    options?: { delay?: number; cron?: string },
+  ): Promise<void> {
+    const queue = this.getQueue(name);
+
+    if (queue === undefined) {
+      throw new Error(`Queue "${name}" is not registered.`);
+    }
+
+    const url = `${this.baseUrl.replace(/\/$/, "")}/api/jobs/${name}`;
+
+    this.logger.log(`Publishing job "${name}" to QStash.`);
+
+    const publishOptions: any = {
+      url,
+      body: payload,
+    };
+
+    if (options?.delay) {
+      publishOptions.delay = options.delay;
+    }
+
+    if (options?.cron) {
+      publishOptions.cron = options.cron;
+    }
+
+    const response = (await this.qstash.publish(publishOptions)) as {
+      messageId: string;
+    };
+
+    this.logger.log(`Job "${name}" published successfully. Message ID: ${response.messageId}`);
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -49,12 +82,7 @@ export class QueueService implements OnApplicationShutdown {
     }
 
     this.shuttingDown = true;
-    this.logger.log("Shutting down queues, waiting for active jobs...");
-
-    await Promise.all(
-      Array.from(this.queues.values()).map(({ queue }) => queue.close()),
-    );
-
-    this.logger.log("Queues closed.");
+    this.logger.log("Shutting down queue service...");
+    this.logger.log("Queue service shutdown complete.");
   }
 }

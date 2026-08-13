@@ -2,13 +2,13 @@ import "reflect-metadata";
 
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { Client } from "@upstash/qstash";
 
-import { loadApiEnv } from "@mela/config/env";
 import { QUEUE_CONFIGS } from "@mela/config";
+import { loadApiEnv } from "@mela/config/env";
 import { AppModule } from "./app.module";
 import { createLogger } from "./logging/create-logger";
 import { QueueService } from "./worker/queue.service";
-import { REDIS } from "./redis/redis.module";
 
 async function bootstrap(): Promise<void> {
   const env = loadApiEnv();
@@ -22,19 +22,21 @@ async function bootstrap(): Promise<void> {
   const workerLogger = new Logger("Worker");
   workerLogger.log(`Worker started. Consumed queues: ${Object.keys(QUEUE_CONFIGS).join(", ")}`);
 
-  const redis = app.get(REDIS);
+  const qstash = new Client({
+    baseUrl: env.QSTASH_URL,
+    token: env.QSTASH_TOKEN,
+  });
+
   try {
-    await redis.ping();
-    workerLogger.log("Redis reachable.");
+    await qstash.logs({ count: 1 });
+    workerLogger.log("QStash reachable.");
   } catch (error) {
-    workerLogger.error(
-      `Redis is unreachable at ${env.REDIS_URL}. Start Redis (docker compose up -d redis) or check the connection string.`,
-    );
+    workerLogger.error(`QStash is unreachable at ${env.QSTASH_URL}. Check the token or network.`);
     await app.close();
     process.exit(1);
   }
 
-  const queueService = new QueueService(redis);
+  const queueService = new QueueService(qstash, env.QSTASH_URL);
   queueService.setup();
 
   const shutdown = async (signal: string): Promise<void> => {
@@ -49,9 +51,7 @@ async function bootstrap(): Promise<void> {
     try {
       await Promise.race([queueService.shutdown(), timeoutPromise]);
     } catch (error) {
-      workerLogger.error(
-        error instanceof Error ? error.message : String(error),
-      );
+      workerLogger.error(error instanceof Error ? error.message : String(error));
     }
 
     await app.close();

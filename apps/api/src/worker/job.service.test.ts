@@ -3,16 +3,16 @@ import { describe, expect, it } from "vitest";
 import { JobService, Skipped, ValidationError } from "./job.service";
 import { QueueService } from "./queue.service";
 
-class FakeRedis {
-  async ping(): Promise<string> {
-    return "PONG";
+class FakeQStashClient {
+  async publish(_options: any): Promise<{ messageId: string }> {
+    return { messageId: "msg-123" };
   }
 }
 
 describe("JobService", () => {
   const createService = () => {
-    const redis = new FakeRedis() as any;
-    const queueService = new QueueService(redis);
+    const qstash = new FakeQStashClient() as any;
+    const queueService = new QueueService(qstash, "https://qstash-eu-central-1.upstash.io");
     queueService.setup();
     return new JobService(queueService);
   };
@@ -29,36 +29,40 @@ describe("JobService", () => {
 
     it("rejects an invalid payload naming the invalid fields", () => {
       const service = createService();
-      expect(() =>
-        service.validatePayload("scoring", { companyId: "company-1" }),
-      ).toThrow(/weightVersion/);
+      expect(() => service.validatePayload("scoring", { companyId: "company-1" })).toThrow(
+        /weightVersion/,
+      );
     });
 
     it("throws ValidationError for an unknown job type", () => {
       const service = createService();
-      expect(() => service.validatePayload("unknown" as any, {})).toThrow(
-        /Unknown job type/,
-      );
+      expect(() => service.validatePayload("unknown" as any, {})).toThrow(/Unknown job type/);
     });
   });
 
   describe("enqueue", () => {
     it("refuses an invalid payload and writes nothing", async () => {
       const service = createService();
+      await expect(service.enqueue("scoring", { companyId: "company-1" })).rejects.toThrow(
+        ValidationError,
+      );
+    });
+
+    it("publishes a valid payload to QStash", async () => {
+      const service = createService();
       await expect(
-        service.enqueue("scoring", { companyId: "company-1" }),
-      ).rejects.toThrow(ValidationError);
+        service.enqueue("scoring", { companyId: "company-1", weightVersion: 1 }),
+      ).resolves.toBeUndefined();
     });
   });
 
   describe("wrapProcessor", () => {
     it("validates the payload before calling the processor", async () => {
       const service = createService();
-      const processor = async (_payload: any, _job: any) => {};
+      const processor = async (_payload: any) => {};
       const wrapped = service.wrapProcessor("scoring", processor);
 
-      const job = { data: { companyId: "company-1" } } as any;
-      await expect(wrapped(job)).rejects.toThrow(ValidationError);
+      await expect(wrapped({ companyId: "company-1" } as any)).rejects.toThrow(ValidationError);
     });
 
     it("calls the processor with the parsed payload", async () => {
@@ -69,8 +73,7 @@ describe("JobService", () => {
       };
       const wrapped = service.wrapProcessor("scoring", processor);
 
-      const job = { data: { companyId: "company-1", weightVersion: 1 } } as any;
-      await wrapped(job);
+      await wrapped({ companyId: "company-1", weightVersion: 1 } as any);
       expect(received.companyId).toBe("company-1");
       expect(received.weightVersion).toBe(1);
     });
@@ -84,8 +87,7 @@ describe("JobService", () => {
       };
       const wrapped = service.wrapProcessor("scoring", processor);
 
-      const job = { data: { companyId: "company-1", weightVersion: 1 } } as any;
-      await wrapped(job);
+      await wrapped({ companyId: "company-1", weightVersion: 1 } as any);
       expect(called).toBe(true);
     });
   });

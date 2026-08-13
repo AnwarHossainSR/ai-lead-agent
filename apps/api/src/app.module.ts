@@ -3,6 +3,7 @@ import { Module } from "@nestjs/common";
 import { AIModule } from "./ai/ai.module";
 import { AnalysisModule } from "./analysis/analysis.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
+import { CompaniesModule } from "./companies/companies.module";
 import { EnvModule } from "./config/env.module";
 import { DatabaseModule } from "./database/database.module";
 import { DiscoveryModule } from "./discovery/discovery.module";
@@ -11,6 +12,7 @@ import { OpportunityModule } from "./opportunity/opportunity.module";
 import { OutreachModule } from "./outreach/outreach.module";
 import { RedisModule } from "./redis/redis.module";
 import { ResearchSummaryModule } from "./research-summary/research-summary.module";
+import { ScoringModule } from "./scoring/scoring.module";
 import { VerificationModule } from "./verification/verification.module";
 
 /**
@@ -29,7 +31,9 @@ import { VerificationModule } from "./verification/verification.module";
     DiscoveryModule,
     VerificationModule,
     AnalysisModule,
+    CompaniesModule,
     OpportunityModule,
+    ScoringModule,
     OutreachModule,
     AnalyticsModule,
     ResearchSummaryModule,

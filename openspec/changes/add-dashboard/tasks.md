@@ -4,17 +4,17 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Evidence primitives
 
-- [ ] 1.1 Build `<Fact>` rendering observed, inferred and unknown as three distinct states, with no path producing a blank, a dash or a zero for a missing value
-- [ ] 1.2 Build `<Evidence>` showing the source URL as a link, the time recorded, and the matched or cited text in a popover
-- [ ] 1.3 Build `<Generated>` labelling model-produced prose persistently
-- [ ] 1.4 Add component tests for all three, including an unmeasured score not rendering as zero
-- [ ] 1.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
+- [x] 1.1 Build `<Fact>` rendering observed, inferred and unknown as three distinct states, with no path producing a blank, a dash or a zero for a missing value
+- [x] 1.2 Build `<Evidence>` showing the source URL as a link, the time recorded, and the matched or cited text in a popover
+- [x] 1.3 Build `<Generated>` labelling model-produced prose persistently
+- [x] 1.4 Add component tests for all three, including an unmeasured score not rendering as zero
+- [x] 1.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
 
 ## 2. Read endpoints
 
-- [ ] 2.1 Add the list endpoints the views need: leads with filters and ordering, companies with pipeline state, outreach by status
-- [ ] 2.2 Include the certainty, source URL and recorded time on every claim the views render
-- [ ] 2.3 Include failure and incomplete states in list responses rather than omitting those records
+- [x] 2.1 Add the list endpoints the views need: leads with filters and ordering, companies with pipeline state, outreach by status
+- [x] 2.2 Include the certainty, source URL and recorded time on every claim the views render
+- [x] 2.3 Include failure and incomplete states in list responses rather than omitting those records
 - [ ] 2.4 Add API tests for the filters, ordering and the presence of provenance fields
 - [ ] 2.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
