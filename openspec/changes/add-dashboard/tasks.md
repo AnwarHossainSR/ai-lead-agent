@@ -8,7 +8,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 1.2 Build `<Evidence>` showing the source URL as a link, the time recorded, and the matched or cited text in a popover
 - [x] 1.3 Build `<Generated>` labelling model-produced prose persistently
 - [x] 1.4 Add component tests for all three, including an unmeasured score not rendering as zero
-- [ ] 1.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
+- [x] 1.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
 
 ## 2. Read endpoints
 
