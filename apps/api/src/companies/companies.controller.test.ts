@@ -302,6 +302,79 @@ describe("GET /api/companies/:id/opportunities", () => {
   });
 });
 
+describe("GET /api/companies/needs-attention", () => {
+  it("collects blocked, failed and unreachable companies into their own buckets", async () => {
+    const blocked = await insertCompany(harness.database, companyInput({ name: "Blocked Co" }));
+    await insertWebsiteAnalysis(harness.database, {
+      companyId: blocked.id,
+      analysedUrl: "https://blocked.example.com",
+      outcome: "blocked",
+      failureReason: "Disallowed by robots.txt",
+    });
+
+    const failed = await insertCompany(harness.database, companyInput({ name: "Failed Co" }));
+    await insertWebsiteAnalysis(harness.database, {
+      companyId: failed.id,
+      analysedUrl: "https://failed.example.com",
+      outcome: "failed",
+      failureReason: "Browser render timed out.",
+    });
+
+    const unreachable = await insertCompany(
+      harness.database,
+      companyInput({ name: "Unreachable Co" }),
+    );
+    await harness.database
+      .update(companies)
+      .set({ verificationState: "unreachable" })
+      .where(eq(companies.id, unreachable.id));
+
+    const healthy = await insertCompany(harness.database, companyInput({ name: "Healthy Co" }));
+    await harness.database
+      .update(companies)
+      .set({ verificationState: "verified" })
+      .where(eq(companies.id, healthy.id));
+    await insertWebsiteAnalysis(harness.database, {
+      companyId: healthy.id,
+      analysedUrl: "https://healthy.example.com",
+      outcome: "completed",
+    });
+
+    const response = await request(app?.getHttpServer())
+      .get("/api/companies/needs-attention")
+      .expect(200);
+
+    expect(response.body.blocked).toHaveLength(1);
+    expect(response.body.blocked[0].companyId).toBe(blocked.id);
+    expect(response.body.blocked[0].reason).toBe("Disallowed by robots.txt");
+
+    expect(response.body.failed).toHaveLength(1);
+    expect(response.body.failed[0].companyId).toBe(failed.id);
+    expect(response.body.failed[0].reason).toBe("Browser render timed out.");
+
+    expect(response.body.unreachable).toHaveLength(1);
+    expect(response.body.unreachable[0].companyId).toBe(unreachable.id);
+    expect(response.body.unreachable[0].reason).toBeNull();
+
+    const allIds = [
+      ...response.body.blocked,
+      ...response.body.failed,
+      ...response.body.unreachable,
+    ].map((record: { companyId: string }) => record.companyId);
+    expect(allIds).not.toContain(healthy.id);
+  });
+
+  it("returns empty buckets rather than an error when nothing needs attention", async () => {
+    await insertCompany(harness.database, companyInput({ name: "Fine Co" }));
+
+    const response = await request(app?.getHttpServer())
+      .get("/api/companies/needs-attention")
+      .expect(200);
+
+    expect(response.body).toEqual({ blocked: [], failed: [], unreachable: [] });
+  });
+});
+
 describe("GET /api/companies/count", () => {
   it("counts companies matching the same filters as the list endpoint", async () => {
     await insertCompany(

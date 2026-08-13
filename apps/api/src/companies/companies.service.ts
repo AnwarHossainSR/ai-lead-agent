@@ -48,6 +48,22 @@ interface LeadSummary {
   readonly leadScore: number;
 }
 
+export interface NeedsAttentionRecord {
+  readonly companyId: string;
+  readonly companyName: string;
+  readonly industryId: string;
+  readonly cityId: string | null;
+  /** Null for the unreachable bucket — verification does not record a reason. */
+  readonly reason: string | null;
+  readonly since: Date;
+}
+
+export interface NeedsAttentionResult {
+  readonly blocked: readonly NeedsAttentionRecord[];
+  readonly failed: readonly NeedsAttentionRecord[];
+  readonly unreachable: readonly NeedsAttentionRecord[];
+}
+
 export interface CompanyDetail {
   readonly id: string;
   readonly name: string;
@@ -251,6 +267,92 @@ export class CompaniesService {
       doNotContactReason: row.doNotContactReason,
       createdAt: row.createdAt,
       lead: lead ?? null,
+    };
+  }
+
+  /**
+   * Every company sitting in a failure or unreachable state, across all
+   * three pipeline stages (design D4): unreachable at verification, and
+   * blocked or failed at either analysis stage. Sorted oldest-first within
+   * each bucket, since the point of "needs attention" is what has been
+   * neglected longest, not what happened most recently.
+   */
+  async getNeedsAttention(): Promise<NeedsAttentionResult> {
+    const [companyRows, analyses, opportunityRuns] = await Promise.all([
+      this.database
+        .select({
+          id: companies.id,
+          name: companies.name,
+          industryId: companies.industryId,
+          cityId: companies.cityId,
+          verificationState: companies.verificationState,
+          verifiedAt: companies.verifiedAt,
+          createdAt: companies.createdAt,
+        })
+        .from(companies),
+      this.database
+        .select({
+          companyId: websiteAnalysis.companyId,
+          outcome: websiteAnalysis.outcome,
+          failureReason: websiteAnalysis.failureReason,
+          createdAt: websiteAnalysis.createdAt,
+        })
+        .from(websiteAnalysis)
+        .orderBy(desc(websiteAnalysis.createdAt)),
+      this.database
+        .select({
+          companyId: opportunityAnalysisRuns.companyId,
+          outcome: opportunityAnalysisRuns.outcome,
+          reason: opportunityAnalysisRuns.reason,
+          createdAt: opportunityAnalysisRuns.createdAt,
+        })
+        .from(opportunityAnalysisRuns)
+        .orderBy(desc(opportunityAnalysisRuns.createdAt)),
+    ]);
+
+    const latestAnalysisByCompany = latestPerCompany(analyses);
+    const latestOpportunityByCompany = latestPerCompany(opportunityRuns);
+
+    const blocked: NeedsAttentionRecord[] = [];
+    const failed: NeedsAttentionRecord[] = [];
+    const unreachable: NeedsAttentionRecord[] = [];
+
+    for (const company of companyRows) {
+      const base = {
+        companyId: company.id,
+        companyName: company.name,
+        industryId: company.industryId,
+        cityId: company.cityId,
+      };
+
+      if (company.verificationState === "unreachable") {
+        unreachable.push({
+          ...base,
+          reason: null,
+          since: company.verifiedAt ?? company.createdAt,
+        });
+      }
+
+      const analysis = latestAnalysisByCompany.get(company.id);
+      if (analysis?.outcome === "blocked") {
+        blocked.push({ ...base, reason: analysis.failureReason, since: analysis.createdAt });
+      } else if (analysis?.outcome === "failed") {
+        failed.push({ ...base, reason: analysis.failureReason, since: analysis.createdAt });
+      }
+
+      const opportunityRun = latestOpportunityByCompany.get(company.id);
+      if (opportunityRun?.outcome === "failed") {
+        failed.push({ ...base, reason: opportunityRun.reason, since: opportunityRun.createdAt });
+      }
+    }
+
+    const byAge = (a: NeedsAttentionRecord, b: NeedsAttentionRecord) =>
+      a.since.getTime() - b.since.getTime();
+
+    return {
+      blocked: blocked.sort(byAge),
+      failed: failed.sort(byAge),
+      unreachable: unreachable.sort(byAge),
     };
   }
 

@@ -49,6 +49,13 @@ export class CompaniesController {
     return { count: value };
   }
 
+  // Registered before ":id": a route parameter registered earlier would
+  // swallow this literal path segment as an :id.
+  @Get("needs-attention")
+  async getNeedsAttention() {
+    return this.companiesService.getNeedsAttention();
+  }
+
   // Registered after "count": a route parameter registered earlier would
   // swallow that literal path segment as an :id.
   @Get(":id")

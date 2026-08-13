@@ -140,11 +140,19 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Companies</h1>
-        <p className="text-muted-foreground">
-          Verification state, analysis outcome and pipeline stage for every discovered company.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Companies</h1>
+          <p className="text-muted-foreground">
+            Verification state, analysis outcome and pipeline stage for every discovered company.
+          </p>
+        </div>
+        <Link
+          href="/companies/needs-attention"
+          className="shrink-0 text-sm text-primary underline-offset-4 hover:underline"
+        >
+          Needs attention
+        </Link>
       </div>
 
       <CompanyFiltersBar
