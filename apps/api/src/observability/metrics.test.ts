@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  aiCostUsd,
-  aiInvocationDuration,
-  aiTokens,
-  dbPoolConnections,
-  discoverySourceRequests,
-  httpRequestsTotal,
-  jobDuration,
-  pipelineStageOutcomes,
-  queueDepth,
-  register,
-} from "./metrics";
+import { pipelineStageOutcomes, register } from "./metrics";
 
 describe("metrics registry", () => {
   it("registers the pipeline stage outcomes counter", () => {
@@ -78,14 +67,11 @@ describe("label values are drawn from configured sets", () => {
     pipelineStageOutcomes.inc({ stage: "scoring", outcome: "blocked" }, 1);
 
     for (const stage of validStages) {
-      expect(() =>
-        pipelineStageOutcomes.inc({ stage, outcome: "completed" }, 1),
-      ).not.toThrow();
+      expect(() => pipelineStageOutcomes.inc({ stage, outcome: "completed" }, 1)).not.toThrow();
     }
   });
 
   it("no label carries a company identifier, URL or email address", () => {
-    const labelPattern = /^[a-z0-9_-]+$/;
     const invalidPatterns = [/^https?:\/\//, /@/, /^company-/, /^lead-/];
 
     const metricNames = register.getMetricsAsArray().map((m) => m.name);

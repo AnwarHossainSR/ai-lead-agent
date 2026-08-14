@@ -6,24 +6,53 @@ import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";
 
 /**
- * `GET /health` — unauthenticated, and excluded from the global `/api` prefix
- * so it stays where load balancers, container orchestrators and uptime checks
- * expect to find it.
+ * Health endpoints. Each answers a different question:
  *
- * Terminus returns 200 when every indicator is up and 503 when any is down,
- * with the per-dependency detail in the body either way. A check that reported
- * healthy while a dependency was unreachable would be worse than no check.
+ * - `/live` — is the process running? Succeeds unless the process is dead.
+ * - `/ready` — can it serve work? Fails when a dependency is unreachable
+ *   or shutdown has begun.
+ * - `/health` — what is the state of each dependency? Unchanged from before.
  */
-@Controller("health")
+@Controller()
 export class HealthController {
+  private shuttingDown = false;
+
   constructor(
     private readonly health: HealthCheckService,
     private readonly postgres: PostgresHealthIndicator,
     private readonly redis: RedisHealthIndicator,
   ) {}
 
+  /** Called by `main.ts` / `worker.ts` before closing the app. */
+  markShuttingDown(): void {
+    this.shuttingDown = true;
+  }
+
   @Public()
-  @Get()
+  @Get("live")
+  live(): { status: string } {
+    return { status: "ok" };
+  }
+
+  @Public()
+  @Get("ready")
+  @HealthCheck()
+  async ready(): Promise<HealthCheckResult> {
+    if (this.shuttingDown) {
+      return {
+        status: "error",
+        details: { shutdown: { status: "down", message: "Shutdown in progress" } },
+      };
+    }
+
+    return this.health.check([
+      () => this.postgres.isHealthy("postgres"),
+      () => this.redis.isHealthy("redis"),
+    ]);
+  }
+
+  @Public()
+  @Get("health")
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
     return this.health.check([

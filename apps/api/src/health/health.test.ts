@@ -3,6 +3,7 @@ import request from "supertest";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { CLOSED_PORT_URL, createTestApp } from "../testing/app";
+import { HealthController } from "./health.controller";
 
 /**
  * These talk to the PostgreSQL and Redis containers from `docker compose`. The
@@ -113,5 +114,74 @@ describe("GET /health", () => {
     app = await createTestApp();
 
     await request(app.getHttpServer()).get("/health").expect(200);
+  });
+});
+
+describe("GET /live", () => {
+  it("responds with 200 and status ok", async () => {
+    app = await createTestApp();
+
+    const response = await request(app.getHttpServer()).get("/live").expect(200);
+    expect(response.body).toEqual({ status: "ok" });
+  });
+
+  it("succeeds even when the database is unreachable", async () => {
+    app = await createTestApp({ DATABASE_URL: CLOSED_PORT_URL.postgres });
+
+    await request(app.getHttpServer()).get("/live").expect(200);
+  });
+
+  it("is served at the root, outside the /api prefix", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/api/live").expect(404);
+  });
+
+  it("needs no authentication", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/live").expect(200);
+  });
+});
+
+describe("GET /ready", () => {
+  it("responds with 200 when dependencies are reachable", async () => {
+    app = await createTestApp();
+
+    const response = await request(app.getHttpServer()).get("/ready").expect(200);
+    expect(response.body.status).toBe("ok");
+  });
+
+  it("fails with 503 when the database is unreachable", async () => {
+    app = await createTestApp({ DATABASE_URL: CLOSED_PORT_URL.postgres });
+
+    const response = await request(app.getHttpServer()).get("/ready").expect(503);
+    expect(response.body.status).toBe("error");
+  });
+
+  it("fails with 503 during shutdown while liveness succeeds", async () => {
+    app = await createTestApp();
+
+    // Get the controller from the DI container and trigger shutdown
+    const controller = app.get(HealthController);
+    controller.markShuttingDown();
+
+    // Readiness should fail
+    await request(app.getHttpServer()).get("/ready").expect(503);
+
+    // Liveness should still succeed
+    await request(app.getHttpServer()).get("/live").expect(200);
+  });
+
+  it("is served at the root, outside the /api prefix", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/api/ready").expect(404);
+  });
+
+  it("needs no authentication", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/ready").expect(200);
   });
 });

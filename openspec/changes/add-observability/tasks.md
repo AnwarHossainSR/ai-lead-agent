@@ -33,21 +33,21 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 4. Metrics
 
-- [ ] 4.1 Add the metrics client and the registry, serving `/metrics` on its own port in both processes
-- [ ] 4.2 Confirm the metrics path is not served on the application port
-- [ ] 4.3 Record per-stage outcome counters and per-source request counters from the outcomes the stages already produce
-- [ ] 4.4 Record model tokens, estimated cost and invocation duration from the existing invocation records
-- [ ] 4.5 Record queue depth, job duration, HTTP status counts and database pool saturation
-- [ ] 4.6 Add a test asserting every label value is drawn from a configured set and no label carries a company identifier, URL or email address
-- [ ] 4.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 4.1 Add the metrics client and the registry, serving `/metrics` on its own port in both processes
+- [x] 4.2 Confirm the metrics path is not served on the application port
+- [x] 4.3 Record per-stage outcome counters and per-source request counters from the outcomes the stages already produce
+- [x] 4.4 Record model tokens, estimated cost and invocation duration from the existing invocation records
+- [x] 4.5 Record queue depth, job duration, HTTP status counts and database pool saturation
+- [x] 4.6 Add a test asserting every label value is drawn from a configured set and no label carries a company identifier, URL or email address
+- [x] 4.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 5. Error reporting
 
-- [ ] 5.1 Capture unhandled exceptions and unhandled promise rejections in both entry points, reporting each once with its correlation identifier
-- [ ] 5.2 Apply the same serializer before anything leaves the process
-- [ ] 5.3 No-op when no destination is configured, and bound the shutdown flush by a timeout so the process always exits
-- [ ] 5.4 Add tests: a rejection reported once, a credential-bearing error reported without the credential, an unreachable destination not blocking shutdown
-- [ ] 5.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 5.1 Capture unhandled exceptions and unhandled promise rejections in both entry points, reporting each once with its correlation identifier
+- [x] 5.2 Apply the same serializer before anything leaves the process
+- [x] 5.3 No-op when no destination is configured, and bound the shutdown flush by a timeout so the process always exits
+- [x] 5.4 Add tests: a rejection reported once, a credential-bearing error reported without the credential, an unreachable destination not blocking shutdown
+- [x] 5.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 6. Liveness and readiness
 

@@ -22,7 +22,11 @@ export function configureApp(app: INestApplication, env: ApiEnv): INestApplicati
   // endpoint at the root, and moving it costs a configuration line in every
   // one of them.
   app.setGlobalPrefix("api", {
-    exclude: [{ path: "health", method: RequestMethod.GET }],
+    exclude: [
+      { path: "health", method: RequestMethod.GET },
+      { path: "live", method: RequestMethod.GET },
+      { path: "ready", method: RequestMethod.GET },
+    ],
   });
 
   // Zod rather than Nest's class-validator ValidationPipe: the project

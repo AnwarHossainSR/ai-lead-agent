@@ -8,12 +8,15 @@ import { QUEUE_CONFIGS } from "@mela/config";
 import { hydrateEnvironment, loadApiEnv } from "@mela/config/env";
 import { AppModule } from "./app.module";
 import { createLogger } from "./logging/create-logger";
+import { installErrorHandlers } from "./observability/error-reporter";
 import { startMetricsServer, stopMetricsServer } from "./observability/metrics";
 import { QueueService } from "./worker/queue.service";
 
 async function bootstrap(): Promise<void> {
   hydrateEnvironment();
   const env = loadApiEnv();
+
+  installErrorHandlers(env.ERROR_REPORTING_DSN);
 
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: createLogger(env.NODE_ENV),

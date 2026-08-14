@@ -1,6 +1,6 @@
-import { createServer, type Server } from "node:http";
+import { type Server, createServer } from "node:http";
 
-import { Registry, Counter, Histogram, Gauge, collectDefaultMetrics } from "prom-client";
+import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "prom-client";
 
 import { OBSERVABILITY_CONFIG } from "@mela/config";
 

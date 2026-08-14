@@ -4,11 +4,15 @@ import { EnvironmentValidationError, hydrateEnvironment, loadApiEnv } from "@mel
 import { Logger } from "@nestjs/common";
 
 import { createApp } from "./create-app";
+import { HealthController } from "./health/health.controller";
+import { installErrorHandlers } from "./observability/error-reporter";
 import { startMetricsServer, stopMetricsServer } from "./observability/metrics";
 
 async function bootstrap(): Promise<void> {
   hydrateEnvironment();
   const env = loadApiEnv();
+
+  installErrorHandlers(env.ERROR_REPORTING_DSN);
 
   const app = await createApp(env);
   await app.listen(env.API_PORT);
@@ -18,8 +22,11 @@ async function bootstrap(): Promise<void> {
   new Logger("Bootstrap").log(`API listening on http://localhost:${env.API_PORT}`);
   new Logger("Bootstrap").log(`Metrics listening on http://localhost:${env.METRICS_PORT}/metrics`);
 
+  const health = app.get(HealthController);
+
   const shutdown = async (signal: string): Promise<void> => {
     new Logger("Bootstrap").log(`Received ${signal}, shutting down...`);
+    health.markShuttingDown();
     await stopMetricsServer();
     await app.close();
     process.exit(0);
@@ -33,9 +40,6 @@ bootstrap().catch((error: unknown) => {
   const logger = new Logger("Bootstrap");
 
   if (error instanceof EnvironmentValidationError) {
-    // Already free of raw values — the loader strips them out — and already
-    // names each variable and what it is for. A stack trace would add noise
-    // and no information.
     logger.error(error.message);
   } else {
     logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error));
