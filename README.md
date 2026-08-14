@@ -25,15 +25,29 @@ cp .env.example apps/web/.env.local
 # Start backing services
 docker compose up -d
 
-# Apply database migrations
-pnpm --filter @mela/database db:migrate
+# Build the database: drop everything, migrate, and create the sign-in account
+pnpm db:fresh
 
-# Create the local development account (writes no other data)
-pnpm db:seed:dev
+# Or the same, plus the full example dataset
+pnpm db:fresh:seed
 
 # Or create your own account instead — there is no sign-up page
 pnpm --filter @mela/api create-account -- --email=you@example.com --role=operator
 ```
+
+### Rebuilding the database
+
+Two commands, both destructive — they drop every table and re-apply the
+migrations. The difference is what is written afterwards:
+
+| Command | Result |
+|---------|--------|
+| `pnpm db:fresh` | An empty database with the sign-in account restored. Nothing else. |
+| `pnpm db:fresh:seed` | The same, then the full example dataset. |
+
+The account is recreated by both, so signing in works immediately either way.
+`db:fresh` is the one to use when you want to see the interface with no data
+in it — every empty state, on every page.
 
 ## Accounts and roles
 
@@ -51,9 +65,26 @@ creates one account and nothing else — no companies, no leads, no drafts:
 |-------|----------|------|
 | `dev@mela.local` | `DevPassword123!` | operator |
 
-Example data is not part of setup. `pnpm --filter @mela/database db:seed`
-still exists and writes the example dataset if you ever want it; nothing
-runs it for you.
+### The example dataset
+
+`pnpm db:fresh:seed` writes a dataset built to exercise the interface rather
+than to look tidy: 26 companies across all five industries and all four
+cities, carried to different points in the pipeline. It deliberately includes
+the states a hand-made fixture forgets — a company with no website at all, an
+analysis that was blocked rather than merely low-scoring, a score that was
+never measured, a lead nobody has summarised, a draft a reviewer refused, and
+both a company-wide and a personal do-not-contact marker. Outreach covers
+every status a reviewer can meet: draft, pending approval, approved, sent,
+replied and rejected.
+
+Every row is marked `is_example`, named "Example …", and hosted under a
+reserved example domain, so a seeded row cannot be mistaken for a researched
+one. Approvals, rejections and sends are attributed to a real account — the
+database refuses them otherwise — which is why the seed runs after the
+account is created and refuses outright if no operator exists.
+
+`pnpm db:seed:data` writes it into a database you have already migrated,
+without dropping anything.
 
 The sign-in form prefills the operator one in development, so signing in
 locally is a single click. Nothing about this reaches a deployment: the
@@ -97,11 +128,13 @@ pnpm --filter @mela/web dev      # Web on port 3000
 
 | Command | Description |
 |---------|-------------|
-| `pnpm --filter @mela/database db:migrate` | Apply pending migrations |
+| `pnpm db:fresh` | **Destructive.** Drop everything, migrate, restore the sign-in account. No example data |
+| `pnpm db:fresh:seed` | **Destructive.** The same, then write the full example dataset |
+| `pnpm db:migrate` | Apply pending migrations |
+| `pnpm db:reset` | **Destructive.** Drop every table and re-apply migrations. Writes nothing |
+| `pnpm db:seed:data` | Write the example dataset into an already-migrated database |
+| `pnpm db:seed:accounts` | Create the local development account, and nothing else |
 | `pnpm --filter @mela/database db:generate` | Generate migration files |
-| `pnpm --filter @mela/database db:seed` | Write the example dataset (opt-in, never part of setup) |
-| `pnpm db:seed:dev` | Create the local development account, and nothing else |
-| `pnpm --filter @mela/api seed:accounts` | The same, called directly |
 | `pnpm --filter @mela/database db:studio` | Open Drizzle Studio |
 
 ### Individual Packages
