@@ -21,6 +21,12 @@ async function main(): Promise<void> {
   try {
     const result = await seed(database);
     console.log(result.reason);
+
+    if (result.counts !== undefined) {
+      for (const [label, count] of Object.entries(result.counts)) {
+        console.log(`  ${label}: ${count}`);
+      }
+    }
   } finally {
     await close();
   }
