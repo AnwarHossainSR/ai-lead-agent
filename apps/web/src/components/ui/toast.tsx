@@ -133,8 +133,8 @@ function ToastItem({ toast }: { toast: ToastPrimitive.Root.ToastObject }) {
     >
       <Icon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <ToastPrimitive.Title className="text-sm font-medium text-foreground" />
-        <ToastPrimitive.Description className="text-sm text-muted-foreground" />
+        <ToastPrimitive.Title className="text-meta font-semibold text-foreground" />
+        <ToastPrimitive.Description className="text-meta text-muted-foreground" />
       </div>
       <ToastPrimitive.Close
         aria-label="Dismiss notification"

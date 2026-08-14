@@ -90,6 +90,8 @@
   --text-body--line-height: 1.5;
   --text-heading: 0.9375rem; /* 15px — panel and section titles */
   --text-heading--line-height: 1.35;
+  --text-figure: 1.625rem; /* 26px — the headline number on a stat card */
+  --text-figure--line-height: 1.1;
   --text-title: 1.875rem; /* 30px — the page title, once per screen */
   --text-title--line-height: 1.1;
 

@@ -521,6 +521,7 @@ px column is what renders at the browser default.
 | `--text-meta` | 11 | Table cells, timestamps, supporting text |
 | `--text-body` | 13 | The base the whole workspace is set in |
 | `--text-heading` | 15 | Panel and section titles |
+| `--text-figure` | 26 | The headline number on a stat card |
 | `--text-title` | 30 | The page title, once per screen |
 
 The 11px rung is restricted to supporting text that repeats something already

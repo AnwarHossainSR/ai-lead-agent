@@ -47,8 +47,8 @@ export function Evidence({ sourceUrl, recordedAt, detail, children, className }:
         <PopoverHeader>
           <PopoverTitle>Evidence</PopoverTitle>
         </PopoverHeader>
-        <p className="border-l-2 border-border pl-2.5 text-sm">{detail}</p>
-        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+        <p className="border-l-2 border-border pl-2.5 text-body">{detail}</p>
+        <div className="flex flex-col gap-1 text-label text-muted-foreground">
           <a
             href={sourceUrl}
             target="_blank"
