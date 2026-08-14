@@ -1,23 +1,15 @@
 import { redirect } from "next/navigation";
 
-import { apiUrl } from "@/lib/api";
-import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
-import type { OutreachRecord } from "@/lib/outreach";
+import { fetchAwaitingReview } from "./awaiting-review";
 
 /**
  * The queue's entry point: no list, no multi-select — it hands the operator
  * straight into a message awaiting review (design D3). "One message at a
- * time" starts here, not just inside the reviewer itself. The API always
- * orders outreach newest-first, so this is the most recently drafted
- * message, not the oldest.
+ * time" starts here, not just inside the reviewer itself. Covers both
+ * `pending_approval` and never-submitted `draft` messages, newest first.
  */
 export default async function OutreachReviewPage() {
-  const url = apiUrl("/outreach?status=pending_approval&limit=1");
-
-  const result =
-    url === null
-      ? ({ status: "unreachable", error: "API_URL is not configured." } as const)
-      : await fetchWithTimeout<OutreachRecord[]>(url);
+  const result = await fetchAwaitingReview(1);
 
   if (result.status === "ok" && result.data.length > 0) {
     redirect(`/outreach/review/${result.data[0]!.id}`);

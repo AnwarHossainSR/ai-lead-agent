@@ -9,9 +9,11 @@ import type { OutreachRecord } from "@/lib/outreach";
 import {
   approveOutreachAction,
   cancelOutreachAction,
+  recordOutreachSentAction,
   rejectOutreachAction,
   updateOutreachAction,
 } from "../actions";
+import { fetchAwaitingReview } from "../awaiting-review";
 
 interface ReviewPageProps {
   params: Promise<{ id: string }>;
@@ -47,12 +49,7 @@ export default async function OutreachReviewMessagePage({ params }: ReviewPagePr
         ? ({ status: "unreachable", error: "API_URL is not configured." } as const)
         : fetchWithTimeout<LeadDetail>(url);
     })(),
-    (async () => {
-      const url = apiUrl("/outreach?status=pending_approval&limit=200");
-      return url === null
-        ? ({ status: "unreachable", error: "API_URL is not configured." } as const)
-        : fetchWithTimeout<OutreachRecord[]>(url);
-    })(),
+    fetchAwaitingReview(200),
   ]);
 
   const companyName = leadResult.status === "ok" ? leadResult.data.company.name : null;
@@ -83,6 +80,7 @@ export default async function OutreachReviewMessagePage({ params }: ReviewPagePr
           onReject={rejectOutreachAction}
           onCancel={cancelOutreachAction}
           onSave={updateOutreachAction}
+          onRecordSent={recordOutreachSentAction}
         />
 
         <div>

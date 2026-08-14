@@ -50,6 +50,7 @@ const BASE_PROPS = {
   onReject: vi.fn().mockResolvedValue({ ok: true }),
   onCancel: vi.fn().mockResolvedValue({ ok: true }),
   onSave: vi.fn().mockResolvedValue({ ok: true }),
+  onRecordSent: vi.fn().mockResolvedValue({ ok: true }),
 };
 
 describe("MessageReviewCard", () => {
@@ -167,5 +168,50 @@ describe("MessageReviewCard", () => {
 
     await user.type(reasonField, "Not a good fit");
     expect(screen.getByRole("button", { name: "Confirm reject" })).toBeEnabled();
+  });
+
+  /**
+   * The API refuses approve and reject once a message is already approved
+   * (both are reachable only from draft/pending_approval), so an approved
+   * message gets a different action set entirely rather than buttons that
+   * would just error.
+   */
+  it("offers no Approve or Reject for an already-approved message", () => {
+    render(<MessageReviewCard {...BASE_PROPS} status="approved" />);
+
+    expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reject…" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Record as sent…" })).toBeInTheDocument();
+  });
+
+  it("describes recording a send as recording, not sending, and does not offer a send control", async () => {
+    const user = userEvent.setup();
+    render(<MessageReviewCard {...BASE_PROPS} status="approved" />);
+
+    await user.click(screen.getByRole("button", { name: "Record as sent…" }));
+
+    expect(screen.getByText(/does not send anything/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^send$/i })).not.toBeInTheDocument();
+  });
+
+  it("requires the means before recording, then calls onRecordSent with the means and time", async () => {
+    const user = userEvent.setup();
+    const onRecordSent = vi.fn().mockResolvedValue({ ok: true });
+    render(<MessageReviewCard {...BASE_PROPS} status="approved" onRecordSent={onRecordSent} />);
+
+    await user.click(screen.getByRole("button", { name: "Record as sent…" }));
+    expect(screen.getByRole("button", { name: "Record as sent" })).toBeDisabled();
+
+    await user.type(screen.getByLabelText("How was it sent?"), "Gmail");
+    expect(screen.getByRole("button", { name: "Record as sent" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Record as sent" }));
+
+    expect(onRecordSent).toHaveBeenCalledTimes(1);
+    expect(onRecordSent).toHaveBeenCalledWith(
+      "outreach-1",
+      expect.objectContaining({ means: "Gmail" }),
+    );
+    expect(await screen.findByText("Recorded as sent.")).toBeInTheDocument();
   });
 });
