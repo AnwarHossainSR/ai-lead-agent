@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { apiUrl } from "@/lib/api";
+import { sessionCookieHeader } from "@/lib/session-cookie";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -15,7 +16,11 @@ export async function retryFailedJobAction(dlqId: string): Promise<ActionResult>
   }
 
   try {
-    const response = await fetch(url, { method: "POST", cache: "no-store" });
+    const response = await fetch(url, {
+      method: "POST",
+      cache: "no-store",
+      headers: await sessionCookieHeader(),
+    });
 
     if (!response.ok) {
       const body = await response.json().catch(() => null);

@@ -1,3 +1,5 @@
+import { sessionCookieHeader } from "./session-cookie";
+
 const DEFAULT_TIMEOUT_MS = 2000;
 
 export type FetchResult<T> =
@@ -31,7 +33,12 @@ export async function fetchWithTimeout<T>(
     // into the page at build time and never changes again in production.
     // Next's fetch cache is opt-out per call, not per app, so this is set
     // explicitly rather than relying on a global default.
-    const response = await fetch(url, { cache: "no-store", ...init, signal: controller.signal });
+    const response = await fetch(url, {
+      cache: "no-store",
+      ...init,
+      headers: { ...(await sessionCookieHeader()), ...init?.headers },
+      signal: controller.signal,
+    });
 
     if (!response.ok) {
       return { status: "degraded", error: `${url} responded with ${response.status}.` };

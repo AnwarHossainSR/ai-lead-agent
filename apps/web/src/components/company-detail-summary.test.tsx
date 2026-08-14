@@ -18,6 +18,7 @@ function company(overrides: Partial<CompanyDetail> = {}): CompanyDetail {
     discoverySourceUrl: "https://maps.example.com/place/123",
     doNotContactAt: null,
     doNotContactReason: null,
+    doNotContactByAccountId: null,
     createdAt: "2026-01-01T00:00:00Z",
     lead: null,
     ...overrides,
@@ -26,27 +27,31 @@ function company(overrides: Partial<CompanyDetail> = {}): CompanyDetail {
 
 describe("CompanyDetailSummary", () => {
   it("renders the discovery source URL as a link (dashboard spec: 'A company links to where it was discovered')", () => {
-    render(<CompanyDetailSummary company={company()} />);
+    render(<CompanyDetailSummary company={company()} doNotContactByEmail={null} />);
 
     const link = screen.getByRole("link", { name: "Google Places" });
     expect(link).toHaveAttribute("href", "https://maps.example.com/place/123");
   });
 
-  it("shows a do-not-contact banner with its reason", () => {
+  it("shows a do-not-contact banner with its reason and who marked it (task 8.5)", () => {
     render(
       <CompanyDetailSummary
         company={company({
           doNotContactAt: "2026-01-05T00:00:00Z",
           doNotContactReason: "Unsubscribed",
+          doNotContactByAccountId: "account-1",
         })}
+        doNotContactByEmail="ops@example.com"
       />,
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Unsubscribed");
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Unsubscribed");
+    expect(alert).toHaveTextContent(/Marked by ops@example\.com at/);
   });
 
   it("shows 'Not scored' when the company has no lead", () => {
-    render(<CompanyDetailSummary company={company({ lead: null })} />);
+    render(<CompanyDetailSummary company={company({ lead: null })} doNotContactByEmail={null} />);
 
     expect(screen.getByText("Not scored")).toBeInTheDocument();
   });
@@ -57,6 +62,7 @@ describe("CompanyDetailSummary", () => {
         company={company({
           lead: { id: "lead-1", status: "new", priority: "high", leadScore: 82 },
         })}
+        doNotContactByEmail={null}
       />,
     );
 

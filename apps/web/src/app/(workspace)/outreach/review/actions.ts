@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { apiUrl } from "@/lib/api";
+import { sessionCookieHeader } from "@/lib/session-cookie";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -21,7 +22,11 @@ async function callOutreachApi(path: string, init?: RequestInit): Promise<Action
   }
 
   try {
-    const response = await fetch(url, { ...init, cache: "no-store" });
+    const response = await fetch(url, {
+      ...init,
+      cache: "no-store",
+      headers: { ...(await sessionCookieHeader()), ...init?.headers },
+    });
 
     if (!response.ok) {
       const body = await response.json().catch(() => null);

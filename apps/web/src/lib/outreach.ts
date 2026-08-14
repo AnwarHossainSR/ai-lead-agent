@@ -23,4 +23,11 @@ export interface OutreachRecord {
   readonly citedFacts: readonly OutreachClaim[];
   readonly rejectionReason: string | null;
   readonly createdAt: string;
+  readonly approvedAt: string | null;
+  readonly approvedByAccountId: string | null;
+  readonly rejectedAt: string | null;
+  readonly rejectedByAccountId: string | null;
+  readonly sentAt: string | null;
+  readonly sentMeans: string | null;
+  readonly sentByAccountId: string | null;
 }

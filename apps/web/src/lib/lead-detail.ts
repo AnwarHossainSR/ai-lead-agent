@@ -92,4 +92,7 @@ export interface Contact {
   readonly sourceUrl: string | null;
   readonly researchSource: string;
   readonly createdAt: string;
+  readonly doNotContactAt: string | null;
+  readonly doNotContactReason: string | null;
+  readonly doNotContactByAccountId: string | null;
 }

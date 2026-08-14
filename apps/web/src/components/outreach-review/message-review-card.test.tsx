@@ -46,6 +46,10 @@ const BASE_PROPS = {
   messageBody: "Message body text.",
   isHumanEdited: false,
   rejectionReason: null,
+  canApprove: true,
+  approval: null,
+  rejection: null,
+  send: null,
   onApprove: vi.fn().mockResolvedValue({ ok: true }),
   onReject: vi.fn().mockResolvedValue({ ok: true }),
   onCancel: vi.fn().mockResolvedValue({ ok: true }),
@@ -107,6 +111,58 @@ describe("MessageReviewCard", () => {
       screen.getByText(/This message is Rejected: Not a good fit right now\./),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+  });
+
+  it("shows who approved, rejected or recorded a send, and when", () => {
+    // "approved" is itself actionable (offers Record as sent), so approval
+    // attribution is only rendered once the message has moved past it —
+    // "sent" here, alongside its own send attribution.
+    const { rerender } = render(
+      <MessageReviewCard
+        {...BASE_PROPS}
+        status="sent"
+        approval={{ email: "ops@example.com", at: "2026-01-01T00:00:00Z" }}
+      />,
+    );
+    expect(screen.getByText(/Approved by ops@example.com at/)).toBeInTheDocument();
+
+    rerender(
+      <MessageReviewCard
+        {...BASE_PROPS}
+        status="rejected"
+        rejectionReason="Not a fit."
+        rejection={{ email: "ops@example.com", at: "2026-01-02T00:00:00Z" }}
+      />,
+    );
+    expect(screen.getByText(/Rejected by ops@example.com at/)).toBeInTheDocument();
+
+    rerender(
+      <MessageReviewCard
+        {...BASE_PROPS}
+        status="sent"
+        send={{ email: "ops@example.com", at: "2026-01-03T00:00:00Z", means: "Gmail" }}
+      />,
+    );
+    expect(screen.getByText(/Recorded sent by ops@example.com via Gmail at/)).toBeInTheDocument();
+  });
+
+  /**
+   * Task 8.4: a viewer sees no approve, reject or record-send control — the
+   * API refuses the request anyway either way (`auth/requires-role.test.ts`
+   * on the API side), so this is belt and braces, not the only defence.
+   */
+  it("hides Approve, Reject and Record as sent for a viewer (canApprove: false)", () => {
+    const { rerender } = render(<MessageReviewCard {...BASE_PROPS} canApprove={false} />);
+    markViewed();
+
+    expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reject…" })).not.toBeInTheDocument();
+    // Edit and Cancel are not role-gated on the API side, so they stay visible.
+    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+
+    rerender(<MessageReviewCard {...BASE_PROPS} canApprove={false} status="approved" />);
+    expect(screen.queryByRole("button", { name: "Record as sent…" })).not.toBeInTheDocument();
   });
 
   /**

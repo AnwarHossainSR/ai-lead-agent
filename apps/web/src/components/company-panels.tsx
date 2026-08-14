@@ -1,6 +1,7 @@
 import { ContactList } from "@/components/lead-detail/contact-list";
 import { OpportunityList } from "@/components/lead-detail/opportunity-list";
 import { TechnologyList } from "@/components/lead-detail/technology-list";
+import { fetchAccounts } from "@/lib/accounts";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import type {
@@ -74,5 +75,7 @@ export async function ContactsPanel({ companyId }: { companyId: string }) {
     return <Unavailable title="Contacts" error={result.error} />;
   }
 
-  return <ContactList contacts={result.data.contacts} />;
+  const accounts = await fetchAccounts();
+
+  return <ContactList contacts={result.data.contacts} accounts={accounts} />;
 }
