@@ -29,6 +29,7 @@ catalog:
   # Toolchain
   typescript: 7.0.2
   turbo: 2.10.9
+  concurrently: 10.0.4
   "@biomejs/biome": 1.9.4
   "@types/node": 24.13.3
   vitest: 4.1.10
