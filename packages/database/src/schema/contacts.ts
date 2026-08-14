@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { boolean, check, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
+import { accounts } from "./accounts";
 import { aiInvocations } from "./ai-invocations";
 import { companies } from "./companies";
 import { certaintyEnum, contactExtractionMethodEnum, mailDeliverabilityEnum } from "./enums";
@@ -57,6 +58,9 @@ export const contacts = pgTable(
 
     doNotContactAt: timestamp("do_not_contact_at", { withTimezone: true }),
     doNotContactReason: text("do_not_contact_reason"),
+    doNotContactByAccountId: uuid("do_not_contact_by_account_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -79,6 +83,11 @@ export const contacts = pgTable(
     check(
       "contacts_do_not_contact_requires_reason",
       sql`${table.doNotContactAt} IS NULL OR length(btrim(${table.doNotContactReason})) > 0`,
+    ),
+    // Design D5: the actor is set and cleared together with the marker.
+    check(
+      "contacts_do_not_contact_actor_pairs_with_timestamp",
+      sql`(${table.doNotContactAt} IS NULL) = (${table.doNotContactByAccountId} IS NULL)`,
     ),
     index("contacts_company_id_idx").on(table.companyId),
   ],

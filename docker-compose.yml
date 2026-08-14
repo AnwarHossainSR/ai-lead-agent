@@ -19,8 +19,8 @@ services:
     container_name: mela-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-mela}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mela_local_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-mela}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"

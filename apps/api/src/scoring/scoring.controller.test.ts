@@ -1,5 +1,4 @@
 import type { INestApplication } from "@nestjs/common";
-import request from "supertest";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { eq } from "drizzle-orm";
@@ -8,6 +7,8 @@ import { insertCompany, insertLead, leads } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { createTestApp } from "../testing/app";
+import { authedRequest } from "../testing/authed-request";
+import { createAuthenticatedContext } from "../testing/authenticated-context";
 
 /**
  * API tests for GET /api/leads (task 2.4): filters, ordering and the
@@ -16,6 +17,12 @@ import { createTestApp } from "../testing/app";
 
 let harness: TestDatabase;
 let app: INestApplication | undefined;
+let authCookie: string;
+
+/** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
+function request(server: Parameters<typeof authedRequest>[0]) {
+  return authedRequest(server, authCookie);
+}
 
 beforeAll(async () => {
   harness = await setupTestDatabase();
@@ -24,6 +31,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await harness.truncate();
   app = await createTestApp({ DATABASE_URL: harness.url });
+  authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 });
 
 afterEach(async () => {

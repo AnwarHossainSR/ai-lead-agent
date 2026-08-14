@@ -15,6 +15,9 @@ const SOURCED_CONTACT: Contact = {
   sourceUrl: "https://example.com/team",
   researchSource: "team_page",
   createdAt: "2026-01-01T00:00:00Z",
+  doNotContactAt: null,
+  doNotContactReason: null,
+  doNotContactByAccountId: null,
 };
 
 const UNSOURCED_CONTACT: Contact = {
@@ -27,6 +30,9 @@ const UNSOURCED_CONTACT: Contact = {
   sourceUrl: null,
   researchSource: "linkedin_search",
   createdAt: "2026-01-01T00:00:00Z",
+  doNotContactAt: null,
+  doNotContactReason: null,
+  doNotContactByAccountId: null,
 };
 
 describe("ContactList", () => {
@@ -57,5 +63,25 @@ describe("ContactList", () => {
     render(<ContactList contacts={[]} />);
 
     expect(screen.getByText("No contacts found.")).toBeInTheDocument();
+  });
+
+  it("shows a do-not-contact marker with its reason and who set it (task 8.5)", () => {
+    render(
+      <ContactList
+        contacts={[
+          {
+            ...SOURCED_CONTACT,
+            doNotContactAt: "2026-01-05T00:00:00Z",
+            doNotContactReason: "Asked to stop.",
+            doNotContactByAccountId: "account-1",
+          },
+        ]}
+        accounts={[{ id: "account-1", email: "ops@example.com", role: "operator" }]}
+      />,
+    );
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Asked to stop.");
+    expect(alert).toHaveTextContent(/Marked by ops@example\.com at/);
   });
 });

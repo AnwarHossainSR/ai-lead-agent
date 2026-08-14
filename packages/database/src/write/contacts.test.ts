@@ -3,8 +3,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { contacts } from "../schema/contacts";
 import { expectConstraintViolation } from "../testing/constraints";
-import { aiInvocationInput, companyInput, contactInput } from "../testing/fixtures";
+import { accountInput, aiInvocationInput, companyInput, contactInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
+import { insertAccount } from "./accounts";
 import { insertAIInvocation } from "./ai-invocations";
 import { insertCompany } from "./companies";
 import {
@@ -259,19 +260,22 @@ describe("deleteContactsForCompany", () => {
 });
 
 describe("do-not-contact markers", () => {
-  it("stores the marker with its reason and time", async () => {
+  it("stores the marker with its reason, time and acting account", async () => {
     const contact = await insertContact(
       harness.database,
       contactInput(companyId, { jobTitle: "Operations Director" }),
     );
+    const actor = await insertAccount(harness.database, accountInput());
 
     const marked = await setContactDoNotContact(harness.database, {
       contactId: contact.id,
       reason: "Unsubscribe request",
+      actorAccountId: actor.id,
     });
 
     expect(marked.doNotContactAt).toBeInstanceOf(Date);
     expect(marked.doNotContactReason).toBe("Unsubscribe request");
+    expect(marked.doNotContactByAccountId).toBe(actor.id);
   });
 
   it("refuses a blank reason via the database", async () => {
@@ -280,32 +284,53 @@ describe("do-not-contact markers", () => {
       contactInput(companyId, { jobTitle: "Operations Director" }),
     );
 
+    const actor = await insertAccount(harness.database, accountInput());
+
     await expectConstraintViolation(
       harness.database
         .update(contacts)
         .set({
           doNotContactAt: new Date(),
           doNotContactReason: "   ",
+          doNotContactByAccountId: actor.id,
         })
         .where(eq(contacts.id, contact.id)),
       "contacts_do_not_contact_requires_reason",
     );
   });
 
-  it("clears the marker", async () => {
+  it("refuses a marker with no acting account (design D5)", async () => {
     const contact = await insertContact(
       harness.database,
       contactInput(companyId, { jobTitle: "Operations Director" }),
     );
 
+    await expectConstraintViolation(
+      harness.database
+        .update(contacts)
+        .set({ doNotContactAt: new Date(), doNotContactReason: "Unsubscribe request" })
+        .where(eq(contacts.id, contact.id)),
+      "contacts_do_not_contact_actor_pairs_with_timestamp",
+    );
+  });
+
+  it("clears the marker and its acting account", async () => {
+    const contact = await insertContact(
+      harness.database,
+      contactInput(companyId, { jobTitle: "Operations Director" }),
+    );
+    const actor = await insertAccount(harness.database, accountInput());
+
     await setContactDoNotContact(harness.database, {
       contactId: contact.id,
       reason: "Unsubscribe request",
+      actorAccountId: actor.id,
     });
 
     const cleared = await clearContactDoNotContact(harness.database, contact.id);
 
     expect(cleared.doNotContactAt).toBeNull();
     expect(cleared.doNotContactReason).toBeNull();
+    expect(cleared.doNotContactByAccountId).toBeNull();
   });
 });

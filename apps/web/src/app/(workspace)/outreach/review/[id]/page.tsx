@@ -2,10 +2,12 @@ import Link from "next/link";
 
 import { CitedFactsPanel } from "@/components/outreach-review/cited-facts-panel";
 import { MessageReviewCard } from "@/components/outreach-review/message-review-card";
+import { fetchAccounts, resolveAccountEmail } from "@/lib/accounts";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import type { LeadDetail } from "@/lib/lead-detail";
 import type { OutreachRecord } from "@/lib/outreach";
+import { getCurrentAccount } from "@/lib/session";
 import {
   approveOutreachAction,
   cancelOutreachAction,
@@ -42,7 +44,7 @@ export default async function OutreachReviewMessagePage({ params }: ReviewPagePr
 
   const outreachMessage = outreachResult.data;
 
-  const [leadResult, queueResult] = await Promise.all([
+  const [leadResult, queueResult, accounts, account] = await Promise.all([
     (async () => {
       const url = apiUrl(`/leads/${outreachMessage.leadId}`);
       return url === null
@@ -50,9 +52,33 @@ export default async function OutreachReviewMessagePage({ params }: ReviewPagePr
         : fetchWithTimeout<LeadDetail>(url);
     })(),
     fetchAwaitingReview(200),
+    fetchAccounts(),
+    getCurrentAccount(),
   ]);
 
   const companyName = leadResult.status === "ok" ? leadResult.data.company.name : null;
+  const canApprove = account?.role === "operator";
+
+  const approval = outreachMessage.approvedAt
+    ? {
+        email: resolveAccountEmail(accounts, outreachMessage.approvedByAccountId),
+        at: outreachMessage.approvedAt,
+      }
+    : null;
+  const rejection = outreachMessage.rejectedAt
+    ? {
+        email: resolveAccountEmail(accounts, outreachMessage.rejectedByAccountId),
+        at: outreachMessage.rejectedAt,
+      }
+    : null;
+  const send =
+    outreachMessage.sentAt && outreachMessage.sentMeans
+      ? {
+          email: resolveAccountEmail(accounts, outreachMessage.sentByAccountId),
+          at: outreachMessage.sentAt,
+          means: outreachMessage.sentMeans,
+        }
+      : null;
 
   const queue = queueResult.status === "ok" ? queueResult.data : [];
   const position = queue.findIndex((item) => item.id === outreachMessage.id);
@@ -76,6 +102,10 @@ export default async function OutreachReviewMessagePage({ params }: ReviewPagePr
           messageBody={outreachMessage.messageBody}
           isHumanEdited={outreachMessage.isHumanEdited}
           rejectionReason={outreachMessage.rejectionReason}
+          canApprove={canApprove}
+          approval={approval}
+          rejection={rejection}
+          send={send}
           onApprove={approveOutreachAction}
           onReject={rejectOutreachAction}
           onCancel={cancelOutreachAction}

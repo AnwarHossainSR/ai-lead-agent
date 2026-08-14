@@ -20,6 +20,7 @@ allowBuilds:
   unrs-resolver: true
   '@biomejs/biome': true
   msgpackr-extract: true
+  argon2: true
 
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
@@ -28,6 +29,7 @@ catalog:
   # Toolchain
   typescript: 7.0.2
   turbo: 2.10.9
+  concurrently: 10.0.4
   "@biomejs/biome": 1.9.4
   "@types/node": 24.13.3
   vitest: 4.1.10
@@ -35,13 +37,13 @@ catalog:
   # release age gate; a version published hours ago is exactly what a
   # compromised-package window looks like.
   tsx: 4.23.9
+  ts-node: 10.9.2
 
   # SWC compiles the API's decorators with `emitDecoratorMetadata`, which
   # esbuild — and therefore Vitest's default transform — does not implement.
   # Without it Nest's dependency injection has no constructor parameter types
   # to read and every provider fails to resolve.
   "@swc/core": 1.15.47
-  "@swc-node/register": 1.12.1
   unplugin-swc: 1.5.10
   supertest: 7.2.2
   "@types/supertest": 7.2.1
@@ -71,6 +73,10 @@ catalog:
 
   # AI
   "@google/genai": 2.16.0
+
+  # Authentication — Argon2id password hashing (design D3). Ships prebuilt
+  # native binaries via node-gyp-build; no compiler needed on a normal install.
+  argon2: 0.45.1
 
 # vite declares tsx as an *optional* peer dependency, so with autoInstallPeers
 # pnpm pulls whatever the newest release is into every package that uses

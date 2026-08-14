@@ -12,6 +12,7 @@ export interface CompanyDetail {
   readonly discoverySourceUrl: string;
   readonly doNotContactAt: string | null;
   readonly doNotContactReason: string | null;
+  readonly doNotContactByAccountId: string | null;
   readonly createdAt: string;
   /** Null means the company has not been scored into a lead. */
   readonly lead: {

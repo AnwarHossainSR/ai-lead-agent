@@ -10,7 +10,13 @@ import { formatLabel } from "@/lib/format-label";
  * fetched `CompanyDetail` — so it renders in jsdom, unlike the async panels
  * beside it on the page.
  */
-export function CompanyDetailSummary({ company }: { company: CompanyDetail }) {
+export function CompanyDetailSummary({
+  company,
+  doNotContactByEmail,
+}: {
+  company: CompanyDetail;
+  doNotContactByEmail: string | null;
+}) {
   const industryName = findIndustry(company.industryId)?.name ?? company.industryId;
   const cityName = company.cityId ? (findCity(company.cityId)?.name ?? company.cityId) : null;
 
@@ -42,6 +48,10 @@ export function CompanyDetailSummary({ company }: { company: CompanyDetail }) {
           <p className="text-sm font-medium text-destructive">Do not contact</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {company.doNotContactReason ?? "No reason recorded."}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Marked by {doNotContactByEmail ?? "an account (email unavailable)"} at{" "}
+            {new Date(company.doNotContactAt).toLocaleString()}
           </p>
         </div>
       ) : null}

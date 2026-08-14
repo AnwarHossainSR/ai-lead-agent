@@ -15,6 +15,11 @@ function nowForDateTimeLocalInput(): string {
   return now.toISOString().slice(0, 16);
 }
 
+interface Attribution {
+  readonly email: string | null;
+  readonly at: string;
+}
+
 interface MessageReviewCardProps {
   outreachId: string;
   status: string;
@@ -23,6 +28,11 @@ interface MessageReviewCardProps {
   messageBody: string;
   isHumanEdited: boolean;
   rejectionReason: string | null;
+  /** A viewer cannot approve, reject or record a send (task 8.4) — the API refuses it anyway either way. */
+  canApprove: boolean;
+  approval: Attribution | null;
+  rejection: Attribution | null;
+  send: (Attribution & { means: string }) | null;
   onApprove: (outreachId: string) => Promise<ActionResult>;
   onReject: (outreachId: string, reason: string) => Promise<ActionResult>;
   onCancel: (outreachId: string) => Promise<ActionResult>;
@@ -61,6 +71,10 @@ export function MessageReviewCard({
   messageBody,
   isHumanEdited,
   rejectionReason,
+  canApprove,
+  approval,
+  rejection,
+  send,
   onApprove,
   onReject,
   onCancel,
@@ -122,6 +136,24 @@ export function MessageReviewCard({
           This message is {formatLabel(status)}
           {rejectionReason ? `: ${rejectionReason}` : "."}
         </p>
+        {approval && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Approved by {approval.email ?? "an account (email unavailable)"} at{" "}
+            {new Date(approval.at).toLocaleString()}
+          </p>
+        )}
+        {rejection && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Rejected by {rejection.email ?? "an account (email unavailable)"} at{" "}
+            {new Date(rejection.at).toLocaleString()}
+          </p>
+        )}
+        {send && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Recorded sent by {send.email ?? "an account (email unavailable)"} via {send.means} at{" "}
+            {new Date(send.at).toLocaleString()}
+          </p>
+        )}
         <MessageBody subject={subject} messageBody={messageBody} channel={channel} />
       </div>
     );
@@ -218,20 +250,21 @@ export function MessageReviewCard({
 
       {!isEditing && !isRejecting && !isRecordingSent && !recordedSent && (
         <div className="flex flex-wrap gap-2">
-          {isApproved ? (
-            <Button type="button" disabled={isPending} onClick={() => setIsRecordingSent(true)}>
-              Record as sent…
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              disabled={!hasBeenViewed || isPending}
-              title={hasBeenViewed ? undefined : "Read the message before approving"}
-              onClick={() => runAction(() => onApprove(outreachId))}
-            >
-              Approve
-            </Button>
-          )}
+          {canApprove &&
+            (isApproved ? (
+              <Button type="button" disabled={isPending} onClick={() => setIsRecordingSent(true)}>
+                Record as sent…
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                disabled={!hasBeenViewed || isPending}
+                title={hasBeenViewed ? undefined : "Read the message before approving"}
+                onClick={() => runAction(() => onApprove(outreachId))}
+              >
+                Approve
+              </Button>
+            ))}
           <Button
             type="button"
             variant="outline"
@@ -243,7 +276,7 @@ export function MessageReviewCard({
           >
             Edit
           </Button>
-          {!isApproved && (
+          {!isApproved && canApprove && (
             <Button
               type="button"
               variant="outline"

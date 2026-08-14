@@ -25,6 +25,36 @@ export async function expectConstraintViolation(
   expect(constraintNames(thrown)).toContain(constraint);
 }
 
+/**
+ * Asserts that a statement was refused with a message matching `pattern`.
+ *
+ * For use with a `RAISE EXCEPTION` message (e.g. the audit log's append-only
+ * trigger) rather than a named constraint — those have no constraint name to
+ * match against, only the text after `RAISE EXCEPTION`. Drizzle wraps the raw
+ * driver error in a `DrizzleQueryError` whose own `message` is the failing
+ * SQL, so the real text is on `.cause`, matching the layout
+ * `expectConstraintViolation` already walks.
+ */
+export async function expectErrorMatching(work: Promise<unknown>, pattern: RegExp): Promise<void> {
+  let thrown: unknown;
+
+  try {
+    await work;
+  } catch (error) {
+    thrown = error;
+  }
+
+  expect(
+    thrown,
+    `Expected the statement to be refused with a message matching ${pattern}.`,
+  ).toBeDefined();
+
+  const cause = thrown instanceof Error ? thrown.cause : undefined;
+  const message = cause instanceof Error ? cause.message : String(thrown);
+
+  expect(message).toMatch(pattern);
+}
+
 function constraintNames(error: unknown): string[] {
   const names: string[] = [];
   let candidate: unknown = error;

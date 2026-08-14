@@ -265,3 +265,9 @@ export {
   parseAuthenticationConfig,
   type AuthenticationConfig,
 } from "./authentication";
+
+export {
+  SESSION_COOKIE_NAME,
+  sessionCookieAttributes,
+  type SessionCookieAttributes,
+} from "./session-cookie";

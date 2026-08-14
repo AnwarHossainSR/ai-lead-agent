@@ -15,6 +15,13 @@ function record(overrides: Partial<OutreachRecord>): OutreachRecord {
     citedFacts: [],
     rejectionReason: null,
     createdAt: "2026-01-01T00:00:00Z",
+    approvedAt: null,
+    approvedByAccountId: null,
+    rejectedAt: null,
+    rejectedByAccountId: null,
+    sentAt: null,
+    sentMeans: null,
+    sentByAccountId: null,
     ...overrides,
   };
 }

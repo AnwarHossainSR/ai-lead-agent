@@ -9,6 +9,9 @@
  */
 
 export * from "./enums";
+export * from "./accounts";
+export * from "./sessions";
+export * from "./audit-log";
 export * from "./companies";
 export * from "./discovery";
 export * from "./contacts";

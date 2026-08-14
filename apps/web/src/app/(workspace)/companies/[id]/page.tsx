@@ -1,6 +1,7 @@
 import { CompanyDetailSummary } from "@/components/company-detail-summary";
 import { ContactsPanel, OpportunitiesPanel, TechnologiesPanel } from "@/components/company-panels";
 import { Panel } from "@/components/panel";
+import { fetchAccounts, resolveAccountEmail } from "@/lib/accounts";
 import { apiUrl } from "@/lib/api";
 import type { CompanyDetail } from "@/lib/company-detail";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -31,10 +32,12 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
   }
 
   const company = result.data;
+  const accounts = await fetchAccounts();
+  const doNotContactByEmail = resolveAccountEmail(accounts, company.doNotContactByAccountId);
 
   return (
     <div className="space-y-6">
-      <CompanyDetailSummary company={company} />
+      <CompanyDetailSummary company={company} doNotContactByEmail={doNotContactByEmail} />
 
       <div>
         <h2 className="mb-2 font-medium">Opportunities</h2>

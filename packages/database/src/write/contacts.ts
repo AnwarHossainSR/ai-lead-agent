@@ -156,6 +156,7 @@ export async function getLatestContacts(
 export const setContactDoNotContactInputSchema = z.object({
   contactId: z.string().uuid("Expected the contact identifier."),
   reason: z.string().trim().min(1, "Expected a non-blank reason."),
+  actorAccountId: z.string().uuid("Expected the acting account identifier."),
 });
 
 export type SetContactDoNotContactInput = z.input<typeof setContactDoNotContactInputSchema>;
@@ -174,6 +175,7 @@ export async function setContactDoNotContact(
     .set({
       doNotContactAt: databaseNow(),
       doNotContactReason: value.reason,
+      doNotContactByAccountId: value.actorAccountId,
       updatedAt: databaseNow(),
     })
     .where(eq(contacts.id, value.contactId))
@@ -198,6 +200,7 @@ export async function clearContactDoNotContact(
     .set({
       doNotContactAt: null,
       doNotContactReason: null,
+      doNotContactByAccountId: null,
       updatedAt: databaseNow(),
     })
     .where(eq(contacts.id, contactId))

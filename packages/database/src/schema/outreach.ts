@@ -11,6 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { accounts } from "./accounts";
 import { aiInvocations } from "./ai-invocations";
 import { outreachChannelEnum, outreachStatusEnum } from "./enums";
 import { leads } from "./leads";
@@ -52,14 +53,26 @@ export const outreach = pgTable(
     citedFacts: jsonb("cited_facts").notNull().default("[]"),
 
     approvedAt: timestamp("approved_at", { withTimezone: true }),
+    // `restrict`, not `set null`: losing the record of who approved a message
+    // that reached a real company is exactly what design D5 exists to
+    // prevent, so a referenced account is disabled rather than deleted.
+    approvedByAccountId: uuid("approved_by_account_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
     sentAt: timestamp("sent_at", { withTimezone: true }),
     sentMeans: text("sent_means"),
+    sentByAccountId: uuid("sent_by_account_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
     respondedAt: timestamp("responded_at", { withTimezone: true }),
     approvalRevokedAt: timestamp("approval_revoked_at", { withTimezone: true }),
     approvedTextHash: text("approved_text_hash"),
 
     rejectionReason: text("rejection_reason"),
     rejectedAt: timestamp("rejected_at", { withTimezone: true }),
+    rejectedByAccountId: uuid("rejected_by_account_id").references(() => accounts.id, {
+      onDelete: "restrict",
+    }),
 
     notes: text("notes"),
 
@@ -120,6 +133,23 @@ export const outreach = pgTable(
     check(
       "outreach_rejection_requires_reason",
       sql`${table.rejectedAt} IS NULL OR length(btrim(${table.rejectionReason})) > 0`,
+    ),
+
+    // Design D5: an action timestamp and its actor are set and cleared
+    // together — an approval, rejection or send with no account behind it,
+    // or an account reference outliving the action it names, are both
+    // impossible states.
+    check(
+      "outreach_approved_actor_pairs_with_timestamp",
+      sql`(${table.approvedAt} IS NULL) = (${table.approvedByAccountId} IS NULL)`,
+    ),
+    check(
+      "outreach_rejected_actor_pairs_with_timestamp",
+      sql`(${table.rejectedAt} IS NULL) = (${table.rejectedByAccountId} IS NULL)`,
+    ),
+    check(
+      "outreach_sent_actor_pairs_with_timestamp",
+      sql`(${table.sentAt} IS NULL) = (${table.sentByAccountId} IS NULL)`,
     ),
 
     index("outreach_lead_status_idx").on(table.leadId, table.status),

@@ -118,7 +118,7 @@ export async function submitOutreachForApproval(
 }
 
 /**
- * Records that a human approved this message, and when.
+ * Records that a human approved this message, and when, and which account.
  *
  * The timestamp is taken here rather than supplied by the caller: an approval
  * time that can be passed in is an approval time that can be backdated.
@@ -126,6 +126,7 @@ export async function submitOutreachForApproval(
 export async function approveOutreach(
   executor: Executor,
   outreachId: string,
+  actorAccountId: string,
 ): Promise<OutreachRow> {
   const [current] = await executor
     .select()
@@ -153,6 +154,7 @@ export async function approveOutreach(
     .set({
       status: "approved",
       approvedAt,
+      approvedByAccountId: actorAccountId,
       approvedTextHash: textHash,
       updatedAt: approvedAt,
     })
@@ -202,6 +204,7 @@ export async function updateOutreachText(
         isHumanEdited: true,
         status: "draft",
         approvedAt: null,
+        approvedByAccountId: null,
         approvalRevokedAt: databaseNow(),
         updatedAt: databaseNow(),
       })
@@ -236,11 +239,13 @@ export async function markOutreachSent(
   executor: Executor,
   outreachId: string,
   means: string,
+  actorAccountId: string,
 ): Promise<OutreachRow> {
   return transition(executor, outreachId, ["approved"], {
     status: "sent",
     sentAt: databaseNow(),
     sentMeans: means,
+    sentByAccountId: actorAccountId,
   });
 }
 
@@ -271,6 +276,7 @@ export async function rejectOutreach(
   executor: Executor,
   outreachId: string,
   reason: string,
+  actorAccountId: string,
 ): Promise<OutreachRow> {
   const trimmed = reason.trim();
 
@@ -284,6 +290,7 @@ export async function rejectOutreach(
     status: "rejected",
     rejectionReason: trimmed,
     rejectedAt: databaseNow(),
+    rejectedByAccountId: actorAccountId,
   });
 }
 
@@ -370,6 +377,7 @@ export const recordOutreachSendInputSchema = z.object({
   outreachId: z.string().uuid("Expected the outreach identifier."),
   sentAt: z.coerce.date("Expected the send time."),
   means: z.string().trim().min(1, "Expected the send means."),
+  actorAccountId: z.string().uuid("Expected the acting account identifier."),
 });
 
 export type RecordOutreachSendInput = z.input<typeof recordOutreachSendInputSchema>;
@@ -416,6 +424,7 @@ export async function recordOutreachSend(
       status: "sent",
       sentAt: value.sentAt,
       sentMeans: value.means,
+      sentByAccountId: value.actorAccountId,
       updatedAt: databaseNow(),
     })
     .where(eq(outreach.id, value.outreachId))

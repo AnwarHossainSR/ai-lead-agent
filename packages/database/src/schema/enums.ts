@@ -256,3 +256,14 @@ export const contactResearchOutcomeEnum = pgEnum(
   "contact_research_outcome",
   CONTACT_RESEARCH_OUTCOMES,
 );
+
+/**
+ * The two roles design D4 draws: `operator` may take every action; `viewer`
+ * may read but not approve outreach, mark do-not-contact, record a send, or
+ * trigger anything that spends on a model call.
+ */
+export const ACCOUNT_ROLES = ["operator", "viewer"] as const;
+
+export type AccountRole = (typeof ACCOUNT_ROLES)[number];
+
+export const accountRoleEnum = pgEnum("account_role", ACCOUNT_ROLES);

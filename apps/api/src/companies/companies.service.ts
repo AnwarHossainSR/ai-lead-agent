@@ -77,6 +77,7 @@ export interface CompanyDetail {
   readonly discoverySourceUrl: string;
   readonly doNotContactAt: Date | null;
   readonly doNotContactReason: string | null;
+  readonly doNotContactByAccountId: string | null;
   readonly createdAt: Date;
   /** Null means the company has not been scored into a lead. */
   readonly lead: LeadSummary | null;
@@ -95,6 +96,7 @@ export interface ListedCompany {
   readonly discoverySourceUrl: string;
   readonly doNotContactAt: Date | null;
   readonly doNotContactReason: string | null;
+  readonly doNotContactByAccountId: string | null;
   readonly createdAt: Date;
   /** Null means never analysed — a fourth state, distinct from every outcome. */
   readonly latestAnalysis: LatestAnalysis | null;
@@ -218,6 +220,7 @@ export class CompaniesService {
       discoverySourceUrl: row.discoverySourceUrl,
       doNotContactAt: row.doNotContactAt,
       doNotContactReason: row.doNotContactReason,
+      doNotContactByAccountId: row.doNotContactByAccountId,
       createdAt: row.createdAt,
       latestAnalysis: latestAnalysisByCompany.get(row.id) ?? null,
       latestOpportunityAnalysis: latestOpportunityByCompany.get(row.id) ?? null,
@@ -265,6 +268,7 @@ export class CompaniesService {
       discoverySourceUrl: row.discoverySourceUrl,
       doNotContactAt: row.doNotContactAt,
       doNotContactReason: row.doNotContactReason,
+      doNotContactByAccountId: row.doNotContactByAccountId,
       createdAt: row.createdAt,
       lead: lead ?? null,
     };

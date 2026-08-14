@@ -1,7 +1,5 @@
 # Development Guide
 
-> **No authentication.** The web application and the API carry no authentication layer. Both are intended to be run locally only, until an authentication capability is added — do not expose either to a network beyond your own machine.
-
 ## Pinned Versions
 
 - **Node.js**: 22.x
@@ -62,6 +60,25 @@ pnpm --filter @mela/database db:seed
 ```
 
 **Note**: The seed script only runs against databases with `NODE_ENV=development`.
+
+## Authentication
+
+Every route requires a signed-in session — there is no sign-up page. Set
+`SESSION_SECRET` in `.env` (32+ characters; the API refuses to start
+outside development without one), then create your first account:
+
+```bash
+pnpm --filter @mela/api create-account -- --email=you@example.com --role=operator
+```
+
+This reads the password from the terminal with the input masked, refuses
+anything shorter than the configured minimum, and never writes it to a
+log or the process's argument list. `--role` is `operator` or `viewer`
+(see `README.md` for what each can do). Once an operator account exists,
+further accounts can also be created through `POST /api/accounts`.
+
+Sign in at `/sign-in` in the web app, or `POST /api/auth/sign-in` directly
+against the API.
 
 ## Running Tests
 

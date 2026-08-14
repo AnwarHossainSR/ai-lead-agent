@@ -1,8 +1,10 @@
+import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import type { INestApplication } from "@nestjs/common";
-import request from "supertest";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { createTestApp } from "../testing/app";
+import { authedRequest } from "../testing/authed-request";
+import { createAuthenticatedContext } from "../testing/authenticated-context";
 import { QSTASH_CLIENT, type QStashDlqClient } from "./qstash-client.provider";
 
 /**
@@ -13,11 +15,26 @@ import { QSTASH_CLIENT, type QStashDlqClient } from "./qstash-client.provider";
  * assumed — is unreachable.
  */
 
+let harness: TestDatabase;
 let app: INestApplication | undefined;
+let authCookie: string;
+
+/** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
+function request(server: Parameters<typeof authedRequest>[0]) {
+  return authedRequest(server, authCookie);
+}
+
+beforeAll(async () => {
+  harness = await setupTestDatabase();
+});
 
 afterEach(async () => {
   await app?.close();
   app = undefined;
+});
+
+afterAll(async () => {
+  await harness?.close();
 });
 
 function fakeQstash(overrides: Partial<QStashDlqClient["dlq"]> = {}): QStashDlqClient {
@@ -42,7 +59,10 @@ describe("GET /api/operations/queues", () => {
       }),
     });
 
-    app = await createTestApp({}, [{ token: QSTASH_CLIENT, useValue: qstash }]);
+    app = await createTestApp({ DATABASE_URL: harness.url }, [
+      { token: QSTASH_CLIENT, useValue: qstash },
+    ]);
+    authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 
     const response = await request(app.getHttpServer()).get("/api/operations/queues").expect(200);
 
@@ -62,7 +82,10 @@ describe("GET /api/operations/queues", () => {
       listMessages: vi.fn().mockRejectedValue(new Error("QStash did not respond.")),
     });
 
-    app = await createTestApp({}, [{ token: QSTASH_CLIENT, useValue: qstash }]);
+    app = await createTestApp({ DATABASE_URL: harness.url }, [
+      { token: QSTASH_CLIENT, useValue: qstash },
+    ]);
+    authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 
     await request(app.getHttpServer()).get("/api/operations/queues").expect(500);
   });
@@ -84,7 +107,10 @@ describe("GET /api/operations/failed-jobs", () => {
       }),
     });
 
-    app = await createTestApp({}, [{ token: QSTASH_CLIENT, useValue: qstash }]);
+    app = await createTestApp({ DATABASE_URL: harness.url }, [
+      { token: QSTASH_CLIENT, useValue: qstash },
+    ]);
+    authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 
     const response = await request(app.getHttpServer())
       .get("/api/operations/failed-jobs")
@@ -108,7 +134,10 @@ describe("POST /api/operations/failed-jobs/:dlqId/retry", () => {
     const retry = vi.fn().mockResolvedValue(undefined);
     const qstash = fakeQstash({ retry });
 
-    app = await createTestApp({}, [{ token: QSTASH_CLIENT, useValue: qstash }]);
+    app = await createTestApp({ DATABASE_URL: harness.url }, [
+      { token: QSTASH_CLIENT, useValue: qstash },
+    ]);
+    authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 
     const response = await request(app.getHttpServer())
       .post("/api/operations/failed-jobs/dlq-1/retry")

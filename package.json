@@ -9,7 +9,7 @@
     "pnpm": ">=11"
   },
   "scripts": {
-    "dev": "pnpm --filter @mela/api dev & pnpm --filter @mela/api worker & pnpm --filter @mela/web dev",
+    "dev": "concurrently --kill-others-on-fail --names api,worker,web --prefix \"[{name}]\" \"pnpm --filter @mela/api dev\" \"pnpm --filter @mela/api worker\" \"pnpm --filter @mela/web dev\"",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "concurrently": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

@@ -5,6 +5,7 @@ import { type Database, deleteContactsForCompany } from "@mela/database";
 import { contacts } from "@mela/database";
 import { Inject } from "@nestjs/common";
 import { eq } from "drizzle-orm";
+import { RequiresRole } from "../auth/requires-role.decorator";
 import { DATABASE } from "../database/database.module";
 import { createZodDto } from "../validation/zod-dto";
 import { ResearchService } from "./research.service";
@@ -40,6 +41,7 @@ export class ResearchController {
    * POST /api/companies/:id/contacts/research — run contact research.
    */
   @Post(":id/contacts/research")
+  @RequiresRole("operator", "Running contact research")
   @HttpCode(HttpStatus.ACCEPTED)
   async researchContacts(
     @Param("id") id: string,

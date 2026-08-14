@@ -5,12 +5,13 @@ import { NestFactory } from "@nestjs/core";
 import { Client } from "@upstash/qstash";
 
 import { QUEUE_CONFIGS } from "@mela/config";
-import { loadApiEnv } from "@mela/config/env";
+import { hydrateEnvironment, loadApiEnv } from "@mela/config/env";
 import { AppModule } from "./app.module";
 import { createLogger } from "./logging/create-logger";
 import { QueueService } from "./worker/queue.service";
 
 async function bootstrap(): Promise<void> {
+  hydrateEnvironment();
   const env = loadApiEnv();
 
   const app = await NestFactory.createApplicationContext(AppModule, {

@@ -1,9 +1,10 @@
 import { type INestApplication } from "@nestjs/common";
-import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
+import { authedRequest } from "../testing/authed-request";
+import { createAuthenticatedContext } from "../testing/authenticated-context";
 
 /**
  * API tests for the discovery controller (task 8.4).
@@ -17,6 +18,21 @@ import { createTestApp } from "../testing/app";
 
 let harness: TestDatabase;
 let app: INestApplication | undefined;
+let authCookie: string;
+
+/** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
+function request(server: Parameters<typeof authedRequest>[0]) {
+  return authedRequest(server, authCookie);
+}
+
+/** Every test here boots its own app rather than sharing one via `beforeEach` — this pairs an authenticated context with it, against the same database the app is configured to query. */
+async function startAuthenticatedApp(
+  overrides: Parameters<typeof createTestApp>[0] = {},
+): Promise<INestApplication> {
+  const nextApp = await createTestApp({ DATABASE_URL: harness.url, ...overrides });
+  authCookie = (await createAuthenticatedContext(harness.database)).cookie;
+  return nextApp;
+}
 
 beforeAll(async () => {
   harness = await setupTestDatabase();
@@ -33,7 +49,7 @@ afterAll(async () => {
 
 describe("POST /api/discovery/runs", () => {
   it("returns 400 for an unknown industry naming the configured ones", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -56,7 +72,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("returns 400 for an unknown country naming the configured ones", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -79,7 +95,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("returns 400 for an unknown city naming the configured ones", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -101,7 +117,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("returns 400 when city belongs to a different country", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -124,7 +140,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("creates a run and returns its counts", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -148,7 +164,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -170,7 +186,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("refuses a run with missing required fields", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -182,7 +198,7 @@ describe("POST /api/discovery/runs", () => {
   });
 
   it("refuses a run with invalid candidate limit", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .post("/api/discovery/runs")
@@ -198,7 +214,7 @@ describe("POST /api/discovery/runs", () => {
 
 describe("GET /api/discovery/runs", () => {
   it("returns a list of runs", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer()).get("/api/discovery/runs").expect(200);
 
@@ -206,7 +222,7 @@ describe("GET /api/discovery/runs", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer()).get("/api/discovery/runs").expect(200);
 
@@ -220,7 +236,7 @@ describe("GET /api/discovery/runs", () => {
 
 describe("GET /api/discovery/runs/:id", () => {
   it("returns 404 for a non-existent run", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .get("/api/discovery/runs/00000000-0000-0000-0000-000000000000")
@@ -228,7 +244,7 @@ describe("GET /api/discovery/runs/:id", () => {
   });
 
   it("returns a run with its sources", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     // First create a run
     const createResponse = await request(app.getHttpServer())
@@ -254,7 +270,7 @@ describe("GET /api/discovery/runs/:id", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     // Create a run first
     const createResponse = await request(app.getHttpServer())

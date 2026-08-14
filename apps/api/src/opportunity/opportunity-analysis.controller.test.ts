@@ -1,14 +1,21 @@
 import { type INestApplication } from "@nestjs/common";
-import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { insertCompany } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
+import { authedRequest } from "../testing/authed-request";
+import { createAuthenticatedContext } from "../testing/authenticated-context";
 
 describe("POST /api/opportunity/analysis/:companyId", () => {
   let harness: TestDatabase;
   let app: INestApplication | undefined;
+  let authCookie: string;
+
+  /** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
+  function request(server: Parameters<typeof authedRequest>[0]) {
+    return authedRequest(server, authCookie);
+  }
 
   beforeAll(async () => {
     harness = await setupTestDatabase();
@@ -25,6 +32,7 @@ describe("POST /api/opportunity/analysis/:companyId", () => {
 
   it("returns 404 for a non-existent company", async () => {
     app = await createTestApp({ DATABASE_URL: harness.url });
+    authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 
     const response = await request(app.getHttpServer())
       .post("/api/opportunity/analysis/00000000-0000-0000-0000-000000000000")
@@ -35,6 +43,7 @@ describe("POST /api/opportunity/analysis/:companyId", () => {
 
   it("returns below_threshold when no analysis exists", async () => {
     app = await createTestApp({ DATABASE_URL: harness.url });
+    authCookie = (await createAuthenticatedContext(harness.database)).cookie;
 
     const company = await insertCompany(harness.database, {
       name: "Test Company",
