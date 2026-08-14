@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { apiEnvSchema, loadApiEnv } from "./api";
 import { databaseEnvSchema, loadDatabaseEnv } from "./database";
 import { EnvironmentValidationError } from "./load";
+import { SESSION_SECRET_PLACEHOLDER } from "./session-secret";
 import { loadWebEnv, webEnvSchema } from "./web";
 
 /**
@@ -93,7 +94,9 @@ describe("a missing variable is refused", () => {
         "CLOUDFLARE_API_TOKEN",
         "DATABASE_URL",
         "GEMINI_API_KEY",
+        "QSTASH_TOKEN",
         "REDIS_URL",
+        "SESSION_SECRET",
       ]);
     }
   });
@@ -120,6 +123,8 @@ describe("a malformed variable is refused", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
+        SESSION_SECRET: "test-session-secret-not-real-0123456789",
       });
       expect.unreachable("loadApiEnv should have refused a non-numeric port");
     } catch (error: unknown) {
@@ -138,6 +143,8 @@ describe("a malformed variable is refused", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
+        SESSION_SECRET: "test-session-secret-not-real-0123456789",
       }),
     ).toThrow(/API_PORT/);
   });
@@ -150,6 +157,8 @@ describe("a malformed variable is refused", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
+        SESSION_SECRET: "test-session-secret-not-real-0123456789",
         AI_SPEND_CEILING_USD: "not-a-number",
       });
       expect.unreachable("loadApiEnv should have refused a non-numeric spend ceiling");
@@ -172,6 +181,8 @@ describe("failure messages carry no credential", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
+        SESSION_SECRET: "test-session-secret-not-real-0123456789",
       });
       expect.unreachable("loadApiEnv should have refused a non-Redis URL");
     } catch (error: unknown) {
@@ -189,6 +200,8 @@ describe("a valid environment is accepted", () => {
     GEMINI_API_KEY: "test-gemini-key",
     CLOUDFLARE_ACCOUNT_ID: "test-account-id",
     CLOUDFLARE_API_TOKEN: "test-cf-token",
+    QSTASH_TOKEN: "test-qstash-token",
+    SESSION_SECRET: "test-session-secret-not-real-0123456789",
   };
 
   it("applies the documented defaults", () => {
@@ -223,5 +236,73 @@ describe("a valid environment is accepted", () => {
     });
 
     expect(Object.keys(env).sort()).toEqual(["API_URL", "NEXT_PUBLIC_API_URL"]);
+  });
+});
+
+describe("the session secret startup guard", () => {
+  const baseEnv = {
+    DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
+    REDIS_URL: "redis://localhost:6379",
+    GEMINI_API_KEY: "test-gemini-key",
+    CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+    CLOUDFLARE_API_TOKEN: "test-cf-token",
+    QSTASH_TOKEN: "test-qstash-token",
+  };
+
+  it("aborts naming the variable when the secret is missing", () => {
+    try {
+      loadApiEnv(baseEnv);
+      expect.unreachable("loadApiEnv should have refused a missing SESSION_SECRET");
+    } catch (error: unknown) {
+      const failure = error as EnvironmentValidationError;
+      expect(failure.variables).toContain("SESSION_SECRET");
+      expect(failure.message).toContain("SESSION_SECRET");
+    }
+  });
+
+  it("accepts the committed placeholder in development", () => {
+    const env = loadApiEnv({ ...baseEnv, SESSION_SECRET: SESSION_SECRET_PLACEHOLDER });
+    expect(env.SESSION_SECRET).toBe(SESSION_SECRET_PLACEHOLDER);
+  });
+
+  it("refuses the committed placeholder outside development", () => {
+    expect(() =>
+      loadApiEnv({
+        ...baseEnv,
+        NODE_ENV: "production",
+        SESSION_SECRET: SESSION_SECRET_PLACEHOLDER,
+      }),
+    ).toThrow(/placeholder may not be used outside development/);
+  });
+
+  it("refuses a short secret outside development", () => {
+    expect(() =>
+      loadApiEnv({ ...baseEnv, NODE_ENV: "production", SESSION_SECRET: "too-short" }),
+    ).toThrow(/at least 32 characters/);
+  });
+
+  it("accepts a short secret in development", () => {
+    const env = loadApiEnv({ ...baseEnv, SESSION_SECRET: "short-but-fine-for-dev" });
+    expect(env.SESSION_SECRET).toBe("short-but-fine-for-dev");
+  });
+
+  it("accepts a long, non-placeholder secret outside development", () => {
+    const env = loadApiEnv({
+      ...baseEnv,
+      NODE_ENV: "production",
+      SESSION_SECRET: "a-real-32-character-or-longer-secret-value",
+    });
+    expect(env.SESSION_SECRET).toBe("a-real-32-character-or-longer-secret-value");
+  });
+
+  it("never lets a recognisable short secret reach the failure message", () => {
+    const secret = "recognisable-value";
+    try {
+      loadApiEnv({ ...baseEnv, NODE_ENV: "production", SESSION_SECRET: secret });
+      expect.unreachable("loadApiEnv should have refused a secret shorter than the minimum");
+    } catch (error: unknown) {
+      const failure = error as EnvironmentValidationError;
+      expect(failure.message).not.toContain(secret);
+    }
   });
 });

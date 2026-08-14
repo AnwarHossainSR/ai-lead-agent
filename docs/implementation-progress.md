@@ -183,11 +183,23 @@ Records outreach send events, classifies replies, and advances the lead lifecycl
 
 Delivered: `POST /api/outreach/:id/sent` recording manual sends with backdate protection; `POST /api/outreach/:id/responses/classify` proposing categories via AI with grounding checks; `POST /api/outreach/:id/responses` confirming responses and applying lead transitions; `POST /api/outreach/:id/no-response` recording non-responses after the configured interval; do-not-contact drafting guards at service and database layers; unsubscribe marking both company and contact; company/contact DNC management endpoints; analytics service computing response rates by segment with minimum-sample-size flags; full test suite passes with 19 outreach/analytics tests.
 
+## In Progress
+
+**`add-dashboard` (Change #13)** — 48/50 tasks complete; `openspec validate add-dashboard --strict`
+passes. Sections 1–9 are done, including a scenario-by-scenario audit of `specs/dashboard/spec.md`
+and `specs/developer-environment/spec.md` (task 9.7) that found and fixed three real gaps: a
+missing discovery-source link, an outreach review queue that never fetched drafts (so a freshly
+AI-drafted or approval-revoked message was invisible), and a spec-required "record a manual send"
+control that had never been built. Tasks 5.6 and 5.7 (Playwright workflow tests for the review
+queue) are intentionally deferred per an explicit scope decision — covered instead by Vitest
+component tests — and left unchecked rather than marked done; that is the only reason this isn't
+50/50. Ready to archive once that deferral is revisited or accepted as final.
+
 ## Next Module
 
 **`add-background-jobs` (Change #12)** — Background job processing. Depends on `add-outreach-tracking` (11), now complete. Ready to start.
 
-After that: `add-background-jobs` (12).
+After that: `add-background-jobs` (12), then archiving `add-dashboard` (13) once its remaining tasks close.
 
 ## New capabilities these changes introduce
 
@@ -212,14 +224,30 @@ Each change also carries deltas against the three existing capabilities where it
 
 ## Testing status — current build
 
-| Package          | Test files | Tests | Status  |
-| ---------------- | ---------- | ----- | ------- |
-| `@mela/config`   | 17         | 250   | passing |
-| `@mela/shared`   | 3          | 66    | passing |
-| `@mela/database` | 13         | 180   | passing |
-| `@mela/ai`       | 10         | 93    | passing |
-| `@mela/api`      | 46         | 379   | passing |
-| `@mela/web`      | 5          | 5     | passing |
+| Package          | Test files | Tests | Status                          |
+| ---------------- | ---------- | ----- | -------------------------------- |
+| `@mela/config`   | 20         | 297   | passing                         |
+| `@mela/shared`   | 3          | 66    | passing                         |
+| `@mela/database` | 13         | 201   | 1 failing (pre-existing, below) |
+| `@mela/ai`       | 11         | 99    | passing                         |
+| `@mela/api`      | 57         | 458   | passing                         |
+| `@mela/web`      | 22         | 83    | passing (Vitest; +9 Playwright) |
+
+Each row above is from running that package's suite in isolation (`pnpm --filter <pkg> test`).
+Running `pnpm test` at the root runs `@mela/database` and `@mela/api` concurrently against the
+same `DATABASE_URL`; since neither test suite is schema-isolated from the other, that produces
+spurious ordering/count/foreign-key failures that do not reproduce standalone. That is a
+pre-existing test-infrastructure gap, not a regression — worth fixing before relying on a plain
+root-level `pnpm test` for a pass/fail signal.
+
+**Known pre-existing failure** (unrelated to `add-dashboard`, from the already-archived
+`add-outreach-tracking` change): `packages/database/src/write/outreach.test.ts` →
+`sending records its means > refuses a send without means via the database`. The test expects
+the update to be refused by `outreach_sent_means_required`, but `outreach_sent_at_not_before_approved_at`
+fires first — `sent_at` (a fresh `new Date()` in the test) is landing before `approved_at`
+(set moments earlier), which points at a clock or timestamp-precision mismatch between the test
+process and PostgreSQL rather than the constraint under test. Reproduces deterministically in
+isolation (3/3 runs); not touched or introduced by `add-dashboard`.
 
 ## Next step
 

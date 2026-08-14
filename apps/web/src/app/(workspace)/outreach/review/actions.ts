@@ -93,3 +93,25 @@ export async function updateOutreachAction(
   }
   return result;
 }
+
+/**
+ * Records that an already-approved message was sent through some other
+ * tool. This does not send anything — there is no transport anywhere in
+ * this application (dashboard spec: "Nothing in the interface sends a
+ * message").
+ */
+export async function recordOutreachSentAction(
+  outreachId: string,
+  input: { means: string; sentAt: string },
+): Promise<ActionResult> {
+  const result = await callOutreachApi(`/outreach/${outreachId}/sent`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (result.ok) {
+    revalidatePath("/outreach/review");
+    revalidatePath(`/outreach/review/${outreachId}`);
+  }
+  return result;
+}

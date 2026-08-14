@@ -258,3 +258,10 @@ export {
   resolveQueueConfig,
   validateConcurrency,
 } from "./background-jobs";
+
+export {
+  AUTHENTICATION_CONFIG,
+  authenticationConfigSchema,
+  parseAuthenticationConfig,
+  type AuthenticationConfig,
+} from "./authentication";

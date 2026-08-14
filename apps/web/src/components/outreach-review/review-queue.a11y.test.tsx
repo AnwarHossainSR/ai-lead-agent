@@ -50,6 +50,7 @@ describe("Outreach review queue accessibility (task 9.1)", () => {
         onReject={vi.fn().mockResolvedValue({ ok: true })}
         onCancel={vi.fn().mockResolvedValue({ ok: true })}
         onSave={vi.fn().mockResolvedValue({ ok: true })}
+        onRecordSent={vi.fn().mockResolvedValue({ ok: true })}
       />,
     );
     expect(await axe(container)).toHaveNoViolations();
