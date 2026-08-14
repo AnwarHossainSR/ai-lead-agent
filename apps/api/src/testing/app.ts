@@ -14,6 +14,23 @@ export interface ProviderOverride {
 }
 
 /**
+ * Placeholder values for every required environment variable that has no
+ * default. Tests must not depend on real secrets being available; passing
+ * this object to `loadApiEnv` satisfies the Zod schema without hitting
+ * `process.env`.
+ */
+const TEST_ENV: Record<string, string> = {
+  NODE_ENV: "test",
+  DATABASE_URL: "postgresql://test:test@127.0.0.1:1/test",
+  REDIS_URL: "redis://127.0.0.1:1",
+  GEMINI_API_KEY: "test-gemini-key",
+  CLOUDFLARE_ACCOUNT_ID: "test-cf-account",
+  CLOUDFLARE_API_TOKEN: "test-cf-token",
+  QSTASH_TOKEN: "test-qstash-token",
+  SESSION_SECRET: "changeme-generate-a-real-secret-with-openssl-rand-hex-32",
+};
+
+/**
  * Boots the real application — real modules, real pool, real Redis client —
  * with the environment optionally amended.
  *
@@ -31,7 +48,7 @@ export async function createTestApp(
   overrides: Partial<ApiEnv> = {},
   providerOverrides: readonly ProviderOverride[] = [],
 ): Promise<INestApplication> {
-  const env: ApiEnv = { ...loadApiEnv(), ...overrides };
+  const env: ApiEnv = { ...loadApiEnv({ ...TEST_ENV, ...overrides }), ...overrides };
 
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(API_ENV)

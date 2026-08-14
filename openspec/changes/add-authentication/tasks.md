@@ -23,13 +23,13 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 3. Credentials and sessions
 
-- [ ] 3.1 Implement Argon2id hashing at the configured parameters, with a fixed dummy hash compared when an account does not exist
-- [ ] 3.2 Implement sign-in returning an identical message and comparable timing for an unknown address and a wrong password
-- [ ] 3.3 Implement session creation, sliding expiry with an absolute maximum, sign-out and revocation
-- [ ] 3.4 Set the cookie HTTP-only, same-site restricted, and secure outside development
-- [ ] 3.5 Implement rate limiting per account and per source, indistinguishable between known and unknown addresses, and not blocking other accounts
-- [ ] 3.6 Add unit and integration tests for every scenario in the credentials, sessions and rate-limiting requirements
-- [ ] 3.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 3.1 Implement Argon2id hashing at the configured parameters, with a fixed dummy hash compared when an account does not exist — `apps/api/src/auth/password.ts`; `DUMMY_PASSWORD_HASH` is a real, precomputed Argon2id hash at the same parameters, so a lazily-computed dummy can't make the first post-restart refusal slower than the rest
+- [x] 3.2 Implement sign-in returning an identical message and comparable timing for an unknown address and a wrong password — `AuthService.signIn`; both branches always run one Argon2id comparison (real hash or the dummy) before returning `SIGN_IN_FAILURE_MESSAGE`
+- [x] 3.3 Implement session creation, sliding expiry with an absolute maximum, sign-out and revocation — `AuthService`/`validateSessionToken` (sliding expiry capped at `createdAt + sessionAbsoluteMaxLifetimeMinutes`), `signOut`; the stored value is an HMAC of the token (`session-token.ts`), never the token itself
+- [x] 3.4 Set the cookie HTTP-only, same-site restricted, and secure outside development — the attributes are a single source of truth in `packages/config` (`sessionCookieAttributes`, design D2/D7) since both `apps/api` (issues it) and `apps/web` (section 8, sets it via the sign-in Server Action) need the same policy and there is no shared package between the two apps otherwise; exercised here via `AuthController`'s `POST /auth/sign-in`/`sign-out`
+- [x] 3.5 Implement rate limiting per account and per source, indistinguishable between known and unknown addresses, and not blocking other accounts — `SignInRateLimiter`, in-memory per API process (one process, same reasoning as D2's session table)
+- [x] 3.6 Add unit and integration tests for every scenario in the credentials, sessions and rate-limiting requirements — `password.test.ts`, `session-token.test.ts`, `sign-in-rate-limiter.test.ts`, `auth.service.test.ts` (real Postgres), `auth.controller.test.ts` (real HTTP via supertest, including the Secure attribute in both development and production)
+- [x] 3.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes — 496/496
 
 ## 4. Deny by default
 

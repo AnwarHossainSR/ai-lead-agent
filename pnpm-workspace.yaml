@@ -20,6 +20,7 @@ allowBuilds:
   unrs-resolver: true
   '@biomejs/biome': true
   msgpackr-extract: true
+  argon2: true
 
 # Single source of truth for shared dependency versions.
 # Packages declare "catalog:" instead of a literal range, so a version bump
@@ -71,6 +72,10 @@ catalog:
 
   # AI
   "@google/genai": 2.16.0
+
+  # Authentication — Argon2id password hashing (design D3). Ships prebuilt
+  # native binaries via node-gyp-build; no compiler needed on a normal install.
+  argon2: 0.45.1
 
 # vite declares tsx as an *optional* peer dependency, so with autoInstallPeers
 # pnpm pulls whatever the newest release is into every package that uses

@@ -24,6 +24,7 @@
     "@nestjs/platform-express": "catalog:",
     "@nestjs/terminus": "catalog:",
     "@upstash/qstash": "2.11.3",
+    "argon2": "catalog:",
     "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
     "reflect-metadata": "catalog:",
