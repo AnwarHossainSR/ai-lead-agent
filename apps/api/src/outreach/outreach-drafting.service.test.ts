@@ -6,8 +6,8 @@ import { hydrateEnvironment } from "@mela/config/env";
 import {
   applyLeadStatusChange,
   getOutreach,
-  insertAccount,
   insertAIInvocation,
+  insertAccount,
   insertCompany,
   insertContact,
   insertLead,
@@ -21,7 +21,12 @@ import {
   setContactDoNotContact,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { accountInput, companyInput, contactInput, leadInput } from "@mela/database/testing/fixtures";
+import {
+  accountInput,
+  companyInput,
+  contactInput,
+  leadInput,
+} from "@mela/database/testing/fixtures";
 import { eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";

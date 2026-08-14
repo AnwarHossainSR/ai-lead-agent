@@ -1,6 +1,11 @@
-import { hydrateEnvironment, loadDatabaseEnv } from "@mela/config/env";
 import { AUTHENTICATION_CONFIG } from "@mela/config";
-import { ACCOUNT_ROLES, type AccountRole, createIsolatedConnection, insertAccount } from "@mela/database";
+import { hydrateEnvironment, loadDatabaseEnv } from "@mela/config/env";
+import {
+  ACCOUNT_ROLES,
+  type AccountRole,
+  createIsolatedConnection,
+  insertAccount,
+} from "@mela/database";
 
 import { hashPassword } from "../auth/password";
 

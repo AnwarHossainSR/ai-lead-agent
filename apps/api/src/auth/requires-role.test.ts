@@ -29,7 +29,7 @@ const FAKE_ID = "00000000-0000-0000-0000-000000000000";
 
 interface GatedRoute {
   readonly name: string;
-  readonly method: "post";
+  readonly method: "post" | "patch";
   readonly path: string;
   readonly body?: Record<string, unknown>;
   readonly action: string;
@@ -120,6 +120,29 @@ const GATED_ROUTES: readonly GatedRoute[] = [
     path: `/api/opportunity/analysis/${FAKE_ID}`,
     action: "Running opportunity analysis",
     triggersModelCall: true,
+  },
+  {
+    name: "create account",
+    method: "post",
+    path: "/api/accounts",
+    body: { email: "new-account@example.com", password: "a-very-long-password", role: "viewer" },
+    action: "Creating an account",
+    triggersModelCall: false,
+  },
+  {
+    name: "change account role",
+    method: "patch",
+    path: `/api/accounts/${FAKE_ID}/role`,
+    body: { role: "viewer" },
+    action: "Changing an account's role",
+    triggersModelCall: false,
+  },
+  {
+    name: "disable account",
+    method: "post",
+    path: `/api/accounts/${FAKE_ID}/disable`,
+    action: "Disabling an account",
+    triggersModelCall: false,
   },
 ];
 

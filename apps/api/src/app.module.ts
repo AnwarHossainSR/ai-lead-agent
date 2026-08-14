@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 
+import { AccountsModule } from "./accounts/accounts.module";
 import { AIModule } from "./ai/ai.module";
 import { AnalysisModule } from "./analysis/analysis.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
@@ -28,6 +29,7 @@ import { VerificationModule } from "./verification/verification.module";
     EnvModule,
     DatabaseModule,
     AuthModule,
+    AccountsModule,
     RedisModule,
     HealthModule,
     AIModule,

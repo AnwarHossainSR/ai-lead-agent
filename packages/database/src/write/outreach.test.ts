@@ -79,9 +79,9 @@ describe("sending without approval", () => {
       messageBody: "Example draft.",
     });
 
-    await expect(markOutreachSent(harness.database, draft.id, "email", actorAccountId)).rejects.toThrow(
-      WriteValidationError,
-    );
+    await expect(
+      markOutreachSent(harness.database, draft.id, "email", actorAccountId),
+    ).rejects.toThrow(WriteValidationError);
 
     const [stored] = await harness.database.select().from(outreach);
     expect(stored?.status).toBe("draft");
@@ -273,7 +273,12 @@ describe("rejecting outreach", () => {
     const submitted = await submitOutreachForApproval(harness.database, draft.id);
     expect(submitted.status).toBe("pending_approval");
 
-    const rejected = await rejectOutreach(harness.database, submitted.id, "Too generic.", actorAccountId);
+    const rejected = await rejectOutreach(
+      harness.database,
+      submitted.id,
+      "Too generic.",
+      actorAccountId,
+    );
 
     expect(rejected.status).toBe("rejected");
     expect(rejected.rejectionReason).toBe("Too generic.");
@@ -289,9 +294,9 @@ describe("rejecting outreach", () => {
 
     const submitted = await submitOutreachForApproval(harness.database, draft.id);
 
-    await expect(rejectOutreach(harness.database, submitted.id, "   ", actorAccountId)).rejects.toThrow(
-      WriteValidationError,
-    );
+    await expect(
+      rejectOutreach(harness.database, submitted.id, "   ", actorAccountId),
+    ).rejects.toThrow(WriteValidationError);
   });
 
   it("cannot reject from a non-pending state", async () => {
@@ -301,9 +306,9 @@ describe("rejecting outreach", () => {
       messageBody: "Example draft.",
     });
 
-    await expect(rejectOutreach(harness.database, draft.id, "Too generic.", actorAccountId)).rejects.toThrow(
-      /reachable only from pending_approval/,
-    );
+    await expect(
+      rejectOutreach(harness.database, draft.id, "Too generic.", actorAccountId),
+    ).rejects.toThrow(/reachable only from pending_approval/);
   });
 });
 

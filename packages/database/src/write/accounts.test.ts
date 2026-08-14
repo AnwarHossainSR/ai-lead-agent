@@ -2,8 +2,8 @@ import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { expectErrorMatching } from "../testing/constraints";
-import { accountInput } from "../testing/fixtures";
+import { expectConstraintViolation, expectErrorMatching } from "../testing/constraints";
+import { accountInput, companyInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
 import {
   changeAccountRole,
@@ -14,7 +14,10 @@ import {
   listAccounts,
 } from "./accounts";
 import { insertAuditEntry, listAuditEntries } from "./audit-log";
+import { insertCompany } from "./companies";
 import { RecordNotFoundError, WriteValidationError } from "./errors";
+import { insertLead } from "./leads";
+import { approveOutreach, insertOutreachDraft } from "./outreach";
 import { findSessionByTokenHash, insertSession, revokeSession } from "./sessions";
 
 let harness: TestDatabase;
@@ -105,6 +108,45 @@ describe("accounts (specs/lead-data-model: accounts, sessions and audit entries 
 
   it("throws for a disable of an unknown account", async () => {
     await expect(disableAccount(harness.database, uuidv7())).rejects.toThrow(RecordNotFoundError);
+  });
+
+  it("attribution survives the acting account being disabled (design D5)", async () => {
+    const actor = await insertAccount(harness.database, accountInput());
+    const company = await insertCompany(harness.database, companyInput());
+    const lead = await insertLead(harness.database, leadInput(company.id));
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId: lead.id,
+      channel: "email",
+      messageBody: "Example draft.",
+      isExample: false,
+    });
+
+    const approved = await approveOutreach(harness.database, draft.id, actor.id);
+    await disableAccount(harness.database, actor.id);
+
+    expect(approved.approvedByAccountId).toBe(actor.id);
+    const stillAttributed = await getAccount(harness.database, actor.id);
+    expect(stillAttributed?.disabledAt).toBeInstanceOf(Date);
+    expect(stillAttributed?.id).toBe(actor.id);
+  });
+
+  it("refuses to delete an account a record still attributes an action to (design D5's ON DELETE RESTRICT)", async () => {
+    const actor = await insertAccount(harness.database, accountInput());
+    const company = await insertCompany(harness.database, companyInput());
+    const lead = await insertLead(harness.database, leadInput(company.id));
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId: lead.id,
+      channel: "email",
+      messageBody: "Example draft.",
+      isExample: false,
+    });
+
+    await approveOutreach(harness.database, draft.id, actor.id);
+
+    await expectConstraintViolation(
+      harness.database.execute(sql`DELETE FROM accounts WHERE id = ${actor.id}`),
+      "outreach_approved_by_account_id_accounts_id_fk",
+    );
   });
 });
 
