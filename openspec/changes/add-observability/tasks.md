@@ -4,11 +4,11 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Configuration
 
-- [ ] 1.1 Add observability configuration to `packages/config`: redaction patterns, maximum logged string length, metrics enablement and the metric label sets
-- [ ] 1.2 Add `METRICS_PORT`, `LOG_LEVEL` and `ERROR_REPORTING_DSN` to the API env schema and `.env.example` with a `.describe()` on each
-- [ ] 1.3 Abort startup when the metrics port equals the application port, naming both
-- [ ] 1.4 Add unit tests covering every scenario in `specs/developer-environment/spec.md`
-- [ ] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes
+- [x] 1.1 Add observability configuration to `packages/config`: redaction patterns, maximum logged string length, metrics enablement and the metric label sets
+- [x] 1.2 Add `METRICS_PORT`, `LOG_LEVEL` and `ERROR_REPORTING_DSN` to the API env schema and `.env.example` with a `.describe()` on each
+- [x] 1.3 Abort startup when the metrics port equals the application port, naming both
+- [x] 1.4 Add unit tests covering every scenario in `specs/developer-environment/spec.md`
+- [x] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes
 
 ## 2. The redacting logger
 

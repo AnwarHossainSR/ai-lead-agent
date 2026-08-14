@@ -170,6 +170,36 @@ describe("a malformed variable is refused", () => {
   });
 });
 
+describe("metrics port equal to application port aborts startup", () => {
+  const validApiEnv = {
+    DATABASE_URL: "postgresql://mela:pw@localhost:5432/mela",
+    REDIS_URL: "redis://localhost:6379",
+    GEMINI_API_KEY: "test-gemini-key",
+    CLOUDFLARE_ACCOUNT_ID: "test-account-id",
+    CLOUDFLARE_API_TOKEN: "test-cf-token",
+    QSTASH_TOKEN: "test-qstash-token",
+    SESSION_SECRET: "test-session-secret-not-real-0123456789",
+  };
+
+  it("names both ports when they match", () => {
+    try {
+      loadApiEnv({ ...validApiEnv, API_PORT: "4000", METRICS_PORT: "4000" });
+      expect.unreachable("loadApiEnv should have refused identical ports");
+    } catch (error: unknown) {
+      const failure = error as EnvironmentValidationError;
+      expect(failure.variables).toContain("METRICS_PORT");
+      expect(failure.message).toContain("API_PORT");
+      expect(failure.message).toContain("4000");
+    }
+  });
+
+  it("accepts different ports", () => {
+    const env = loadApiEnv({ ...validApiEnv, API_PORT: "3001", METRICS_PORT: "9090" });
+    expect(env.API_PORT).toBe(3001);
+    expect(env.METRICS_PORT).toBe(9090);
+  });
+});
+
 describe("failure messages carry no credential", () => {
   it("does not repeat the rejected value", () => {
     const password = "hunter2-should-never-be-printed";
@@ -209,6 +239,8 @@ describe("a valid environment is accepted", () => {
 
     expect(env.NODE_ENV).toBe("development");
     expect(env.API_PORT).toBe(3001);
+    expect(env.METRICS_PORT).toBe(9090);
+    expect(env.LOG_LEVEL).toBe("log");
     expect(env.WEB_ORIGIN).toBe("http://localhost:3000");
     expect(env.AI_MODEL_DEFAULT).toBe("gemini-2.5-pro");
     expect(env.AI_MODEL_FAST).toBe("@cf/meta/llama-3.3-70b-instruct-fp8-fast");
