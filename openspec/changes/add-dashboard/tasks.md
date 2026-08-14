@@ -74,7 +74,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [x] 9.2 Confirm the review queue is fully operable by keyboard and every interactive control has an accessible name
 - [x] 9.3 Add the accessibility checks to the CI workflow — the CI `test` job now runs `pnpm --filter @mela/web exec vitest run`, which includes the a11y suite; Playwright is excluded (needs a running API/DB and browser binaries this job doesn't provision)
 - [x] 9.4 Document the views in `docs/architecture.md` and state the local-only, unauthenticated posture in `README.md` and `docs/development.md`
-- [ ] 9.5 Update `docs/implementation-progress.md`
-- [ ] 9.6 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
+- [x] 9.5 Update `docs/implementation-progress.md`
+- [x] 9.6 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output — lint/typecheck/build all pass; test passes per-package in isolation (found and fixed a real turbo.json gap: `API_URL`/`NEXT_PUBLIC_API_URL` weren't declared as build-task env, so a root `pnpm build` silently produced static pages instead of dynamic ones — fixed; also fixed a stale `QSTASH_TOKEN`-less fixture in `packages/config`'s env test). One pre-existing, unrelated failure remains in `packages/database` (see implementation-progress.md) plus a pre-existing lack of DB isolation between `@mela/api` and `@mela/database` when run concurrently at the root — both predate and are outside `add-dashboard`'s scope
 - [ ] 9.7 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test; list any that do not
 - [ ] 9.8 Run `openspec validate add-dashboard --strict` and resolve anything it reports
