@@ -37,6 +37,7 @@ catalog:
   # release age gate; a version published hours ago is exactly what a
   # compromised-package window looks like.
   tsx: 4.23.9
+  ts-node: 10.9.2
 
   # SWC compiles the API's decorators with `emitDecoratorMetadata`, which
   # esbuild — and therefore Vitest's default transform — does not implement.
