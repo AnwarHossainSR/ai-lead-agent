@@ -8,6 +8,7 @@ import { EnvModule } from "./config/env.module";
 import { DatabaseModule } from "./database/database.module";
 import { DiscoveryModule } from "./discovery/discovery.module";
 import { HealthModule } from "./health/health.module";
+import { OperationsModule } from "./operations/operations.module";
 import { OpportunityModule } from "./opportunity/opportunity.module";
 import { OutreachModule } from "./outreach/outreach.module";
 import { RedisModule } from "./redis/redis.module";
@@ -37,6 +38,7 @@ import { VerificationModule } from "./verification/verification.module";
     OutreachModule,
     AnalyticsModule,
     ResearchSummaryModule,
+    OperationsModule,
   ],
 })
 export class AppModule {}
