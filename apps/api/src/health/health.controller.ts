@@ -1,10 +1,11 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Inject } from "@nestjs/common";
 import { HealthCheck, type HealthCheckResult, HealthCheckService } from "@nestjs/terminus";
 
 import { Public } from "../auth/public.decorator";
 import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";
-import { ShutdownState } from "./shutdown-state";
+import { SHUTDOWN_STATE } from "./shutdown-state";
+import type { ShutdownState } from "./shutdown-state";
 
 /**
  * Health endpoints. Each answers a different question:
@@ -20,7 +21,7 @@ export class HealthController {
     private readonly health: HealthCheckService,
     private readonly postgres: PostgresHealthIndicator,
     private readonly redis: RedisHealthIndicator,
-    private readonly shutdownState: ShutdownState,
+    @Inject(SHUTDOWN_STATE) private readonly shutdownState: ShutdownState,
   ) {}
 
   @Public()

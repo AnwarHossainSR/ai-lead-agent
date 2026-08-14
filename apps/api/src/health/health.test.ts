@@ -8,7 +8,7 @@ import { CLOSED_PORT_URL, createTestApp } from "../testing/app";
 import { HealthController } from "./health.controller";
 import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";
-import { ShutdownState } from "./shutdown-state";
+import { SHUTDOWN_STATE, ShutdownState } from "./shutdown-state";
 
 /**
  * These talk to the PostgreSQL and Redis containers from `docker compose`. The
@@ -169,7 +169,7 @@ describe("GET /ready", () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [HealthController],
       providers: [
-        { provide: ShutdownState, useValue: shutdownState },
+        { provide: SHUTDOWN_STATE, useValue: shutdownState },
         {
           provide: HealthCheckService,
           useValue: {
@@ -187,6 +187,9 @@ describe("GET /ready", () => {
     await app.init();
 
     shutdownState.markShuttingDown();
+
+    // Verify the state was set
+    expect(shutdownState.isShuttingDown()).toBe(true);
 
     // Readiness should fail
     await request(app.getHttpServer()).get("/ready").expect(503);

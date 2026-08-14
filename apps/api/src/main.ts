@@ -4,7 +4,7 @@ import { EnvironmentValidationError, hydrateEnvironment, loadApiEnv } from "@mel
 import { Logger } from "@nestjs/common";
 
 import { createApp } from "./create-app";
-import { ShutdownState } from "./health/shutdown-state";
+import { SHUTDOWN_STATE, type ShutdownState } from "./health/shutdown-state";
 import { installErrorHandlers } from "./observability/error-reporter";
 import { startMetricsServer, stopMetricsServer } from "./observability/metrics";
 
@@ -22,7 +22,7 @@ async function bootstrap(): Promise<void> {
   new Logger("Bootstrap").log(`API listening on http://localhost:${env.API_PORT}`);
   new Logger("Bootstrap").log(`Metrics listening on http://localhost:${env.METRICS_PORT}/metrics`);
 
-  const shutdownState = app.get(ShutdownState);
+  const shutdownState = app.get<ShutdownState>(SHUTDOWN_STATE);
 
   const shutdown = async (signal: string): Promise<void> => {
     new Logger("Bootstrap").log(`Received ${signal}, shutting down...`);

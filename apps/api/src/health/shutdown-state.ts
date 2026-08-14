@@ -1,5 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
+export const SHUTDOWN_STATE = "SHUTDOWN_STATE";
+
 @Injectable()
 export class ShutdownState {
   private shuttingDown = false;

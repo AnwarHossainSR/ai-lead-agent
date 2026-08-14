@@ -6,7 +6,7 @@ import { API_ENV } from "../config/env.module";
 import { HealthController } from "./health.controller";
 import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";
-import { ShutdownState } from "./shutdown-state";
+import { SHUTDOWN_STATE, ShutdownState } from "./shutdown-state";
 
 @Global()
 @Module({
@@ -19,7 +19,11 @@ import { ShutdownState } from "./shutdown-state";
     }),
   ],
   controllers: [HealthController],
-  providers: [PostgresHealthIndicator, RedisHealthIndicator, ShutdownState],
-  exports: [ShutdownState],
+  providers: [
+    PostgresHealthIndicator,
+    RedisHealthIndicator,
+    { provide: SHUTDOWN_STATE, useClass: ShutdownState },
+  ],
+  exports: [SHUTDOWN_STATE],
 })
 export class HealthModule {}
