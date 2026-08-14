@@ -55,11 +55,11 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 7. Analytics
 
-- [ ] 7.1 Build the shared Recharts wrapper taking rate, sent, responded, unrecorded and the below-minimum flag, always rendering counts
-- [ ] 7.2 Suppress trend lines and comparisons for segments below the reporting minimum
-- [ ] 7.3 Build the response-rate views by industry, service, opportunity category, priority band and score decile
-- [ ] 7.4 Add tests: counts always displayed, a small sample marked, no trend drawn below the minimum
-- [ ] 7.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
+- [x] 7.1 Build the shared Recharts wrapper taking rate, sent, responded, unrecorded and the below-minimum flag, always rendering counts
+- [x] 7.2 Suppress trend lines and comparisons for segments below the reporting minimum
+- [x] 7.3 Build the response-rate views by industry, service, opportunity category, priority band and score decile
+- [x] 7.4 Add tests: counts always displayed, a small sample marked, no trend drawn below the minimum
+- [x] 7.5 Verify: `pnpm --filter @mela/web lint typecheck test` passes
 
 ## 8. Operations
 
