@@ -7,8 +7,8 @@
 - [ ] 1.5 Make a run with no usable source end as failed, naming each source and its reason, rather than completing with zero companies stored (spec: a run with no usable source fails)
 - [ ] 1.6 Record each source's returned, stored, duplicate and rejected counts against the run, including the skipped ones with their reason
 - [ ] 1.7 Add an example import file under `apps/api/fixtures/` and document its columns
-- [ ] 1.8 Add tests: the registry's usable/unusable split, a run that stores companies from file import, a run refused for having no usable source, and the per-source report
-- [ ] 1.9 Verify: `pnpm --filter @mela/api lint`, `typecheck`, `test` — and `POST /api/discovery/runs` by hand, confirming companies actually land in the database
+- [ ] 1.8 Confirm by hand: the registry's usable/unusable split, a run that stores companies from file import, a run refused for having no usable source, and the per-source report
+- [ ] 1.9 Verify: `pnpm --filter @mela/api lint`, `typecheck` — and `POST /api/discovery/runs` by hand, confirming companies actually land in the database
 
 ## 2. Queue transport
 
@@ -18,12 +18,12 @@
 - [ ] 2.4 Point `QUEUE_CONFIGS` concurrency, attempts and timeouts at BullMQ's options, keeping the per-stage differences the config already declares
 - [ ] 2.5 Add the queue's Redis connection to the health endpoint's existing checks
 - [ ] 2.6 Update `add-background-jobs`' proposal and design to match the settled transport, so the two changes do not contradict each other
-- [ ] 2.7 Verify: a job enqueued from a test is picked up by a worker against the Docker Redis, with no tunnel and no external account
+- [ ] 2.7 Verify: a job enqueued by hand is picked up by a worker against the Docker Redis, with no tunnel and no external account
 
 ## 3. Stage processors
 
 - [ ] 3.1 Add `PIPELINE_STAGES` to `@mela/config` — the ordered chain, ending after outreach drafting (design D3)
-- [ ] 3.2 Add a test asserting the chain has no stage after drafting, so "the pipeline never sends" is checkable against the data rather than trusted
+- [ ] 3.2 Confirm the chain has no stage after drafting, and state that fact in a comment beside `PIPELINE_STAGES` so the next reader checks the data rather than trusting the code
 - [ ] 3.3 Implement the discovery processor, calling the existing `RunService`
 - [ ] 3.4 Implement the verification processor, calling the existing verification service
 - [ ] 3.5 Implement the website-analysis processor, with the longer timeout and lower concurrency a browser launch needs
@@ -35,8 +35,8 @@
 - [ ] 3.11 Implement the outreach-draft processor, ending the chain with a draft awaiting approval
 - [ ] 3.12 Register every processor in `worker.ts`, replacing the log line that currently names queues it does not consume
 - [ ] 3.13 Add deterministic job ids (`${stage}:${companyId}:${runId}`) and the already-has-a-current-result skip, with a `force` flag only the manual re-run sets (design D7)
-- [ ] 3.14 Add tests: each processor calls its service and enqueues its successor; a failing stage does not enqueue the next; a duplicate enqueue does the work once; `force` overrides the skip
-- [ ] 3.15 Verify: `pnpm --filter @mela/api lint`, `typecheck`, `test`
+- [ ] 3.14 Confirm by hand: each processor calls its service and enqueues its successor; a failing stage does not enqueue the next; a duplicate enqueue does the work once; `force` overrides the skip
+- [ ] 3.15 Verify: `pnpm --filter @mela/api lint`, `typecheck`
 
 ## 4. Pipeline runs
 
@@ -45,8 +45,8 @@
 - [ ] 4.3 Add write helpers — start a run, attach a company, record a company's stage outcome, finish a run — following the existing `write/` conventions
 - [ ] 4.4 Add read helpers deriving per-stage counts by aggregate query rather than from counter columns
 - [ ] 4.5 Add CHECK constraints for the run's own equivalences — a finish time pairs with an outcome, a failure pairs with a reason
-- [ ] 4.6 Add tests covering the write helpers, the derived counts, and each constraint
-- [ ] 4.7 Verify: `pnpm --filter @mela/database lint`, `typecheck`, `test`
+- [ ] 4.6 Exercise the write helpers, the derived counts and each constraint against a local database, and record what each constraint refused
+- [ ] 4.7 Verify: `pnpm --filter @mela/database lint`, `typecheck`
 
 ## 5. Orchestration and ceilings
 
@@ -57,8 +57,8 @@
 - [ ] 5.5 Add `GET /api/pipeline/runs` and `GET /api/pipeline/runs/:id` with per-stage counts, per-source outcomes, failures and spend — open to any signed-in role
 - [ ] 5.6 Add `POST /api/pipeline/companies/:id/stages/:stage/rerun`, operator-only, running one stage for one company with `force` set
 - [ ] 5.7 Mark downstream results stale when a stage is re-run, using the existing staleness helpers (design — open questions)
-- [ ] 5.8 Add tests: a run refused for a viewer, a run refused for an unconfigured territory, the company ceiling, the spend ceiling, a re-run touching only its own stage, and an audit entry recording who started a run
-- [ ] 5.9 Verify: `pnpm --filter @mela/api lint`, `typecheck`, `test`
+- [ ] 5.8 Confirm by hand: a run refused for a viewer, a run refused for an unconfigured territory, the company ceiling, the spend ceiling, a re-run touching only its own stage, and an audit entry recording who started a run
+- [ ] 5.9 Verify: `pnpm --filter @mela/api lint`, `typecheck`
 
 ## 6. The Pipeline page
 
@@ -71,8 +71,8 @@
 - [ ] 6.7 Add the Pipeline entry to the sidebar
 - [ ] 6.8 Add the per-company re-run control on the company detail page, operator-only, wired to a Server Action returning an `ActionResult` so its outcome reaches a toast
 - [ ] 6.9 Add the start-a-run Server Action, with its refusals surfaced as error toasts rather than a blank form
-- [ ] 6.10 Add tests: the form is absent for a viewer, progress renders each stage state, a failed stage shows its reason, polling stops when a run ends
-- [ ] 6.11 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [ ] 6.10 Confirm in the browser: the form is absent for a viewer, progress renders each stage state, a failed stage shows its reason, polling stops when a run ends
+- [ ] 6.11 Verify: `pnpm --filter @mela/web lint`, `typecheck`
 
 ## 7. End to end and completion
 

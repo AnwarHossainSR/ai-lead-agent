@@ -7,7 +7,7 @@ Three specific gaps:
 
 1. **Discovery finds nothing.** `discovery.controller.ts` builds its run with
    `const sources = new Map()` — an empty source map. `PlacesSource` and
-   `FileImportSource` are both written and unit-tested, and neither is ever
+   `FileImportSource` are both written, and neither is ever
    instantiated in production code. A run therefore completes, records itself,
    and stores zero companies.
 2. **Nothing in the web app starts a stage.** The route list is dashboard,

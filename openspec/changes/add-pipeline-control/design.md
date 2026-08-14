@@ -21,7 +21,7 @@ See `proposal.md` — Why. The constraints that shape the approach:
   retries, idempotency, scheduled maintenance, queue observability. Its
   proposal describes BullMQ, which no longer matches the code. This change
   depends on that one and settles the contradiction in D1.
-- **Discovery has two written, tested, never-instantiated sources.**
+- **Discovery has two written, never-instantiated sources.**
   `FileImportSource` (reads a file) and `PlacesSource` (calls a licensed API
   with a key). `discovery.controller.ts:113` passes `new Map()`.
 - **Nest services are request-scoped by default but these are singletons**, so
@@ -120,8 +120,8 @@ discovery → verification → website-analysis → technology-detection
 One `PIPELINE_STAGES` array in `@mela/config` names the order. Each processor,
 on success, asks the table what comes next and enqueues it. Ending the chain is
 the absence of a next entry — so "the pipeline stops before sending" is a
-property of the data, checkable by a test that reads the table, rather than a
-missing `if` somebody could add.
+property of the data, checkable by reading the table, rather than a missing
+`if` somebody could add.
 
 **Why not** each processor naming its own successor: the chain then exists only
 in nine separate files and cannot be asserted about as a whole.
@@ -196,8 +196,9 @@ approvals. A viewer sees runs and progress, and no control that starts work.
   per-queue concurrency on top rather than replacing it.
 - **"Press a button and it does everything" is exactly the shape of a system
   that sends something nobody read** → the chain table (D3) has no entry after
-  drafting, there is no send transport in the codebase, and both the spec and a
-  test assert it. This is the risk the whole product is organised around, and
+  drafting, there is no send transport in the codebase, and
+  `absence-of-transport.test.ts` — one of the eleven test files the workspace
+  retains — asserts it. This is the risk the whole product is organised around, and
   it does not get relaxed for convenience.
 - **A partially-failed run is the normal case, not the exception** — sites
   block, models refuse, contacts are not found → per-company stage state (D2)

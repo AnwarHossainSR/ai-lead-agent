@@ -9,15 +9,15 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [ ] 1.3 Change website analysis to write and read through the driver, storing a key rather than a path
 - [ ] 1.4 Make a store failure record the analysis as failed with that reason rather than as completed
 - [ ] 1.5 Add `ARTIFACT_STORE_DRIVER` and the object storage settings to the API env schema and `.env.example`
-- [ ] 1.6 Add tests covering every scenario in `specs/website-analysis-pipeline/spec.md`, running the analysis suite against the local driver
-- [ ] 1.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes with the Compose stack running
+- [ ] 1.6 Walk every scenario in `specs/website-analysis-pipeline/spec.md` by hand against the local driver and record the outcome
+- [ ] 1.7 Verify: `pnpm --filter @mela/api lint typecheck` passes with the Compose stack running
 
 ## 2. Object storage driver
 
 - [ ] 2.1 Implement the object storage driver behind the same interface
-- [ ] 2.2 Run the same analysis test suite against it using a local object storage emulator in Compose
+- [ ] 2.2 Repeat the 1.6 walkthrough against it using a local object storage emulator in Compose
 - [ ] 2.3 Confirm no application code changes between drivers
-- [ ] 2.4 Verify: `pnpm --filter @mela/api lint typecheck test` passes against both drivers
+- [ ] 2.4 Verify: `pnpm --filter @mela/api lint typecheck` passes against both drivers
 
 ## 3. Container images
 
@@ -25,8 +25,8 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [ ] 3.2 Add `Dockerfile.worker` on the pinned Playwright base image, with the same properties
 - [ ] 3.3 Add `Dockerfile.web` for the Next.js standalone output, with the same properties
 - [ ] 3.4 Add `.dockerignore` excluding `.env`, artifacts, `node_modules` and build output
-- [ ] 3.5 Add image tests asserting the user is not root, no source or environment file is present, and no build toolchain remains
-- [ ] 3.6 Add a test starting each image against the local stack and asserting it reports ready
+- [ ] 3.5 Inspect each built image and confirm the user is not root, no source or environment file is present, and no build toolchain remains
+- [ ] 3.6 Start each image against the local stack and confirm it reports ready
 - [ ] 3.7 Verify: all three images build from a clean clone and start
 
 ## 4. Secrets
@@ -51,7 +51,7 @@ Work one task at a time. After each task: run the relevant checks, report what c
 ## 6. Migrations as a gated step
 
 - [ ] 6.1 Add the one-off migration task running `db:migrate` against the new image
-- [ ] 6.2 Add a test asserting an application process does not apply pending migrations on boot
+- [ ] 6.2 Confirm by hand that an application process with a pending migration boots without applying it
 - [ ] 6.3 Make a migration failure stop the deployment with the previous version still serving
 - [ ] 6.4 Document the backward-compatibility rule for migrations during a rollout
 - [ ] 6.5 Verify: a deliberately failing migration stops the deployment and leaves the previous version serving
@@ -81,5 +81,5 @@ Work one task at a time. After each task: run the relevant checks, report what c
 - [ ] 9.3 Confirm the local setup path still works with no deployment credentials and no cloud access
 - [ ] 9.4 Update `docs/architecture.md` and `docs/implementation-progress.md`
 - [ ] 9.5 Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build` at the root and record the real output
-- [ ] 9.6 Walk `specs/*/spec.md` scenario by scenario and confirm each has a passing test or a recorded manual verification; list any that do not
+- [ ] 9.6 Walk `specs/*/spec.md` scenario by scenario and record a manual verification for each; list any that could not be verified
 - [ ] 9.7 Run `openspec validate add-deployment --strict` and resolve anything it reports

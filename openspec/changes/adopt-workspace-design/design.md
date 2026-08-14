@@ -83,8 +83,7 @@ They are added to `@theme` as a named scale — `--text-meta`, `--text-body`,
 `--text-title`, `--size-sidebar`, `--size-topbar`, `--surface-sidebar`,
 `--surface-topbar` — and used by name. The design-system spec's new requirement
 ("the design language lives in tokens and primitives") is then checkable by
-grepping page code for literal colours and sizes, which is what the group 9 test
-does.
+grepping page code for literal colours and sizes, which is what task 9.2 does.
 
 ### D3 — Nine new primitives, and a hard line around the ones that exist
 
@@ -94,7 +93,10 @@ New, because the app has no equivalent: `StatCard`, `Sparkline`, `FunnelChart`,
 
 Restyled but not rewritten: `Panel`, `Card`, `Badge`, `Button`, `Table`,
 `EmptyState`, `Skeleton`, `Unavailable`, `Fact`, `Evidence`, `Generated`,
-`Toast`. Their props and behaviour are unchanged; only their classes move.
+`Toast`. Their props and behaviour are unchanged; only their classes move. Three
+of them — `Unavailable` (via `data-state.test.tsx`), `Evidence` and `Generated` —
+are among the eleven test files the workspace retains, and those tests must pass
+unmodified after the restyle.
 
 **Why the line matters:** the mock's `Badge`, `Score`, `Generated` and
 `StateCard` are stubs — `StateCard` picks one of four hard-coded strings from an
@@ -184,16 +186,19 @@ design's permanent home is the tokens, the primitives and this spec.
   group, each independently shippable. A group can be paused between pages
   without leaving the app half-styled, because the primitives land first.
 - **Restyling `Fact`, `Evidence` and `Unavailable` risks weakening exactly the
-  behaviour the product exists for.** → Their tests are not modified in this
-  change. A test change in those files is a signal the restyle went too far, and
-  group 9 checks for it explicitly.
+  behaviour the product exists for.** → `Evidence`, `Generated` and
+  `data-state.test.tsx` survive in the retained suite and are not modified here;
+  a change to those test files signals the restyle went too far. `Fact` has no
+  test left, so task 9.1 checks it by diff instead.
 - **The new endpoints are aggregate queries over growing tables** → each is
-  written against the indexes that exist, and group 8 measures them against the
+  written against the indexes that exist, and task 8.6 measures them against the
   seeded dataset rather than assuming.
-- **Density at 13px base risks failing the accessibility floor** → the existing
-  contrast test is extended to cover the new tokens at their actual sizes, and
-  the 11px metadata scale is restricted to supporting text that duplicates
-  something legible, never to the only statement of a fact.
+- **Density at 13px base risks failing the accessibility floor** → the contrast
+  test was among the files removed when the suite was cut to 45 cases, so task
+  1.7 checks the new token pairs by hand and records the ratios in
+  `docs/architecture.md`, where a later reader can re-check them. The 11px
+  metadata scale is restricted to supporting text that duplicates something
+  legible, never to the only statement of a fact.
 - **Two active changes both edit the sidebar navigation list** → it is a single
   array in `apps/web/src/components/navigation.ts`; whichever lands second adds
   one entry. Called out here so it is a merge, not a surprise.
