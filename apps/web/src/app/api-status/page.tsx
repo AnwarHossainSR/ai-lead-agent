@@ -31,26 +31,21 @@ function DependencyStatus({ name, status }: { name: string; status?: "up" | "dow
   );
 }
 
-export default async function Home() {
+export default async function ApiStatusPage() {
   const health = await getHealthStatus();
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to MELA — AI-assisted B2B lead generation</p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card title="Companies" value="—" />
-        <Card title="Contacts" value="—" />
-        <Card title="Active Leads" value="—" />
-        <Card title="Outreach" value="—" />
+        <h1 className="text-2xl font-bold tracking-tight">API Status</h1>
+        <p className="text-muted-foreground">
+          Local-only diagnostic view of the API and its dependencies.
+        </p>
       </div>
 
       <div className="rounded-lg border border-border bg-card p-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">API Status</h2>
+          <h2 className="text-lg font-semibold">API</h2>
           <StatusBadge status={health.status} />
         </div>
         {health.error && <p className="mt-2 text-sm text-muted-foreground">{health.error}</p>}
@@ -61,21 +56,6 @@ export default async function Home() {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function Card({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
     </div>
   );
 }

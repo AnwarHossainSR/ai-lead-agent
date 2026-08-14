@@ -10,7 +10,7 @@ import {
   OUTREACH_CHANNELS,
   type OutreachChannelId,
 } from "@mela/config";
-import type { Database, OutreachRow } from "@mela/database";
+import type { Database, OpportunityRow, OutreachClaim, OutreachRow } from "@mela/database";
 import {
   type LeadRow,
   applyLeadStatusChange,
@@ -18,7 +18,9 @@ import {
   cancelOutreach,
   clearCompanyDoNotContact,
   clearContactDoNotContact,
+  countOutreach,
   getCurrentLeadResearchSummary,
+  getOutreach,
   insertOutreachDraft,
   insertOutreachResponse,
   listOutreach,
@@ -128,7 +130,12 @@ export class OutreachDraftingService {
       contactId: input.contactId,
       channelId: input.channelId,
       summary: {
-        sections: summary.sections as readonly string[],
+        // `sections` is keyed by section name, each holding its own
+        // evidence-linked statements; the drafting prompt wants the prose,
+        // not the grouping or the citation refs.
+        sections: Object.values(summary.sections).flatMap((statements) =>
+          statements.map((statement) => statement.text),
+        ),
         citedFacts: summary.citedFacts as readonly string[],
       },
     };
@@ -174,10 +181,17 @@ export class OutreachDraftingService {
       }
     }
 
+    const citedFacts = resolveClaimCitations(
+      rawOutput.claims,
+      evidence.opportunities,
+      evidence.analysis?.analysedUrl,
+    );
+
     const draft = await insertOutreachDraft(this.database, {
       leadId: input.leadId,
       channel: input.channelId as OutreachChannelId,
       messageBody: rawOutput.body,
+      citedFacts,
       notes: `AI draft v${1}`,
       isExample: false,
     });
@@ -210,6 +224,10 @@ export class OutreachDraftingService {
     return require("@mela/database").gatherCompanyEvidence(this.database, companyId);
   }
 
+  async getOutreach(outreachId: string): Promise<OutreachRow | undefined> {
+    return getOutreach(this.database, outreachId);
+  }
+
   async listOutreach(filters?: {
     status?: string;
     leadId?: string;
@@ -224,6 +242,15 @@ export class OutreachDraftingService {
       offset: filters?.offset,
     });
     return rows;
+  }
+
+  async countOutreach(filters?: { status?: string; leadId?: string; sentAfter?: Date }) {
+    const status = filters?.status as OutreachRow["status"] | undefined;
+    return countOutreach(this.database, {
+      status,
+      leadId: filters?.leadId,
+      sentAfter: filters?.sentAfter,
+    });
   }
 
   async updateOutreach(outreachId: string, changes: { subject?: string; messageBody?: string }) {
@@ -423,4 +450,55 @@ export class OutreachDraftingService {
   async clearContactDoNotContact(contactId: string) {
     return clearContactDoNotContact(this.database, contactId);
   }
+}
+
+/**
+ * Resolves each claim's citations against the evidence the drafting prompt
+ * actually saw, at draft time — a citation resolved later, against
+ * whatever opportunities exist by then, could point at the wrong thing or
+ * nothing at all.
+ */
+function resolveClaimCitations(
+  claims: readonly { text: string; cites: readonly string[] }[],
+  opportunities: readonly OpportunityRow[],
+  analysedUrl: string | undefined,
+): OutreachClaim[] {
+  return claims.map((claim) => ({
+    text: claim.text,
+    citations: claim.cites.map((ref) => resolveCitation(ref, opportunities, analysedUrl)),
+  }));
+}
+
+const OPPORTUNITY_REF_PATTERN = /^o(\d+)$/;
+
+function resolveCitation(
+  ref: string,
+  opportunities: readonly OpportunityRow[],
+  analysedUrl: string | undefined,
+): OutreachClaim["citations"][number] {
+  const opportunityMatch = OPPORTUNITY_REF_PATTERN.exec(ref);
+  const opportunity =
+    opportunityMatch !== null ? opportunities[Number(opportunityMatch[1]) - 1] : undefined;
+
+  if (opportunity !== undefined) {
+    return {
+      ref,
+      detail: `${opportunity.title}: ${opportunity.description}`,
+      url: analysedUrl ?? null,
+      certainty: opportunity.certainty,
+    };
+  }
+
+  // Research-summary citations ("s1", "s2", ...) point into the summary's
+  // own citedFacts, which are themselves unresolved refs from an earlier AI
+  // call with no stored snapshot to resolve against — a pre-existing gap
+  // upstream of this pipeline. Recorded honestly rather than presenting an
+  // opaque ref as if it were real prose (design D4).
+  return {
+    ref,
+    detail:
+      "Cites the lead's research summary; the specific source is not resolvable in this version.",
+    url: null,
+    certainty: null,
+  };
 }

@@ -44,8 +44,20 @@ NestJS REST API providing:
 
 Next.js 16 App Router application providing:
 - Dashboard with API health status
-- Navigation shell (sidebar + header)
+- Navigation shell (sidebar + header) to leads, companies, outreach review, analytics and operations
 - Server-side rendering with React 19
+
+Every panel fetches independently through a bounded-timeout helper (`fetchWithTimeout`) inside its own Suspense and error boundary (`<Panel>`), so one slow or failing dependency degrades only the panel that depends on it. Every claim the views render carries its certainty (observed, inferred, unknown), its source URL, and the time it was recorded (`<Fact>`, `<Evidence>`) — an unmeasured value is never rendered as zero or a blank.
+
+**Leads** (`/leads`, `/leads/[id]`) — the lead list ordered by score with filters for priority, status, industry, city, service and staleness, held in the URL so a filtered view is a shareable link. The detail view shows the score's component breakdown, opportunities and technology detections with cited evidence, contacts with sources, and the research summary rendered through `<Generated>` with its list of unknowns.
+
+**Companies** (`/companies`, `/companies/[id]`, `/companies/needs-attention`) — the company list carries verification state, website analysis outcome and opportunity analysis outcome as three independent columns; a company can be failed or blocked in one while never having reached another, and none of the three is ever omitted. The needs-attention view collects blocked, failed and unreachable companies with counts and ages, oldest first.
+
+**Outreach review** (`/outreach/review`, `/outreach/review/[id]`) — one drafted message at a time beside the facts it cites. Approval is disabled until the message body has actually rendered in the viewport. Actions are approve, edit, reject-with-required-reason and cancel, each a Server Action; there is deliberately no bulk approval, no multi-select and no send control (there is no send path at all — see Outreach Drafting and Approval below). Editing an approved message revokes its approval and returns it to the queue.
+
+**Analytics** (`/analytics`) — response rate by industry, service, opportunity category, priority band and score decile, through a shared chart wrapper that always renders the counts (sent, responded, unrecorded) a rate was computed from. A segment below the configured minimum reporting sample size (`MINIMUM_REPORTING_SAMPLE_SIZE`) is visibly marked and shows no trend or comparison.
+
+**Operations** (`/operations`) — queue configuration paired with each queue's real dead-letter (failed) count, failed jobs with an explicit per-job retry action, and discovery runs with their per-source counts and outcomes. Jobs run through Upstash QStash (HTTP push, not a pollable local queue), so there is no live "pending" count to show; what is shown is what QStash actually exposes.
 
 ### packages/config
 

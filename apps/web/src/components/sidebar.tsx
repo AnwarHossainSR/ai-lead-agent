@@ -6,11 +6,19 @@ import { usePathname } from "next/navigation";
 
 const navigation = [
   { name: "Dashboard", href: "/" },
-  { name: "Companies", href: "/companies" },
-  { name: "Contacts", href: "/contacts" },
   { name: "Leads", href: "/leads" },
-  { name: "Outreach", href: "/outreach" },
+  { name: "Companies", href: "/companies" },
+  { name: "Outreach Review", href: "/outreach/review" },
+  { name: "Analytics", href: "/analytics" },
+  { name: "Operations", href: "/operations" },
 ];
+
+function isActive(pathname: string, href: string): boolean {
+  if (href === "/") {
+    return pathname === "/";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -24,7 +32,7 @@ export function Sidebar() {
             href={item.href}
             className={cn(
               "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted",
-              pathname === item.href ? "bg-muted text-foreground" : "text-muted-foreground",
+              isActive(pathname, item.href) ? "bg-muted text-foreground" : "text-muted-foreground",
             )}
           >
             {item.name}

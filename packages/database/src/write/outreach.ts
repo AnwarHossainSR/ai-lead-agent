@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { OUTREACH_CHANNELS, type OutreachChannelId } from "@mela/config";
-import { and, desc, eq } from "drizzle-orm";
+import { type SQL, and, count, desc, eq, gte } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
@@ -27,10 +27,34 @@ const channelSchema = z.enum(
   OUTREACH_CHANNELS.map((channel) => channel.id) as [OutreachChannelId, ...OutreachChannelId[]],
 );
 
+/**
+ * One citation behind a claim the drafted message makes, resolved to a
+ * source at draft time — not the AI's raw ref, which means nothing once the
+ * evidence it pointed at may have changed. `url` and `certainty` are null
+ * when the underlying fact (currently: anything sourced from the lead's
+ * research summary) has no resolvable source in this version of the
+ * pipeline; that is recorded explicitly rather than invented.
+ */
+const outreachCitationSchema = z.object({
+  ref: z.string().trim().min(1),
+  detail: z.string().trim().min(1),
+  url: z.string().trim().min(1).nullable(),
+  certainty: z.enum(["observed", "inferred"]).nullable(),
+});
+
+const outreachClaimSchema = z.object({
+  text: z.string().trim().min(1),
+  citations: z.array(outreachCitationSchema).min(1),
+});
+
+export type OutreachCitation = z.infer<typeof outreachCitationSchema>;
+export type OutreachClaim = z.infer<typeof outreachClaimSchema>;
+
 export const insertOutreachInputSchema = z.object({
   leadId: z.uuid("Expected the identifier of the lead this message is for."),
   channel: channelSchema,
   messageBody: z.string().trim().min(1, "Expected the message body."),
+  citedFacts: z.array(outreachClaimSchema).default([]),
   notes: z
     .string()
     .trim()
@@ -66,7 +90,7 @@ export async function insertOutreachDraft(
       isHumanEdited: false,
       promptVersion: null,
       aiInvocationId: null,
-      citedFacts: [],
+      citedFacts: value.citedFacts,
       rejectionReason: null,
       rejectedAt: null,
       approvalRevokedAt: null,
@@ -263,11 +287,57 @@ export async function rejectOutreach(
   });
 }
 
-export interface ListOutreachFilters {
+export interface OutreachFilters {
   readonly status?: OutreachRow["status"];
   readonly leadId?: string;
+  /** Keeps only records sent at or after this time. */
+  readonly sentAfter?: Date;
+}
+
+export interface ListOutreachFilters extends OutreachFilters {
   readonly limit?: number;
   readonly offset?: number;
+}
+
+/** A single outreach record, for the review view. */
+export async function getOutreach(
+  executor: Executor,
+  outreachId: string,
+): Promise<OutreachRow | undefined> {
+  const [row] = await executor.select().from(outreach).where(eq(outreach.id, outreachId)).limit(1);
+
+  return row;
+}
+
+/** Shared by listOutreach and countOutreach, so the two never disagree about what a filter means. */
+function buildOutreachConditions(filters?: OutreachFilters): SQL[] {
+  const conditions: SQL[] = [];
+
+  if (filters?.status !== undefined) {
+    conditions.push(eq(outreach.status, filters.status));
+  }
+  if (filters?.leadId !== undefined) {
+    conditions.push(eq(outreach.leadId, filters.leadId));
+  }
+  if (filters?.sentAfter !== undefined) {
+    conditions.push(gte(outreach.sentAt, filters.sentAfter));
+  }
+
+  return conditions;
+}
+
+export async function countOutreach(
+  executor: Executor,
+  filters?: OutreachFilters,
+): Promise<number> {
+  const conditions = buildOutreachConditions(filters);
+
+  const [row] = await executor
+    .select({ value: count() })
+    .from(outreach)
+    .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+  return row?.value ?? 0;
 }
 
 /**
@@ -278,25 +348,13 @@ export async function listOutreach(
   executor: Executor,
   filters?: ListOutreachFilters,
 ): Promise<OutreachRow[]> {
-  const conditions: (
-    | ReturnType<typeof eq<typeof outreach.status>>
-    | ReturnType<typeof eq<typeof outreach.leadId>>
-  )[] = [];
-  if (filters?.status !== undefined) {
-    conditions.push(eq(outreach.status, filters.status));
-  }
-  if (filters?.leadId !== undefined) {
-    conditions.push(eq(outreach.leadId, filters.leadId));
-  }
+  const conditions = buildOutreachConditions(filters);
 
-  const whereClause =
-    conditions.length > 0
-      ? conditions.length === 1
-        ? conditions[0]
-        : and(...conditions)
-      : undefined;
-
-  let query = executor.select().from(outreach).where(whereClause).orderBy(desc(outreach.createdAt));
+  let query = executor
+    .select()
+    .from(outreach)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(outreach.createdAt));
 
   if (filters?.limit !== undefined) {
     query = query.limit(filters.limit) as typeof query;

@@ -59,7 +59,7 @@ describe("JobService", () => {
   describe("wrapProcessor", () => {
     it("validates the payload before calling the processor", async () => {
       const service = createService();
-      const processor = async (_payload: any) => {};
+      const processor = async (_payload: any) => undefined;
       const wrapped = service.wrapProcessor("scoring", processor);
 
       await expect(wrapped({ companyId: "company-1" } as any)).rejects.toThrow(ValidationError);
@@ -70,6 +70,7 @@ describe("JobService", () => {
       let received: any;
       const processor = async (payload: any) => {
         received = payload;
+        return undefined;
       };
       const wrapped = service.wrapProcessor("scoring", processor);
 

@@ -5,12 +5,16 @@ import type { AIService } from "@mela/ai";
 import { hydrateEnvironment } from "@mela/config/env";
 import {
   applyLeadStatusChange,
+  getOutreach,
   insertAIInvocation,
   insertCompany,
   insertContact,
   insertLead,
   insertLeadResearchSummary,
+  insertOpportunity,
+  insertOpportunityAnalysisRun,
   insertOutreachDraft,
+  insertWebsiteAnalysis,
   recordOutreachSend,
   setCompanyDoNotContact,
   setContactDoNotContact,
@@ -63,6 +67,117 @@ describe("outreach-drafting service", () => {
 
   afterEach(async () => {
     await harness.close();
+  });
+
+  describe("draftOutreach citations", () => {
+    it("resolves a claim's opportunity citation to a real source, and a summary citation to an explicit unresolved state", async () => {
+      const company = await insertCompany(harness.database, companyInput());
+      const contact = await insertContact(
+        harness.database,
+        contactInput(company.id, {
+          email: "test@example.com",
+          sourceUrl: "https://example.com/team",
+        }),
+      );
+      const lead = await insertLead(harness.database, leadInput(company.id));
+
+      const analysis = await insertWebsiteAnalysis(harness.database, {
+        companyId: company.id,
+        analysedUrl: "https://example.com",
+        outcome: "completed",
+      });
+
+      const aiInvocation = await insertAIInvocation(harness.database, {
+        promptName: "test",
+        promptVersion: 1,
+        model: "test",
+        tier: "test",
+        inputTokens: 1,
+        outputTokens: 1,
+        estimatedCostUsd: 0,
+        latencyMs: 1,
+        attempts: 1,
+        outcome: "succeeded",
+      });
+
+      const run = await insertOpportunityAnalysisRun(harness.database, {
+        companyId: company.id,
+        websiteAnalysisId: analysis.id,
+        promptVersion: 1,
+        outcome: "opportunities",
+        acceptedCount: 1,
+        aiInvocationId: aiInvocation.id,
+      });
+
+      await insertOpportunity(harness.database, {
+        analysisRunId: run.id,
+        companyId: company.id,
+        categoryId: "modernization",
+        serviceId: "web_development",
+        title: "Slow mobile site",
+        description: "Pages take over ten seconds to load on mobile.",
+        impact: "Visitors leave before the page finishes loading.",
+        citedEvidence: ["t1"],
+        aiInvocationId: aiInvocation.id,
+      });
+
+      await insertLeadResearchSummary(harness.database, {
+        leadId: lead.id,
+        companyId: company.id,
+        sections: { business: [{ text: "Runs an e-commerce storefront.", cites: ["c1"] }] },
+        citedFacts: ["c1"],
+        promptVersion: 1,
+        aiInvocationId: aiInvocation.id,
+      });
+
+      vi.mocked(service as any).aiService.run = vi.fn().mockResolvedValue({
+        value: {
+          subject: "Your mobile site speed",
+          body: "I noticed your site loads slowly on mobile and that you run an online storefront.",
+          claims: [
+            { text: "Their site loads slowly on mobile.", cites: ["o1"] },
+            { text: "They run an e-commerce storefront.", cites: ["s1"] },
+          ],
+        },
+        invocationId: "invocation-2",
+        promptVersion: 1,
+      });
+
+      const result = await service.draftOutreach({
+        leadId: lead.id,
+        contactId: contact.id,
+        channelId: "email",
+      });
+
+      expect(result).not.toHaveProperty("reason");
+      const outreachId = (result as { outreachId: string }).outreachId;
+
+      const stored = await getOutreach(harness.database, outreachId);
+      const citedFacts = stored?.citedFacts as Array<{
+        text: string;
+        citations: Array<{
+          ref: string;
+          detail: string;
+          url: string | null;
+          certainty: string | null;
+        }>;
+      }>;
+
+      expect(citedFacts[0]?.citations[0]).toEqual({
+        ref: "o1",
+        detail: "Slow mobile site: Pages take over ten seconds to load on mobile.",
+        url: "https://example.com",
+        certainty: "inferred",
+      });
+
+      expect(citedFacts[1]?.citations[0]).toEqual({
+        ref: "s1",
+        detail:
+          "Cites the lead's research summary; the specific source is not resolvable in this version.",
+        url: null,
+        certainty: null,
+      });
+    });
   });
 
   it("refuses when the lead has no current research summary", async () => {

@@ -10,7 +10,7 @@
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",
-    "lint": "biome check .",
+    "lint": "cd ../.. && biome check apps/api",
     "test": "vitest run",
     "test:watch": "vitest"
   },

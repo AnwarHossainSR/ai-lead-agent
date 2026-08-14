@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 
 import type { LeadPriority, LeadStatus } from "@mela/config";
+import { TERMINAL_LEAD_STATUSES } from "@mela/config";
 import {
   type Database,
   NoEvidenceForScoringError,
@@ -16,7 +17,7 @@ import {
   leadScoreSnapshots,
   leads,
 } from "@mela/database";
-import { type SQL, and, asc, desc, eq, gte, lt, lte } from "drizzle-orm";
+import { type SQL, and, asc, count, desc, eq, gte, lt, lte, notInArray } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { type ScoringInput, composeScores } from "./composer";
 import { formatExplanation } from "./formatter";
@@ -71,9 +72,24 @@ export interface ListLeadsOptions {
   readonly staleAfterDays?: number;
   /** When set, keeps only stale (`true`) or only fresh (`false`) leads. */
   readonly stale?: boolean;
+  /** When true, excludes leads whose status is terminal (design lead-lifecycle). */
+  readonly active?: boolean;
   readonly order?: "score_asc" | "score_desc";
   readonly limit?: number;
   readonly offset?: number;
+}
+
+export interface CountLeadsOptions {
+  readonly priority?: LeadPriority;
+  readonly status?: LeadStatus;
+  readonly industryId?: string;
+  readonly cityId?: string;
+  readonly serviceId?: string;
+  readonly minScore?: number;
+  readonly maxScore?: number;
+  readonly staleAfterDays?: number;
+  readonly stale?: boolean;
+  readonly active?: boolean;
 }
 
 /** A lead row joined with the company context the lead list views need. */
@@ -322,7 +338,11 @@ export class ScoringService {
     return history;
   }
 
-  async listLeads(options: ListLeadsOptions = {}): Promise<ListedLead[]> {
+  /** Shared by listLeads and countLeads, so the two never disagree about what a filter means. */
+  private buildLeadConditions(options: ListLeadsOptions | CountLeadsOptions): {
+    conditions: SQL[];
+    staleCutoff: Date;
+  } {
     const conditions: SQL[] = [];
 
     if (options.priority) {
@@ -346,6 +366,9 @@ export class ScoringService {
     if (options.maxScore !== undefined) {
       conditions.push(lte(leads.leadScore, options.maxScore));
     }
+    if (options.active === true) {
+      conditions.push(notInArray(leads.status, [...TERMINAL_LEAD_STATUSES]));
+    }
 
     const staleAfterDays = options.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS;
     const staleCutoff = new Date(Date.now() - staleAfterDays * 24 * 60 * 60 * 1000);
@@ -355,6 +378,24 @@ export class ScoringService {
     } else if (options.stale === false) {
       conditions.push(gte(leads.scoredAt, staleCutoff));
     }
+
+    return { conditions, staleCutoff };
+  }
+
+  async countLeads(options: CountLeadsOptions = {}): Promise<number> {
+    const { conditions } = this.buildLeadConditions(options);
+
+    const [row] = await this.database
+      .select({ value: count() })
+      .from(leads)
+      .innerJoin(companies, eq(leads.companyId, companies.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    return row?.value ?? 0;
+  }
+
+  async listLeads(options: ListLeadsOptions = {}): Promise<ListedLead[]> {
+    const { conditions, staleCutoff } = this.buildLeadConditions(options);
 
     const orderColumn =
       options.order === "score_asc" ? asc(leads.leadScore) : desc(leads.leadScore);
@@ -391,4 +432,85 @@ export class ScoringService {
       isStale: row.scoredAt < staleCutoff,
     }));
   }
+
+  /**
+   * A single lead with its company context, for the lead detail view. Uses
+   * the same default staleness window as `listLeads` and `countLeads`, so
+   * "stale" means the same thing everywhere it appears.
+   */
+  async getLead(leadId: string): Promise<LeadDetail | null> {
+    const [row] = await this.database
+      .select({
+        id: leads.id,
+        companyId: leads.companyId,
+        leadScore: leads.leadScore,
+        priority: leads.priority,
+        status: leads.status,
+        businessFitScore: leads.businessFitScore,
+        technicalOpportunityScore: leads.technicalOpportunityScore,
+        businessOpportunityScore: leads.businessOpportunityScore,
+        decisionMakerFoundScore: leads.decisionMakerFoundScore,
+        companyQualityScore: leads.companyQualityScore,
+        scoreExplanation: leads.scoreExplanation,
+        recommendedServiceId: leads.recommendedServiceId,
+        contactReason: leads.contactReason,
+        scoredAt: leads.scoredAt,
+        company: {
+          id: companies.id,
+          name: companies.name,
+          industryId: companies.industryId,
+          cityId: companies.cityId,
+          countryId: companies.countryId,
+          website: companies.website,
+          verificationState: companies.verificationState,
+          discoverySource: companies.discoverySource,
+          discoverySourceUrl: companies.discoverySourceUrl,
+          doNotContactAt: companies.doNotContactAt,
+          doNotContactReason: companies.doNotContactReason,
+        },
+      })
+      .from(leads)
+      .innerJoin(companies, eq(leads.companyId, companies.id))
+      .where(eq(leads.id, leadId))
+      .limit(1);
+
+    if (row === undefined) {
+      return null;
+    }
+
+    const staleCutoff = new Date(Date.now() - DEFAULT_STALE_AFTER_DAYS * 24 * 60 * 60 * 1000);
+
+    return { ...row, isStale: row.scoredAt < staleCutoff };
+  }
+}
+
+export interface LeadDetail {
+  readonly id: string;
+  readonly companyId: string;
+  readonly leadScore: number;
+  readonly priority: string;
+  readonly status: string;
+  readonly businessFitScore: number;
+  readonly technicalOpportunityScore: number;
+  readonly businessOpportunityScore: number;
+  readonly decisionMakerFoundScore: number;
+  readonly companyQualityScore: number;
+  readonly scoreExplanation: string;
+  readonly recommendedServiceId: string | null;
+  readonly contactReason: string | null;
+  readonly scoredAt: Date;
+  readonly isStale: boolean;
+  readonly company: {
+    readonly id: string;
+    readonly name: string;
+    readonly industryId: string;
+    readonly cityId: string | null;
+    readonly countryId: string;
+    readonly website: string | null;
+    readonly verificationState: string;
+    readonly discoverySource: string;
+    readonly discoverySourceUrl: string;
+    readonly doNotContactAt: Date | null;
+    readonly doNotContactReason: string | null;
+  };
 }

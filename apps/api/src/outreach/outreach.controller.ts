@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -23,13 +24,18 @@ const draftOutreachSchema = z.object({
 
 class DraftOutreachRequestDto extends createZodDto(draftOutreachSchema) {}
 
-const listOutreachQuerySchema = z.object({
+const outreachFiltersSchema = z.object({
   status: z.enum([...OUTREACH_STATUSES] as [OutreachStatus, ...OutreachStatus[]]).optional(),
+  sentAfter: z.coerce.date().optional(),
+});
+
+const listOutreachQuerySchema = outreachFiltersSchema.extend({
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
 class ListOutreachQueryDto extends createZodDto(listOutreachQuerySchema) {}
+class CountOutreachQueryDto extends createZodDto(outreachFiltersSchema) {}
 
 const updateOutreachSchema = z.object({
   subject: z.string().trim().min(1).optional(),
@@ -106,6 +112,28 @@ export class OutreachController {
       limit: query.limit,
       offset: query.offset,
     });
+  }
+
+  @Get("outreach/count")
+  async countOutreach(@Query() query: CountOutreachQueryDto) {
+    const value = await this.outreachDraftingService.countOutreach({
+      status: query.status,
+      sentAfter: query.sentAfter,
+    });
+    return { count: value };
+  }
+
+  // Registered after "outreach/count": a route parameter registered earlier
+  // would swallow that literal path segment as an :id.
+  @Get("outreach/:id")
+  async getOutreach(@Param("id") outreachId: string) {
+    const record = await this.outreachDraftingService.getOutreach(outreachId);
+
+    if (record === undefined) {
+      throw new NotFoundException(`Outreach "${outreachId}" not found.`);
+    }
+
+    return record;
   }
 
   @Patch("outreach/:id")

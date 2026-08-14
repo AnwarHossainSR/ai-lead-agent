@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -27,7 +28,15 @@ const batchScoreSchema = z.object({
 class ScoreCompanyRequestDto extends createZodDto(scoreCompanySchema) {}
 class BatchScoreRequestDto extends createZodDto(batchScoreSchema) {}
 
-const listLeadsQuerySchema = z.object({
+// z.coerce.boolean() would treat the query string "false" as truthy — any
+// non-empty string coerces to true — so the two accepted strings are
+// matched explicitly instead.
+const booleanQueryParam = z
+  .enum(["true", "false"])
+  .transform((value) => value === "true")
+  .optional();
+
+const leadFiltersSchema = z.object({
   priority: z.enum(LEAD_PRIORITIES as [LeadPriority, ...LeadPriority[]]).optional(),
   status: z.enum(LEAD_STATUSES as [LeadStatus, ...LeadStatus[]]).optional(),
   industryId: z.string().min(1).optional(),
@@ -35,14 +44,19 @@ const listLeadsQuerySchema = z.object({
   serviceId: z.string().min(1).optional(),
   minScore: z.coerce.number().int().min(0).max(100).optional(),
   maxScore: z.coerce.number().int().min(0).max(100).optional(),
-  stale: z.coerce.boolean().optional(),
+  stale: booleanQueryParam,
   staleAfterDays: z.coerce.number().int().min(1).optional(),
+  active: booleanQueryParam,
+});
+
+const listLeadsQuerySchema = leadFiltersSchema.extend({
   order: z.enum(["score_asc", "score_desc"]).default("score_desc"),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
 class ListLeadsQueryDto extends createZodDto(listLeadsQuerySchema) {}
+class CountLeadsQueryDto extends createZodDto(leadFiltersSchema) {}
 
 @Controller()
 export class ScoringController {
@@ -97,9 +111,29 @@ export class ScoringController {
       maxScore: query.maxScore,
       stale: query.stale,
       staleAfterDays: query.staleAfterDays,
+      active: query.active,
       order: query.order,
       limit: query.limit,
       offset: query.offset,
     });
+  }
+
+  @Get("leads/count")
+  async countLeads(@Query() query: CountLeadsQueryDto) {
+    const value = await this.scoringService.countLeads(query);
+    return { count: value };
+  }
+
+  // Registered after "leads/count": a route parameter registered earlier
+  // would swallow that literal path segment as an :id.
+  @Get("leads/:id")
+  async getLead(@Param("id") leadId: string) {
+    const lead = await this.scoringService.getLead(leadId);
+
+    if (lead === null) {
+      throw new NotFoundException(`Lead "${leadId}" not found.`);
+    }
+
+    return lead;
   }
 }

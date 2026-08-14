@@ -2,6 +2,8 @@
 
 AI-assisted B2B lead generation and sales intelligence platform for the Middle East market.
 
+> **No authentication.** Neither the web application nor the API has an authentication layer. Both are intended to be run locally only, until an authentication capability is added.
+
 ## Prerequisites
 
 - **Node.js** 22+ (recommend using [nvm](https://github.com/nvm-sh/nvm))

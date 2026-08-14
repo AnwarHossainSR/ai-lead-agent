@@ -18,8 +18,13 @@ export class ResearchSummaryController {
     return this.researchSummaryService.generateSummary({ leadId });
   }
 
+  // Wrapped in an object rather than returned bare: Nest treats a handler
+  // returning `null` or `undefined` the same way — an empty body — so a
+  // JSON-parsing client couldn't tell "no summary yet" (design D4, a real
+  // state) apart from a broken response. An object is never nil.
   @Get("leads/:id/research-summary")
   async getCurrentSummary(@Param("id") leadId: string) {
-    return this.researchSummaryService.getCurrentSummary(leadId);
+    const summary = await this.researchSummaryService.getCurrentSummary(leadId);
+    return { summary: summary ?? null };
   }
 }
