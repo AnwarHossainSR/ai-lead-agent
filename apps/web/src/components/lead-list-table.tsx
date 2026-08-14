@@ -3,7 +3,7 @@ import { FilterXIcon, TargetIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Fact } from "@/components/fact";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatLabel } from "@/lib/format-label";
 import type { ListedLead } from "@/lib/leads";
@@ -25,9 +25,9 @@ export function LeadListTable({
         title="No leads match these filters"
         description="Every lead is hidden by the current filters — clearing them shows the full list."
         action={
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/leads">Clear filters</Link>
-          </Button>
+          <Link href="/leads" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Clear filters
+          </Link>
         }
       />
     ) : (

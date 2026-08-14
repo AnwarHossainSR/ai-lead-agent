@@ -3,7 +3,7 @@ import { BuildingIcon, FilterXIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Fact } from "@/components/fact";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { ListedCompany } from "@/lib/companies";
 import { formatLabel } from "@/lib/format-label";
@@ -27,9 +27,9 @@ export function CompanyListTable({
         title="No companies match these filters"
         description="Every company is hidden by the current filters — clearing them shows the full list."
         action={
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/companies">Clear filters</Link>
-          </Button>
+          <Link href="/companies" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Clear filters
+          </Link>
         }
       />
     ) : (
