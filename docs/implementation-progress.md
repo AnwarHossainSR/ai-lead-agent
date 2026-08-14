@@ -185,12 +185,15 @@ Delivered: `POST /api/outreach/:id/sent` recording manual sends with backdate pr
 
 ## In Progress
 
-**`add-dashboard` (Change #13)** — 46/50 tasks complete. Sections 1–8 (evidence primitives, read
-endpoints, shell/navigation, lead views, outreach review, company/pipeline views, analytics,
-operations) and section 9's accessibility/CI/documentation tasks are done. Tasks 5.6 and 5.7
-(Playwright workflow tests for the review queue) are intentionally deferred per an explicit
-scope decision — covered instead by Vitest component tests — and left unchecked rather than
-marked done. Remaining: 9.7 (spec-scenario audit) and 9.8 (`openspec validate --strict`).
+**`add-dashboard` (Change #13)** — 48/50 tasks complete; `openspec validate add-dashboard --strict`
+passes. Sections 1–9 are done, including a scenario-by-scenario audit of `specs/dashboard/spec.md`
+and `specs/developer-environment/spec.md` (task 9.7) that found and fixed three real gaps: a
+missing discovery-source link, an outreach review queue that never fetched drafts (so a freshly
+AI-drafted or approval-revoked message was invisible), and a spec-required "record a manual send"
+control that had never been built. Tasks 5.6 and 5.7 (Playwright workflow tests for the review
+queue) are intentionally deferred per an explicit scope decision — covered instead by Vitest
+component tests — and left unchecked rather than marked done; that is the only reason this isn't
+50/50. Ready to archive once that deferral is revisited or accepted as final.
 
 ## Next Module
 
