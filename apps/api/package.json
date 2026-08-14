@@ -46,7 +46,6 @@
     "class-validator": "^0.15.1",
     "playwright": "^1.62.1",
     "supertest": "catalog:",
-    "ts-node": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
     "vitest": "catalog:"
