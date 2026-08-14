@@ -21,9 +21,14 @@ function developmentCredentials(): { email: string; password: string } {
     return { email: "", password: "" };
   }
 
+  // An empty value counts as unset: `.env.example` ships both keys blank, and a
+  // copied-but-unfilled file should still prefill the seeded account.
+  const override = (value: string | undefined, fallback: string) =>
+    value === undefined || value.trim() === "" ? fallback : value;
+
   return {
-    email: process.env.DEV_SIGN_IN_EMAIL ?? SEEDED_DEV_EMAIL,
-    password: process.env.DEV_SIGN_IN_PASSWORD ?? SEEDED_DEV_PASSWORD,
+    email: override(process.env.DEV_SIGN_IN_EMAIL, SEEDED_DEV_EMAIL),
+    password: override(process.env.DEV_SIGN_IN_PASSWORD, SEEDED_DEV_PASSWORD),
   };
 }
 
