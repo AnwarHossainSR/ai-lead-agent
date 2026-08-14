@@ -9,13 +9,16 @@ const PUBLIC_PATHS = ["/sign-in"];
  *
  * This is a cheap gate — cookie presence, not validity (design D7): the
  * cookie could be expired, revoked, or belong to a since-disabled account,
- * and middleware has no way to ask the API without adding a network round
+ * and this layer has no way to ask the API without adding a network round
  * trip to every navigation. `(workspace)/layout.tsx` makes the real call
  * (`GET /api/auth/me`) and redirects again if that comes back empty — this
  * only keeps a visitor with no cookie at all from ever reaching a page that
  * would attempt to render workspace data.
+ *
+ * Next.js 16 renamed `middleware.ts` to `proxy.ts` and expects the export to
+ * be named `proxy`; the behaviour is unchanged.
  */
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
   if (PUBLIC_PATHS.includes(pathname)) {

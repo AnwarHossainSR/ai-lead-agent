@@ -1,9 +1,14 @@
 import { type INestApplication } from "@nestjs/common";
+import { HealthCheckService } from "@nestjs/terminus";
+import { Test } from "@nestjs/testing";
 import request from "supertest";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CLOSED_PORT_URL, createTestApp } from "../testing/app";
 import { HealthController } from "./health.controller";
+import { PostgresHealthIndicator } from "./postgres.health";
+import { RedisHealthIndicator } from "./redis.health";
+import { ShutdownState } from "./shutdown-state";
 
 /**
  * These talk to the PostgreSQL and Redis containers from `docker compose`. The
@@ -160,17 +165,36 @@ describe("GET /ready", () => {
   });
 
   it("fails with 503 during shutdown while liveness succeeds", async () => {
-    app = await createTestApp();
+    const shutdownState = new ShutdownState();
+    const moduleRef = await Test.createTestingModule({
+      controllers: [HealthController],
+      providers: [
+        { provide: ShutdownState, useValue: shutdownState },
+        {
+          provide: HealthCheckService,
+          useValue: {
+            check: vi
+              .fn()
+              .mockResolvedValue({ status: "ok" as const, info: {}, error: {}, details: {} }),
+          },
+        },
+        { provide: PostgresHealthIndicator, useValue: { isHealthy: vi.fn() } },
+        { provide: RedisHealthIndicator, useValue: { isHealthy: vi.fn() } },
+      ],
+    }).compile();
 
-    // Get the controller from the DI container and trigger shutdown
-    const controller = app.get(HealthController);
-    controller.markShuttingDown();
+    const app = moduleRef.createNestApplication();
+    await app.init();
+
+    shutdownState.markShuttingDown();
 
     // Readiness should fail
     await request(app.getHttpServer()).get("/ready").expect(503);
 
     // Liveness should still succeed
     await request(app.getHttpServer()).get("/live").expect(200);
+
+    await app.close();
   });
 
   it("is served at the root, outside the /api prefix", async () => {

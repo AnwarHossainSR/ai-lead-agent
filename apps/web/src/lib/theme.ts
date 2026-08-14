@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-
 /**
  * The theme preference (design D4).
  *
@@ -11,6 +9,9 @@ import { cookies } from "next/headers";
  * `system` writes no class at all — `globals.css` selects the dark tokens under
  * `prefers-color-scheme: dark` for any root that is not explicitly `.light`, so
  * the OS preference is honoured with no JavaScript.
+ *
+ * The theme toggle is a Client Component and imports from here, so this module
+ * stays free of `next/headers`; reading the cookie lives in `theme.server.ts`.
  */
 export const THEME_COOKIE = "mela_theme";
 
@@ -40,14 +41,7 @@ export function nextThemePreference(preference: ThemePreference): ThemePreferenc
   return THEME_PREFERENCES[(index + 1) % THEME_PREFERENCES.length] as ThemePreference;
 }
 
-/** The stored preference, or the default when there is none or it is unrecognised. */
-export async function readThemePreference(): Promise<ThemePreference> {
-  try {
-    const store = await cookies();
-    const value = store.get(THEME_COOKIE)?.value;
-    return isThemePreference(value) ? value : DEFAULT_THEME;
-  } catch {
-    // Outside a request scope — a unit test rendering the layout directly.
-    return DEFAULT_THEME;
-  }
+/** The preference a stored cookie value stands for, defaulting when it is unrecognised. */
+export function themePreferenceFrom(value: string | undefined): ThemePreference {
+  return isThemePreference(value) ? value : DEFAULT_THEME;
 }

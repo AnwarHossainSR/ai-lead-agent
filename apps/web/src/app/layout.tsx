@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { themeClass, themeColorScheme } from "@/lib/theme";
+import { readThemePreference } from "@/lib/theme.server";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,10 +26,21 @@ export const metadata: Metadata = {
  * instead, since the sign-in page under `(auth)` must not render it: a
  * shell showing account info and workspace navigation makes no sense before
  * anyone is signed in (dashboard spec: "no workspace data is rendered").
+ *
+ * The theme class is written here, during server rendering (design D4), so the
+ * first paint is already in the chosen theme — there is no moment at which the
+ * other one is visible.
  */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const theme = await readThemePreference();
+
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${themeClass(theme)} h-full antialiased`}
+      style={{ colorScheme: themeColorScheme(theme) }}
+      data-theme={theme}
+    >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

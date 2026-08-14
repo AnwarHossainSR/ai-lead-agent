@@ -2,7 +2,22 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * `dark:` applies either when an ancestor carries `.dark` (an explicit choice)
+ * or, with no explicit choice, when the OS asks for a dark scheme — the same
+ * two conditions under which the dark tokens below are selected. `.light` opts
+ * out of the second, so an explicit light choice wins over a dark OS scheme.
+ */
+@custom-variant dark {
+  &:is(.dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:is(:root:not(.light) *) {
+      @slot;
+    }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);

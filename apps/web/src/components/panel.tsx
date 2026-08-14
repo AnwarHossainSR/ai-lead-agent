@@ -1,6 +1,10 @@
 "use client";
 
+import { TriangleAlertIcon } from "lucide-react";
 import { Component, type ReactNode, Suspense } from "react";
+
+import { Button } from "@/components/ui/button";
+import { CardSkeleton } from "@/components/ui/skeleton";
 
 interface PanelErrorBoundaryProps {
   title: string;
@@ -34,10 +38,23 @@ class PanelErrorBoundary extends Component<PanelErrorBoundaryProps, PanelErrorBo
         <div
           role="alert"
           data-slot="panel-error"
-          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4"
+          data-tone="danger"
+          className="flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger-subtle/50 p-4"
         >
-          <p className="text-sm font-medium text-destructive">{this.props.title} is unavailable</p>
-          <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+          <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-danger">{this.props.title} is unavailable</p>
+            <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => this.setState({ error: null })}
+            >
+              Try again
+            </Button>
+          </div>
         </div>
       );
     }
@@ -46,14 +63,13 @@ class PanelErrorBoundary extends Component<PanelErrorBoundaryProps, PanelErrorBo
   }
 }
 
-function PanelSkeleton() {
-  return (
-    <div
-      data-slot="panel-skeleton"
-      aria-hidden="true"
-      className="h-24 animate-pulse rounded-lg border border-border bg-muted/40"
-    />
-  );
+/**
+ * The default wait: a card-shaped placeholder rather than a grey slab (design
+ * D8). A caller whose content is a table or a chart passes the matching shape
+ * through `fallback` instead, so nothing moves when the data lands.
+ */
+function PanelSkeleton({ title }: { title: string }) {
+  return <CardSkeleton label={`Loading ${title.toLowerCase()}`} />;
 }
 
 interface PanelProps {
@@ -71,7 +87,7 @@ interface PanelProps {
 export function Panel({ title, fallback, children }: PanelProps) {
   return (
     <PanelErrorBoundary title={title}>
-      <Suspense fallback={fallback ?? <PanelSkeleton />}>{children}</Suspense>
+      <Suspense fallback={fallback ?? <PanelSkeleton title={title} />}>{children}</Suspense>
     </PanelErrorBoundary>
   );
 }

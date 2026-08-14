@@ -10,7 +10,8 @@ vi.mock("next/headers", () => ({
 }));
 
 import { actionError, actionSuccess } from "./action-result";
-import { FLASH_TOAST_COOKIE, readFlashToast, setFlashToast } from "./flash-toast";
+import { FLASH_TOAST_COOKIE } from "./flash-toast";
+import { readFlashToast, setFlashToast } from "./flash-toast.server";
 
 beforeEach(() => {
   store.get.mockReset();
