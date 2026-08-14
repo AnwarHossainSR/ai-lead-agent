@@ -93,6 +93,7 @@ describe("a missing variable is refused", () => {
         "CLOUDFLARE_API_TOKEN",
         "DATABASE_URL",
         "GEMINI_API_KEY",
+        "QSTASH_TOKEN",
         "REDIS_URL",
       ]);
     }
@@ -120,6 +121,7 @@ describe("a malformed variable is refused", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
       });
       expect.unreachable("loadApiEnv should have refused a non-numeric port");
     } catch (error: unknown) {
@@ -138,6 +140,7 @@ describe("a malformed variable is refused", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
       }),
     ).toThrow(/API_PORT/);
   });
@@ -150,6 +153,7 @@ describe("a malformed variable is refused", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
         AI_SPEND_CEILING_USD: "not-a-number",
       });
       expect.unreachable("loadApiEnv should have refused a non-numeric spend ceiling");
@@ -172,6 +176,7 @@ describe("failure messages carry no credential", () => {
         GEMINI_API_KEY: "test-gemini-key",
         CLOUDFLARE_ACCOUNT_ID: "test-account-id",
         CLOUDFLARE_API_TOKEN: "test-cf-token",
+        QSTASH_TOKEN: "test-qstash-token",
       });
       expect.unreachable("loadApiEnv should have refused a non-Redis URL");
     } catch (error: unknown) {
@@ -189,6 +194,7 @@ describe("a valid environment is accepted", () => {
     GEMINI_API_KEY: "test-gemini-key",
     CLOUDFLARE_ACCOUNT_ID: "test-account-id",
     CLOUDFLARE_API_TOKEN: "test-cf-token",
+    QSTASH_TOKEN: "test-qstash-token",
   };
 
   it("applies the documented defaults", () => {
