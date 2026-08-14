@@ -40,7 +40,9 @@ export function Unavailable({
       data-status={status}
       className={cn(
         "flex items-start gap-3 rounded-xl border p-4 pl-5",
-        degraded ? "border-warning/30 bg-warning-subtle/40" : "border-danger/30 bg-danger-subtle/40",
+        degraded
+          ? "border-warning/30 bg-warning-subtle/40"
+          : "border-danger/30 bg-danger-subtle/40",
         className,
       )}
     >
@@ -65,7 +67,10 @@ export function Unavailable({
 }
 
 /** Re-runs the server render for the current route. */
-export function RetryButton({ className, label = "Try again" }: { className?: string; label?: string }) {
+export function RetryButton({
+  className,
+  label = "Try again",
+}: { className?: string; label?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -89,10 +94,7 @@ export function RetryButton({ className, label = "Try again" }: { className?: st
  * saying which way it failed. Callers keep their own `result.status === "ok"`
  * branch — this only replaces the hand-rolled failure markup.
  */
-export function unavailableFrom<T>(
-  title: string,
-  result: FetchResult<T>,
-): React.ReactNode | null {
+export function unavailableFrom<T>(title: string, result: FetchResult<T>): React.ReactNode | null {
   if (result.status === "ok") return null;
   return <Unavailable title={title} status={result.status} error={result.error} />;
 }

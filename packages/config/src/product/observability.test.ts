@@ -76,9 +76,7 @@ describe("registerSecretForRedaction", () => {
 
   it("ignores empty strings", () => {
     const updated = registerSecretForRedaction(OBSERVABILITY_CONFIG, "");
-    expect(updated.redaction.secretValues).toEqual(
-      OBSERVABILITY_CONFIG.redaction.secretValues,
-    );
+    expect(updated.redaction.secretValues).toEqual(OBSERVABILITY_CONFIG.redaction.secretValues);
   });
 
   it("returns a frozen config", () => {
