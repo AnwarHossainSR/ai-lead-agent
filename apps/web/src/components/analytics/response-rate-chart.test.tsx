@@ -59,7 +59,9 @@ describe("ResponseRateChart", () => {
   it("shows an empty state rather than an empty chart", () => {
     render(<ResponseRateChart data={[]} />);
 
-    expect(screen.getByText("No outreach sent in this segment yet.")).toBeInTheDocument();
+    expect(screen.getByText("No outreach sent in this segment yet")).toBeInTheDocument();
+    // Stated as an absence, not as a zero response rate (spec: empty state).
+    expect(screen.getByText(/none have been sent for this segment/)).toBeInTheDocument();
   });
 
   it("renders unknown for a null response rate instead of 0%", () => {

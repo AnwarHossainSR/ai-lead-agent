@@ -64,13 +64,13 @@
 
 ## 7. Data-state coverage
 
-- [ ] 7.1 Replace `panel.tsx`'s single grey `PanelSkeleton` with the shaped skeleton matching each caller's content, passed through the existing `fallback` prop (design D8)
-- [ ] 7.2 Add `loading.tsx` to each route segment under `app/(workspace)` for whole-page waits
-- [ ] 7.3 Add `error.tsx` to each route segment rendering the designed error state with a retry control (spec: error and degraded state)
-- [ ] 7.4 Render `fetchWithTimeout`'s `degraded` result visibly differently from `unreachable` everywhere it is consumed, without changing the result shape
-- [ ] 7.5 Replace every bare "no results" string with `EmptyState`, distinguishing filtered from nothing-yet and offering a clear-filters control in the filtered case
-- [ ] 7.6 Add tests for the loading, empty, filtered-empty, degraded and unreachable states of at least one list page and one panel page
-- [ ] 7.7 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 7.1 Replace `panel.tsx`'s single grey `PanelSkeleton` with the shaped skeleton matching each caller's content, passed through the existing `fallback` prop (design D8)
+- [x] 7.2 Add `loading.tsx` to each route segment under `app/(workspace)` for whole-page waits
+- [x] 7.3 Add `error.tsx` to each route segment rendering the designed error state with a retry control (spec: error and degraded state)
+- [x] 7.4 Render `fetchWithTimeout`'s `degraded` result visibly differently from `unreachable` everywhere it is consumed, without changing the result shape
+- [x] 7.5 Replace every bare "no results" string with `EmptyState`, distinguishing filtered from nothing-yet and offering a clear-filters control in the filtered case
+- [x] 7.6 Add tests for the loading, empty, filtered-empty, degraded and unreachable states of at least one list page and one panel page
+- [x] 7.7 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 8. Dashboard and analytics
 
