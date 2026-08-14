@@ -24,7 +24,7 @@ interface ParsedArgs {
   readonly role: AccountRole;
 }
 
-function parseArgs(argv: readonly string[]): ParsedArgs {
+export function parseArgs(argv: readonly string[]): ParsedArgs {
   const flags = new Map<string, string>();
 
   for (const arg of argv) {
@@ -109,8 +109,16 @@ function readSecret(promptText: string): Promise<string> {
   });
 }
 
-async function readNewPassword(): Promise<string> {
-  const password = await readSecret("Password: ");
+/**
+ * Takes `readSecret` as a parameter — real terminal input by default — so a
+ * test can inject a fake and exercise the weak-password refusal and
+ * confirmation-mismatch logic without a real TTY, which `readSecret` itself
+ * refuses to run without.
+ */
+export async function readNewPassword(
+  readSecretFn: (promptText: string) => Promise<string> = readSecret,
+): Promise<string> {
+  const password = await readSecretFn("Password: ");
 
   if (password.length < AUTHENTICATION_CONFIG.minimumPasswordLength) {
     throw new Error(
@@ -118,7 +126,7 @@ async function readNewPassword(): Promise<string> {
     );
   }
 
-  const confirmation = await readSecret("Confirm password: ");
+  const confirmation = await readSecretFn("Confirm password: ");
 
   if (confirmation !== password) {
     throw new Error("The password and its confirmation did not match.");

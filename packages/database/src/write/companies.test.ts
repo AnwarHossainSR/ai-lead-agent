@@ -637,6 +637,18 @@ describe("do-not-contact markers", () => {
     );
   });
 
+  it("refuses a marker with no acting account (design D5)", async () => {
+    const company = await insertCompany(harness.database, companyInput());
+
+    await expectConstraintViolation(
+      harness.database
+        .update(companies)
+        .set({ doNotContactAt: new Date(), doNotContactReason: "Unsubscribe request" })
+        .where(eq(companies.id, company.id)),
+      "companies_do_not_contact_actor_pairs_with_timestamp",
+    );
+  });
+
   it("clears the marker and its acting account", async () => {
     const company = await insertCompany(harness.database, companyInput());
     const actor = await insertAccount(harness.database, accountInput());

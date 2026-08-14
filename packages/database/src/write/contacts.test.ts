@@ -299,6 +299,21 @@ describe("do-not-contact markers", () => {
     );
   });
 
+  it("refuses a marker with no acting account (design D5)", async () => {
+    const contact = await insertContact(
+      harness.database,
+      contactInput(companyId, { jobTitle: "Operations Director" }),
+    );
+
+    await expectConstraintViolation(
+      harness.database
+        .update(contacts)
+        .set({ doNotContactAt: new Date(), doNotContactReason: "Unsubscribe request" })
+        .where(eq(contacts.id, contact.id)),
+      "contacts_do_not_contact_actor_pairs_with_timestamp",
+    );
+  });
+
   it("clears the marker and its acting account", async () => {
     const contact = await insertContact(
       harness.database,

@@ -122,6 +122,65 @@ Shared TypeScript configurations:
 - CORS configured for web origin only
 - No credentials in health responses
 
+## Authentication and Authorization
+
+Every route requires a valid session by default. A global NestJS guard
+(`SessionGuard`, registered via `APP_GUARD`) rejects every request that
+doesn't carry a valid session cookie; a route opts *out* with an explicit
+`@Public()` decorator (only the health check and sign-in/sign-out itself).
+This is deny-by-default rather than guard-per-controller: a route added
+later that forgets the guard fails loudly (401) rather than silently
+serving unauthenticated data. `route-coverage.test.ts` enumerates every
+registered route and asserts each is either guarded or explicitly public,
+so a new public route is a deliberate, reviewable act rather than an
+oversight.
+
+**Sessions are server-side, not stateless tokens.** An opaque token lives
+in an HTTP-only, `SameSite=Lax` cookie (`secure` outside development); the
+API stores only an HMAC of it alongside the account, expiry and revocation
+state in a `sessions` table. A stateless JWT can't be revoked without a
+denylist — which is a session table with extra steps — and this product
+runs one API process against one database, where a session lookup is a
+single primary-key read. Expiry slides forward on activity, capped at an
+absolute maximum, so an idle session ends and a long-lived one still
+eventually requires signing in again.
+
+**Passwords** are hashed with Argon2id at parameters held in
+`packages/config`. Sign-in performs a hash comparison even when the
+account doesn't exist (against a fixed dummy hash) and returns the same
+message either way, so neither the response text nor its timing discloses
+whether an email address has an account. Sign-in is rate-limited per
+account and per source address.
+
+**Two roles**, `operator` and `viewer`, drawn at "may take a consequential
+action" rather than read-versus-write: approving or rejecting outreach,
+recording a manual send, setting or clearing a do-not-contact marker, and
+triggering anything that calls a model are all operator-only
+(`@RequiresRole("operator", ...)`, read by the same guard). A viewer can
+read everything and spend nothing. The web app hides controls a viewer
+can't use, but that's convenience — the API's own check is what actually
+enforces it, and is tested directly against a viewer session.
+
+**Attribution** is enforced in the schema, not just application code: the
+account that approved, rejected or sent an outreach message, or marked a
+company or contact do-not-contact, is a `NOT NULL`-paired column
+(`approved_by_account_id`, etc.) with an equivalence `CHECK` — an action
+timestamp and its actor are always set or cleared together, so a
+hand-written `UPDATE` can't record an approval with no approver. The
+foreign key to `accounts` is `ON DELETE RESTRICT`: an account that
+approved something real can never be deleted, only disabled
+(`disabled_at`), which also revokes every session it holds.
+
+**Every consequential action is audited.** Sign-in, failed sign-in and
+sign-out are recorded directly by `AuthService`; every `@RequiresRole`
+route is recorded by a global interceptor that derives the event name from
+the same action string the guard uses to refuse it, so there's one place
+that names an action rather than two that could drift. The audit log
+(`audit_log`) is append-only — a database trigger refuses `UPDATE` and
+`DELETE` — and its `detail` payload never carries a password, a hash, a
+session id or a model prompt (enforced structurally: nothing that writes
+an audit entry ever reads a request or response body into it).
+
 ## Company Discovery
 
 The discovery module orchestrates finding new companies across configured territories and industries.

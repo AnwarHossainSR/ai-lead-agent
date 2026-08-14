@@ -2,8 +2,6 @@
 
 AI-assisted B2B lead generation and sales intelligence platform for the Middle East market.
 
-> **No authentication.** Neither the web application nor the API has an authentication layer. Both are intended to be run locally only, until an authentication capability is added.
-
 ## Prerequisites
 
 - **Node.js** 22+ (recommend using [nvm](https://github.com/nvm-sh/nvm))
@@ -32,7 +30,25 @@ pnpm --filter @mela/database db:migrate
 
 # Seed the database (development only)
 pnpm --filter @mela/database db:seed
+
+# Create your first account — there is no sign-up page
+pnpm --filter @mela/api create-account -- --email=you@example.com --role=operator
 ```
+
+## Accounts and roles
+
+Every route requires signing in. There is no sign-up: the only way to
+create an account is the `create-account` command above (prompts for a
+password on the terminal, never echoed) or the operator-only
+`POST /api/accounts` endpoint once at least one operator account exists.
+
+Two roles:
+
+- **operator** — can approve or reject outreach, record a manual send, set
+  or clear a do-not-contact marker, and trigger anything that calls a
+  model, in addition to everything a viewer can do.
+- **viewer** — read-only. Can sign in and see everything, but the API
+  refuses any of the actions above regardless of what the web app shows.
 
 ## Development
 

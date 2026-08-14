@@ -71,6 +71,58 @@ describe("a stored draft", () => {
   });
 });
 
+describe("attribution constraints (design D5): an action timestamp requires its actor", () => {
+  it("refuses an approval with no approving account", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+
+    await expectConstraintViolation(
+      harness.database
+        .update(outreach)
+        .set({ status: "approved", approvedAt: new Date() })
+        .where(eq(outreach.id, draft.id)),
+      "outreach_approved_actor_pairs_with_timestamp",
+    );
+  });
+
+  it("refuses a rejection with no rejecting account", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+    const submitted = await submitOutreachForApproval(harness.database, draft.id);
+
+    await expectConstraintViolation(
+      harness.database
+        .update(outreach)
+        .set({ status: "rejected", rejectedAt: new Date(), rejectionReason: "Not a fit." })
+        .where(eq(outreach.id, submitted.id)),
+      "outreach_rejected_actor_pairs_with_timestamp",
+    );
+  });
+
+  it("refuses a send with no recording account", async () => {
+    const draft = await insertOutreachDraft(harness.database, {
+      leadId,
+      channel: "email",
+      messageBody: "Example draft.",
+    });
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
+
+    await expectConstraintViolation(
+      harness.database
+        .update(outreach)
+        .set({ status: "sent", sentAt: new Date(), sentMeans: "gmail" })
+        .where(eq(outreach.id, approved.id)),
+      "outreach_sent_actor_pairs_with_timestamp",
+    );
+  });
+});
+
 describe("sending without approval", () => {
   it("is refused, and the record stays unsent", async () => {
     const draft = await insertOutreachDraft(harness.database, {

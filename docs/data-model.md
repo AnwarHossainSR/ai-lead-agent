@@ -209,12 +209,16 @@ Tracks outreach message drafts, approvals, and state transitions.
 | ai_invocation_id | UUID | Foreign key to ai_invocations |
 | cited_facts | JSONB | Fact identifiers cited in the message |
 | approved_at | TIMESTAMP | Approval timestamp |
+| approved_by_account_id | UUID | Account that approved (references accounts, RESTRICT) |
 | sent_at | TIMESTAMP | Send timestamp |
+| sent_means | TEXT | How the send was recorded (e.g. "Gmail") |
+| sent_by_account_id | UUID | Account that recorded the send (references accounts, RESTRICT) |
 | responded_at | TIMESTAMP | Response timestamp |
 | approval_revoked_at | TIMESTAMP | When approval was revoked by editing |
 | approved_text_hash | TEXT | MD5 of subject + body at approval time |
 | rejection_reason | TEXT | Reason for rejection |
 | rejected_at | TIMESTAMP | Rejection timestamp |
+| rejected_by_account_id | UUID | Account that rejected (references accounts, RESTRICT) |
 | notes | TEXT | Operator notes |
 | is_example | BOOLEAN | Whether this is an example record |
 | created_at | TIMESTAMP | Creation timestamp |
@@ -230,9 +234,67 @@ Tracks outreach message drafts, approvals, and state transitions.
 - `outreach_responded_at_requires_sent_at` - Response requires sent timestamp
 - `outreach_approved_text_hash_matches` - Approved text hash must match current text
 - `outreach_rejection_requires_reason` - Rejection requires a non-blank reason
+- `outreach_approved_actor_pairs_with_timestamp` - `approved_at`/`approved_by_account_id` are set or cleared together
+- `outreach_rejected_actor_pairs_with_timestamp` - `rejected_at`/`rejected_by_account_id` are set or cleared together
+- `outreach_sent_actor_pairs_with_timestamp` - `sent_at`/`sent_by_account_id` are set or cleared together
 
 **Indexes:**
 - `outreach_lead_status_idx` (on `lead_id`, `status`)
+
+### accounts
+
+Operator/viewer accounts (design D2/D4). Created only via the `create-account` command or `POST /api/accounts` — there is no sign-up.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| email | TEXT | Unique across accounts |
+| password_hash | TEXT | Argon2id hash; never returned by a read helper |
+| role | account_role | `operator` or `viewer` |
+| disabled_at | TIMESTAMP | Set instead of deleting the row (see below) |
+| created_at | TIMESTAMP | Creation timestamp |
+| updated_at | TIMESTAMP | Last update timestamp |
+
+**Constraints:**
+- `accounts_email_key` - Unique on `email`
+
+**Note:** accounts referenced by an approval, rejection, send record or do-not-contact marker can never be deleted — every one of those foreign keys is `ON DELETE RESTRICT`. Disabling an account (`disabled_at`) also revokes every session it holds; that is how an account is retired.
+
+### sessions
+
+Server-side sessions (design D2) — an opaque token in an HTTP-only cookie, only its HMAC stored here.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| account_id | UUID | Foreign key to accounts |
+| token_hash | TEXT | HMAC of the session token |
+| expires_at | TIMESTAMP | Sliding expiry, capped at an absolute maximum |
+| revoked_at | TIMESTAMP | Set on sign-out or when the account is disabled |
+| last_seen_at | TIMESTAMP | Updated on each valid use |
+| created_at | TIMESTAMP | Creation timestamp |
+
+**Constraints:**
+- `sessions_account_id_fk` - Foreign key to accounts
+
+### audit_log
+
+Append-only record of every sign-in, sign-out and consequential action (design D6).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| account_id | UUID | Acting account (references accounts, SET NULL on delete — belt and braces, since accounts are never actually deleted) |
+| event | TEXT | e.g. `sign_in`, `sign_in_failed`, `sign_out`, or a slugified `@RequiresRole` action |
+| subject_type | TEXT | The kind of thing acted on, if any |
+| subject_id | UUID | The specific record acted on, if any |
+| outcome | TEXT | `succeeded` or `failed` |
+| source_address | INET | Request source address |
+| detail | JSONB | Free-form, non-sensitive detail — never a password, hash, session id or model prompt |
+| created_at | TIMESTAMP | Creation timestamp |
+
+**Constraints:**
+- A database trigger refuses `UPDATE` and `DELETE` against this table — the one exception is the FK's own `ON DELETE SET NULL` action on `account_id`, which Postgres implements as an `UPDATE` under the hood.
 
 ### discovery_runs
 
@@ -327,6 +389,10 @@ Stores individual check results from verification runs.
 - `verification_checks_company_ran_at_idx` - on (`company_id, ran_at DESC`)
 
 ## Enums
+
+### account_role
+
+`operator`, `viewer` (design D4)
 
 ### lead_status
 
