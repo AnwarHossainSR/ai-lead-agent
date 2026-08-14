@@ -3,20 +3,27 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { signInAction } from "./actions";
 
 /**
- * Development convenience: with `DEV_SIGN_IN_EMAIL` and `DEV_SIGN_IN_PASSWORD`
- * set in `.env.local`, the form arrives filled in so a local account can be
- * used without retyping it. Both are read on the server and are ignored outside
- * development, so no credential is ever prefilled in a real deployment — and
- * none is committed to the repository.
+ * Development convenience: the form arrives filled in with the account
+ * `pnpm --filter @mela/api seed:accounts` creates, so signing in locally is one
+ * click. `DEV_SIGN_IN_EMAIL` / `DEV_SIGN_IN_PASSWORD` override it for anyone
+ * using a different local account.
+ *
+ * Both are read on the server and forced empty in production, so no credential
+ * is ever prefilled in a real deployment. The seeded password is a local-only
+ * fixture — its own script refuses to run against anything but a development
+ * database on this machine.
  */
+const SEEDED_DEV_EMAIL = "dev@mela.local";
+const SEEDED_DEV_PASSWORD = "DevPassword123!";
+
 function developmentCredentials(): { email: string; password: string } {
   if (process.env.NODE_ENV === "production") {
     return { email: "", password: "" };
   }
 
   return {
-    email: process.env.DEV_SIGN_IN_EMAIL ?? "",
-    password: process.env.DEV_SIGN_IN_PASSWORD ?? "",
+    email: process.env.DEV_SIGN_IN_EMAIL ?? SEEDED_DEV_EMAIL,
+    password: process.env.DEV_SIGN_IN_PASSWORD ?? SEEDED_DEV_PASSWORD,
   };
 }
 

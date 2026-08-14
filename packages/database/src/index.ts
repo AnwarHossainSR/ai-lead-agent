@@ -19,6 +19,13 @@ export {
   type Executor,
 } from "./client";
 
+export {
+  assertSeedable,
+  seed,
+  SeedRefusedError,
+  type SeedResult,
+} from "./seed";
+
 export * from "./schema";
 export * from "./schemas/evidence";
 export * from "./write";

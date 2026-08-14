@@ -43,10 +43,13 @@ describe("seeding", () => {
 
     expect(result.seeded).toBe(true);
     expect(await counts()).toEqual({
-      companies: 2,
+      // Two illustrative companies (one analysed, one with no website) plus the
+      // lead spread, which exists so the workspace has more than one row to
+      // render.
+      companies: 8,
       contacts: 1,
       analyses: 1,
-      leads: 1,
+      leads: 7,
       outreach: 1,
     });
   });
@@ -91,6 +94,38 @@ describe("seeded records", () => {
     const [analysis] = await harness.database.select().from(websiteAnalysis);
     expect(analysis?.accessibilityScore).toBeNull();
     expect(analysis?.performanceScore).toBe(42);
+  });
+
+  it("cover several priorities and lifecycle statuses, not one row repeated", async () => {
+    await seed(harness.database);
+
+    const rows = await harness.database.select().from(leads);
+
+    expect(new Set(rows.map((row) => row.priority)).size).toBeGreaterThan(2);
+    expect(new Set(rows.map((row) => row.status)).size).toBeGreaterThan(3);
+  });
+
+  it("include both a freshly scored lead and a stale one", async () => {
+    await seed(harness.database);
+
+    const rows = await harness.database.select().from(leads);
+    const ages = rows.map((row) => Date.now() - row.scoredAt.getTime());
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+    expect(ages.some((age) => age < thirtyDays)).toBe(true);
+    expect(ages.some((age) => age > thirtyDays)).toBe(true);
+  });
+
+  it("reach every status through the lifecycle, never by writing the column", async () => {
+    await seed(harness.database);
+
+    const rows = await harness.database.select().from(leads);
+    const statuses = rows.map((row) => row.status);
+
+    // `sent`-like end states are reachable only through the transition map, so
+    // their presence is itself the assertion that the walk was legal.
+    expect(statuses).toContain("won");
+    expect(statuses).toContain("rejected");
   });
 
   it("leave the outreach draft unapproved and unsent", async () => {
