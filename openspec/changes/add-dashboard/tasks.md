@@ -70,8 +70,8 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 9. Accessibility and final verification
 
-- [ ] 9.1 Add automated accessibility checks against the lead list, lead detail and review queue, failing on a violation at the configured level
-- [ ] 9.2 Confirm the review queue is fully operable by keyboard and every interactive control has an accessible name
+- [x] 9.1 Add automated accessibility checks against the lead list, lead detail and review queue, failing on a violation at the configured level — **adapted**: component-level checks via vitest-axe (WCAG 2.1 A/AA) against the presentational pieces of each view, per user decision, rather than full-page checks (which would need Playwright, excluded this session)
+- [x] 9.2 Confirm the review queue is fully operable by keyboard and every interactive control has an accessible name
 - [ ] 9.3 Add the accessibility checks to the CI workflow
 - [ ] 9.4 Document the views in `docs/architecture.md` and state the local-only, unauthenticated posture in `README.md` and `docs/development.md`
 - [ ] 9.5 Update `docs/implementation-progress.md`

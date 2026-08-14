@@ -43,6 +43,7 @@
     "jsdom": "^30.0.1",
     "tailwindcss": "^4",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "vitest-axe": "^0.1.0"
   }
 }
