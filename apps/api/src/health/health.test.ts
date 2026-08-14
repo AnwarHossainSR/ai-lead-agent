@@ -187,14 +187,13 @@ describe("GET /ready", () => {
     await app.init();
 
     shutdownState.markShuttingDown();
-
-    // Verify the state was set
     expect(shutdownState.isShuttingDown()).toBe(true);
 
-    // Readiness should fail
-    await request(app.getHttpServer()).get("/ready").expect(503);
+    const response = await request(app.getHttpServer()).get("/ready");
+    expect(response.status).toBe(503);
+    expect(response.body.status).toBe("error");
+    expect(response.body.details.shutdown.status).toBe("down");
 
-    // Liveness should still succeed
     await request(app.getHttpServer()).get("/live").expect(200);
 
     await app.close();

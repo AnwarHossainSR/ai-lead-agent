@@ -1,21 +1,14 @@
-import { Injectable } from "@nestjs/common";
+let shuttingDown = false;
 
-export const SHUTDOWN_STATE = "SHUTDOWN_STATE";
+export function markShuttingDown(): void {
+  shuttingDown = true;
+}
 
-@Injectable()
-export class ShutdownState {
-  private shuttingDown = false;
+export function isShuttingDown(): boolean {
+  return shuttingDown;
+}
 
-  markShuttingDown(): void {
-    this.shuttingDown = true;
-  }
-
-  isShuttingDown(): boolean {
-    return this.shuttingDown;
-  }
-
-  /** For testing only — resets the flag between tests. */
-  reset(): void {
-    this.shuttingDown = false;
-  }
+/** For testing only — resets the flag between tests. */
+export function resetShutdownState(): void {
+  shuttingDown = false;
 }

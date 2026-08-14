@@ -28,7 +28,7 @@ docker compose up -d
 # Apply database migrations
 pnpm --filter @mela/database db:migrate
 
-# Seed example data and the two local development accounts
+# Create the local development account (writes no other data)
 pnpm db:seed:dev
 
 # Or create your own account instead — there is no sign-up page
@@ -42,15 +42,18 @@ the `create-account` command above (prompts for a password on the terminal,
 never echoed), the `seed:accounts` script below, or the operator-only
 `POST /api/accounts` endpoint once at least one operator account exists.
 
-### Local development accounts
+### Local development account
 
 `pnpm db:seed:dev` (or `pnpm --filter @mela/api seed:accounts` on its own)
-creates two fixed accounts:
+creates one account and nothing else — no companies, no leads, no drafts:
 
 | Email | Password | Role |
 |-------|----------|------|
 | `dev@mela.local` | `DevPassword123!` | operator |
-| `viewer@mela.local` | `DevPassword123!` | viewer |
+
+Example data is not part of setup. `pnpm --filter @mela/database db:seed`
+still exists and writes the example dataset if you ever want it; nothing
+runs it for you.
 
 The sign-in form prefills the operator one in development, so signing in
 locally is a single click. Nothing about this reaches a deployment: the
@@ -96,9 +99,9 @@ pnpm --filter @mela/web dev      # Web on port 3000
 |---------|-------------|
 | `pnpm --filter @mela/database db:migrate` | Apply pending migrations |
 | `pnpm --filter @mela/database db:generate` | Generate migration files |
-| `pnpm --filter @mela/database db:seed` | Seed the database |
-| `pnpm db:seed:dev` | Seed example data and the two local development accounts |
-| `pnpm --filter @mela/api seed:accounts` | Create the local development accounts only |
+| `pnpm --filter @mela/database db:seed` | Write the example dataset (opt-in, never part of setup) |
+| `pnpm db:seed:dev` | Create the local development account, and nothing else |
+| `pnpm --filter @mela/api seed:accounts` | The same, called directly |
 | `pnpm --filter @mela/database db:studio` | Open Drizzle Studio |
 
 ### Individual Packages

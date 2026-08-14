@@ -1,11 +1,10 @@
-import { Controller, Get, Inject } from "@nestjs/common";
+import { Controller, Get } from "@nestjs/common";
 import { HealthCheck, type HealthCheckResult, HealthCheckService } from "@nestjs/terminus";
 
 import { Public } from "../auth/public.decorator";
 import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";
-import { SHUTDOWN_STATE } from "./shutdown-state";
-import type { ShutdownState } from "./shutdown-state";
+import { isShuttingDown } from "./shutdown-state";
 
 /**
  * Health endpoints. Each answers a different question:
@@ -21,7 +20,6 @@ export class HealthController {
     private readonly health: HealthCheckService,
     private readonly postgres: PostgresHealthIndicator,
     private readonly redis: RedisHealthIndicator,
-    @Inject(SHUTDOWN_STATE) private readonly shutdownState: ShutdownState,
   ) {}
 
   @Public()
@@ -33,7 +31,7 @@ export class HealthController {
   @Public()
   @Get("ready")
   async ready(): Promise<HealthCheckResult> {
-    if (this.shutdownState.isShuttingDown()) {
+    if (isShuttingDown()) {
       return {
         status: "error",
         details: { shutdown: { status: "down", message: "Shutdown in progress" } },

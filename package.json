@@ -17,7 +17,7 @@
     "biome": "biome check --write .",
     "biome:check": "biome check .",
     "db:fresh": "pnpm --filter @mela/database db:fresh",
-    "db:seed:dev": "pnpm --filter @mela/database db:seed && pnpm --filter @mela/api seed:accounts"
+    "db:seed:dev": "pnpm --filter @mela/api seed:accounts"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
