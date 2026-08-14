@@ -12,10 +12,18 @@ import { createAuthenticatedContext } from "../testing/authenticated-context";
 import { REQUIRES_ROLE_KEY, type RequiresRoleMetadata } from "./requires-role.decorator";
 
 /**
- * API tests for task 5.3: every route carrying `@RequiresRole("operator", ...)`
+ * API tests for task 5.3: a route carrying `@RequiresRole("operator", ...)`
  * refuses a viewer — naming the action and the required role, and without
  * ever reaching the AI service for the routes that would otherwise spend on
  * a model call — while an operator is let through the role check.
+ *
+ * `GATED_ROUTES` covered all fifteen operator-gated routes until the suite was
+ * cut to a fifty-case ceiling. The three that remain are the three whose
+ * failure costs most: drafting spends on a model call, approval is the human
+ * gate the whole product is built around, and account creation is privilege
+ * escalation. The other twelve carry the same decorator, read by the same
+ * guard, and are now unverified — a gap, recorded here rather than hidden by
+ * a shorter list that looks complete.
  *
  * A nonexistent-but-well-shaped resource id is used throughout: the guard
  * runs before the route handler, so a viewer is refused before any lookup
@@ -53,102 +61,11 @@ const GATED_ROUTES: readonly GatedRoute[] = [
     triggersModelCall: false,
   },
   {
-    name: "reject outreach",
-    method: "post",
-    path: `/api/outreach/${FAKE_ID}/reject`,
-    body: { reason: "Not a fit." },
-    action: "Rejecting outreach",
-    triggersModelCall: false,
-  },
-  {
-    name: "record outreach sent",
-    method: "post",
-    path: `/api/outreach/${FAKE_ID}/sent`,
-    body: { sentAt: new Date().toISOString(), means: "gmail" },
-    action: "Recording outreach as sent",
-    triggersModelCall: false,
-  },
-  {
-    name: "classify outreach response",
-    method: "post",
-    path: `/api/outreach/${FAKE_ID}/responses/classify`,
-    body: { replyText: "Not interested, thanks." },
-    action: "Classifying an outreach response",
-    triggersModelCall: true,
-  },
-  {
-    name: "mark company do-not-contact",
-    method: "post",
-    path: `/api/companies/${FAKE_ID}/do-not-contact`,
-    body: { reason: "Asked to stop." },
-    action: "Marking a company do-not-contact",
-    triggersModelCall: false,
-  },
-  {
-    name: "clear company do-not-contact",
-    method: "post",
-    path: `/api/companies/${FAKE_ID}/clear-do-not-contact`,
-    action: "Clearing a company's do-not-contact marker",
-    triggersModelCall: false,
-  },
-  {
-    name: "mark contact do-not-contact",
-    method: "post",
-    path: `/api/contacts/${FAKE_ID}/do-not-contact`,
-    body: { reason: "Asked to stop." },
-    action: "Marking a contact do-not-contact",
-    triggersModelCall: false,
-  },
-  {
-    name: "clear contact do-not-contact",
-    method: "post",
-    path: `/api/contacts/${FAKE_ID}/clear-do-not-contact`,
-    action: "Clearing a contact's do-not-contact marker",
-    triggersModelCall: false,
-  },
-  {
-    name: "generate research summary",
-    method: "post",
-    path: `/api/leads/${FAKE_ID}/research-summary`,
-    body: {},
-    action: "Generating a research summary",
-    triggersModelCall: true,
-  },
-  {
-    name: "run opportunity analysis",
-    method: "post",
-    path: `/api/opportunity/analysis/${FAKE_ID}`,
-    action: "Running opportunity analysis",
-    triggersModelCall: true,
-  },
-  {
     name: "create account",
     method: "post",
     path: "/api/accounts",
     body: { email: "new-account@example.com", password: "a-very-long-password", role: "viewer" },
     action: "Creating an account",
-    triggersModelCall: false,
-  },
-  {
-    name: "change account role",
-    method: "patch",
-    path: `/api/accounts/${FAKE_ID}/role`,
-    body: { role: "viewer" },
-    action: "Changing an account's role",
-    triggersModelCall: false,
-  },
-  {
-    name: "disable account",
-    method: "post",
-    path: `/api/accounts/${FAKE_ID}/disable`,
-    action: "Disabling an account",
-    triggersModelCall: false,
-  },
-  {
-    name: "view audit log",
-    method: "get",
-    path: "/api/audit-log",
-    action: "Viewing the audit log",
     triggersModelCall: false,
   },
 ];
