@@ -27,7 +27,7 @@ allowBuilds:
 # happens here once instead of drifting across six package.json files.
 catalog:
   # Toolchain
-  typescript: 7.0.2
+  typescript: 5.9.3
   turbo: 2.10.9
   concurrently: 10.0.4
   "@biomejs/biome": 1.9.4
@@ -37,13 +37,16 @@ catalog:
   # release age gate; a version published hours ago is exactly what a
   # compromised-package window looks like.
   tsx: 4.23.9
-  ts-node: 10.9.2
 
   # SWC compiles the API's decorators with `emitDecoratorMetadata`, which
   # esbuild — and therefore Vitest's default transform — does not implement.
   # Without it Nest's dependency injection has no constructor parameter types
   # to read and every provider fails to resolve.
   "@swc/core": 1.15.47
+  # The published require hook for the above. It reads tsconfig.json, so the
+  # decorator settings live in one place rather than being restated in a
+  # hand-written registration shim.
+  "@swc-node/register": 1.12.1
   unplugin-swc: 1.5.10
   supertest: 7.2.2
   "@types/supertest": 7.2.1
@@ -73,6 +76,9 @@ catalog:
 
   # AI
   "@google/genai": 2.16.0
+
+  # Observability
+  "prom-client": 15.1.3
 
   # Authentication — Argon2id password hashing (design D3). Ships prebuilt
   # native binaries via node-gyp-build; no compiler needed on a normal install.

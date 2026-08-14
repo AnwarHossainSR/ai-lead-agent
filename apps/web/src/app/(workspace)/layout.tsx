@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar";
 import { ToastProvider } from "@/components/ui/toast";
-import { readFlashToast } from "@/lib/flash-toast";
+import { readFlashToast } from "@/lib/flash-toast.server";
 import { getCurrentAccount } from "@/lib/session";
+import { readSidebarCollapsed } from "@/lib/sidebar";
+import { readThemePreference } from "@/lib/theme.server";
 
 /**
  * The workspace shell: header (account + sign-out, task 8.3) and sidebar
@@ -25,14 +27,18 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
 
   // An action that redirected here left its outcome in the flash cookie; the
   // provider raises it once and clears the cookie (design D6).
-  const flashToast = await readFlashToast();
+  const [flashToast, theme, sidebarCollapsed] = await Promise.all([
+    readFlashToast(),
+    readThemePreference(),
+    readSidebarCollapsed(),
+  ]);
 
   return (
     <ToastProvider initialToast={flashToast}>
-      <Header account={account} />
+      <Header account={account} theme={theme} />
       <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 p-6">{children}</main>
+        <Sidebar defaultCollapsed={sidebarCollapsed} />
+        <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </ToastProvider>
   );

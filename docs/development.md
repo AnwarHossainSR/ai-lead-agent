@@ -52,14 +52,48 @@ pnpm --filter @mela/database db:migrate
 pnpm --filter @mela/database db:studio
 ```
 
-## Seeding
+## Rebuilding the database
+
+Two destructive commands. Both drop every table and re-apply the migrations;
+they differ only in what is written afterwards.
 
 ```bash
-# Seed the database with development data
-pnpm --filter @mela/database db:seed
+# Empty database, sign-in account restored, no example data
+pnpm db:fresh
+
+# The same, then the full example dataset
+pnpm db:fresh:seed
 ```
 
-**Note**: The seed script only runs against databases with `NODE_ENV=development`.
+Both recreate the local development account, so signing in works immediately
+either way. Use `pnpm db:fresh` to see the interface with nothing in it —
+every empty state, on every page.
+
+To write the example dataset into a database you have already migrated,
+without dropping anything:
+
+```bash
+pnpm db:seed:data
+```
+
+### What the example dataset contains
+
+26 companies across all five industries and all four cities, at different
+points in the pipeline, chosen to exercise the interface rather than to look
+tidy — including a company with no website, an analysis that was blocked, a
+score that was never measured, a lead with no summary, a refused draft, and
+both a company-wide and a personal do-not-contact marker. Outreach covers
+draft, pending approval, approved, sent, replied and rejected.
+
+Every row is marked `is_example`, named "Example …", and hosted under a
+reserved example domain.
+
+**Two independent guards.** Seeding is refused unless `NODE_ENV` is
+`development` or `test` **and** the database host is on this machine. There
+is no override flag. The seed also refuses if no enabled operator account
+exists, because approvals and sends record the account that acted and the
+database rejects those rows unattributed — which is why `db:fresh:seed`
+creates the account before seeding.
 
 ## Authentication
 
@@ -128,7 +162,7 @@ ANALYSIS_ARTIFACT_ROOT=/path/to/artifacts
 
 ### Port Already in Use
 
-If port 3000 or 3001 is already in use:
+If port 3000 or 4000 is already in use:
 
 ```bash
 # Find process using the port

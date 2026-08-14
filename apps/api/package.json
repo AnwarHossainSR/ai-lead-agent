@@ -5,9 +5,10 @@
   "description": "NestJS REST API",
   "main": "./dist/main.js",
   "scripts": {
-    "dev": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r ./scripts/register-swc.cjs src/main.ts",
-    "worker": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r ./scripts/register-swc.cjs src/worker.ts",
-    "create-account": "node --no-experimental-strip-types --disable-warning=ExperimentalWarning -r ./scripts/register-swc.cjs src/scripts/create-account.ts",
+    "dev": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/main.ts",
+    "worker": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/worker.ts",
+    "create-account": "node --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/scripts/create-account.ts",
+    "seed:accounts": "node --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/scripts/seed-dev-accounts.ts",
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",
@@ -28,6 +29,7 @@
     "argon2": "catalog:",
     "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
+    "prom-client": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "zod": "catalog:"
@@ -36,6 +38,7 @@
     "@biomejs/biome": "catalog:",
     "@mela/tsconfig": "workspace:*",
     "@nestjs/testing": "catalog:",
+    "@swc-node/register": "catalog:",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "@types/supertest": "catalog:",
@@ -43,7 +46,6 @@
     "class-validator": "^0.15.1",
     "playwright": "^1.62.1",
     "supertest": "catalog:",
-    "ts-node": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
     "vitest": "catalog:"

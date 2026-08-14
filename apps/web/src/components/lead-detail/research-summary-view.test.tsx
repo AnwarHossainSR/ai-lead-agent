@@ -35,6 +35,9 @@ describe("ResearchSummaryView", () => {
   it("shows an explicit state when no summary has been generated", () => {
     render(<ResearchSummaryView summary={null} />);
 
-    expect(screen.getByText("No research summary generated yet.")).toBeInTheDocument();
+    // An absence stated in words, never a blank region the reader has to
+    // interpret (spec: empty state).
+    expect(screen.getByText("No research summary yet")).toBeInTheDocument();
+    expect(screen.getByText(/This is an absence, not an empty summary/)).toBeInTheDocument();
   });
 });

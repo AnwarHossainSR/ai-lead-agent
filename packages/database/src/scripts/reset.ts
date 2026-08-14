@@ -1,11 +1,23 @@
+import { hydrateEnvironment, loadDatabaseEnv } from "@mela/config/env";
 import postgres from "postgres";
 
 import { runMigrations } from "../migrate.js";
-import { seed } from "../seed.js";
+import { assertSeedable } from "../seed.js";
 
-const client = postgres("postgresql://postgres:postgres@localhost:5432/mela");
+/**
+ * `pnpm --filter @mela/database db:reset`
+ *
+ * Drops every table, type and the migration schema, then re-applies the
+ * migrations. It writes no data: an empty database is the honest starting
+ * point, and `db:seed` exists for anyone who wants the example dataset.
+ *
+ * The URL comes from `DATABASE_URL` rather than being hardcoded, and the same
+ * refusal the seed uses applies — dropping every table in a database that is
+ * not a local development one is the single most destructive thing in this
+ * repository.
+ */
 
-async function dropAll() {
+async function dropAll(client: postgres.Sql): Promise<void> {
   await client.unsafe(`
     DO $$ DECLARE
       r RECORD;
@@ -27,31 +39,26 @@ async function dropAll() {
   `);
 }
 
-async function seedDatabase() {
-  const { createIsolatedConnection } = await import("../client.js");
-  const { database, close } = createIsolatedConnection({ maxConnections: 1 });
+async function main(): Promise<void> {
+  hydrateEnvironment();
+
+  const { DATABASE_URL } = loadDatabaseEnv();
+  assertSeedable(DATABASE_URL, process.env.NODE_ENV);
+
+  const client = postgres(DATABASE_URL, { max: 1 });
 
   try {
-    const result = await seed(database);
-    console.log(result.reason);
+    console.log("Dropping all tables, types, and the drizzle schema...");
+    await dropAll(client);
+    console.log("Running migrations...");
+    await runMigrations();
+    console.log("Reset complete. The database is empty.");
   } finally {
-    await close();
+    await client.end();
   }
 }
 
-async function main() {
-  console.log("Dropping all tables, types, and drizzle schema...");
-  await dropAll();
-  console.log("Running migrations...");
-  await runMigrations();
-  console.log("Seeding...");
-  await seedDatabase();
-  console.log("Reset complete.");
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-  })
-  .finally(() => client.end());
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exitCode = 1;
+});

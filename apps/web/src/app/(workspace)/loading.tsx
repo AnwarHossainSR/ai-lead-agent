@@ -1,0 +1,5 @@
+import { StatsPageLoading } from "@/components/route-loading";
+
+export default function Loading() {
+  return <StatsPageLoading />;
+}

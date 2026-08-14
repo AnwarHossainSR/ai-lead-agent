@@ -1,7 +1,11 @@
 import { findCity, findCountry, findIndustry } from "@mela/config";
+import { RadarIcon } from "lucide-react";
 
+import { Unavailable } from "@/components/data-state";
 import { FailedJobsTable } from "@/components/operations/failed-jobs-table";
 import { Panel } from "@/components/panel";
+import { EmptyState } from "@/components/ui/empty-state";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { apiUrl } from "@/lib/api";
 import type { DiscoveryRunRecord } from "@/lib/discovery-runs";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -9,15 +13,6 @@ import { formatAge } from "@/lib/format-age";
 import { formatLabel } from "@/lib/format-label";
 import type { FailedJob, QueueSummary } from "@/lib/operations";
 import { retryFailedJobAction } from "./actions";
-
-function Unavailable({ title, error }: { title: string; error: string }) {
-  return (
-    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-      <p className="text-sm font-medium text-destructive">{title} is unavailable</p>
-      <p className="mt-1 text-sm text-muted-foreground">{error}</p>
-    </div>
-  );
-}
 
 /**
  * Jobs run through Upstash QStash (HTTP push), not a pollable local queue, so
@@ -34,7 +29,7 @@ async function QueuesPanel() {
       : await fetchWithTimeout<QueueSummary[]>(url);
 
   if (result.status !== "ok") {
-    return <Unavailable title="Queues" error={result.error} />;
+    return <Unavailable title="Queues" status={result.status} error={result.error} />;
   }
 
   return (
@@ -81,7 +76,7 @@ async function FailedJobsPanel() {
       : await fetchWithTimeout<FailedJob[]>(url);
 
   if (result.status !== "ok") {
-    return <Unavailable title="Failed jobs" error={result.error} />;
+    return <Unavailable title="Failed jobs" status={result.status} error={result.error} />;
   }
 
   return <FailedJobsTable jobs={result.data} onRetry={retryFailedJobAction} />;
@@ -139,11 +134,17 @@ async function DiscoveryRunsPanel() {
       : await fetchWithTimeout<DiscoveryRunRecord[]>(url);
 
   if (result.status !== "ok") {
-    return <Unavailable title="Discovery runs" error={result.error} />;
+    return <Unavailable title="Discovery runs" status={result.status} error={result.error} />;
   }
 
   if (result.data.length === 0) {
-    return <p className="text-sm text-muted-foreground">No discovery runs yet.</p>;
+    return (
+      <EmptyState
+        icon={<RadarIcon />}
+        title="No discovery runs yet"
+        description="A run appears here once one has been started. None have been."
+      />
+    );
   }
 
   return (
@@ -199,21 +200,30 @@ export default function OperationsPage() {
         </p>
       </div>
 
-      <Panel title="Queues">
+      <Panel
+        title="Queues"
+        fallback={<TableSkeleton rows={4} columns={5} label="Loading queues" />}
+      >
         <div className="rounded-lg border border-border p-4">
           <h2 className="mb-4 font-medium">Queues</h2>
           <QueuesPanel />
         </div>
       </Panel>
 
-      <Panel title="Failed jobs">
+      <Panel
+        title="Failed jobs"
+        fallback={<TableSkeleton rows={4} columns={5} label="Loading failed jobs" />}
+      >
         <div className="rounded-lg border border-border p-4">
           <h2 className="mb-4 font-medium">Failed jobs</h2>
           <FailedJobsPanel />
         </div>
       </Panel>
 
-      <Panel title="Discovery runs">
+      <Panel
+        title="Discovery runs"
+        fallback={<TableSkeleton rows={5} columns={8} label="Loading discovery runs" />}
+      >
         <div className="rounded-lg border border-border p-4">
           <h2 className="mb-4 font-medium">Discovery runs</h2>
           <DiscoveryRunsPanel />

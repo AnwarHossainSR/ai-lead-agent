@@ -56,9 +56,12 @@ function httpMethodName(method: RequestMethod | undefined): string {
   }
 }
 
-/** The API's global prefix excludes exactly `GET /health` (`create-app.ts`). */
+/** The API's global prefix excludes `GET /health`, `GET /live` and `GET /ready` (`create-app.ts`). */
 function finalPath(rawPath: string, httpMethod: string): string {
-  if (rawPath === "/health" && httpMethod === "GET") {
+  if (
+    httpMethod === "GET" &&
+    (rawPath === "/health" || rawPath === "/live" || rawPath === "/ready")
+  ) {
     return rawPath;
   }
   return `/api${rawPath}`;
@@ -134,7 +137,13 @@ describe("route coverage (design D1: deny by default)", () => {
       .sort();
 
     expect(publicRoutes).toEqual(
-      ["GET /health", "POST /api/auth/sign-in", "POST /api/auth/sign-out"].sort(),
+      [
+        "GET /health",
+        "GET /live",
+        "GET /ready",
+        "POST /api/auth/sign-in",
+        "POST /api/auth/sign-out",
+      ].sort(),
     );
   });
 

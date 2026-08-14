@@ -1,6 +1,9 @@
 "use client";
 
+import { ChartNoAxesColumnIcon } from "lucide-react";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+import { EmptyState } from "@/components/ui/empty-state";
 
 export interface ResponseRateDatum {
   readonly label: string;
@@ -33,7 +36,13 @@ function formatPercent(rate: number): string {
  */
 export function ResponseRateChart({ data }: { data: readonly ResponseRateDatum[] }) {
   if (data.length === 0) {
-    return <p className="text-sm text-muted-foreground">No outreach sent in this segment yet.</p>;
+    return (
+      <EmptyState
+        icon={<ChartNoAxesColumnIcon />}
+        title="No outreach sent in this segment yet"
+        description="A response rate needs sent messages to compute. Nothing is being hidden — none have been sent for this segment."
+      />
+    );
   }
 
   const chartData = data.map((datum) => ({

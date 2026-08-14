@@ -226,3 +226,88 @@ The system SHALL treat a source as not crawlable unless its configuration states
 - **WHEN** the discovery source configuration schema is inspected
 - **THEN** it contains no field that would permit ignoring `robots.txt` or a declared crawl-delay
 
+### Requirement: Scoring weights carry a version
+
+The system SHALL declare a version alongside the scoring weights and SHALL require that version to be incremented whenever a weight changes. Scores record the version they were computed with, so a weight change makes existing scores identifiably stale rather than silently incomparable.
+
+#### Scenario: The version is available to scoring
+
+- **WHEN** the configured weights are read
+- **THEN** their version is available with them
+
+#### Scenario: A changed weight with an unchanged version fails
+
+- **WHEN** the configured weights differ from the recorded fingerprint for their version
+- **THEN** loading the configuration fails stating that the version must be incremented
+
+### Requirement: Every configured weight has an implemented scorer
+
+The system SHALL validate at load that the set of configured scoring components exactly matches the set of implemented scorers. A configured weight with no scorer, or a scorer with no configured weight, SHALL fail immediately rather than silently contributing nothing.
+
+#### Scenario: A weight without a scorer fails at load
+
+- **WHEN** a scoring component is configured with no corresponding scorer
+- **THEN** loading fails naming the component
+
+#### Scenario: A scorer without a weight fails at load
+
+- **WHEN** a scorer exists for a component that is not configured
+- **THEN** loading fails naming the scorer
+
+### Requirement: Per-component scoring rules are configuration
+
+The system SHALL declare each component's scoring rule as validated configuration — the thresholds, bands or point allocations it uses — so tuning a component is a configuration edit rather than a code change. Rules SHALL be validated at load for coverage and ordering, and a rule that cannot produce a value in 0 to 100 SHALL fail.
+
+#### Scenario: Overlapping bands fail at load
+
+- **WHEN** a component's rule declares overlapping bands
+- **THEN** loading fails naming the component and the overlap
+
+#### Scenario: A rule that cannot reach a valid value fails at load
+
+- **WHEN** a component's rule can produce a value outside 0 to 100
+- **THEN** loading fails naming the component
+
+#### Scenario: Tuning a threshold needs no code change
+
+- **WHEN** a component's threshold is changed in configuration and the weight version is incremented
+- **THEN** rescoring produces the new values with no change to scoring logic
+
+### Requirement: Response categories and their transitions are configuration
+
+The system SHALL declare response categories as validated configuration, each with a unique identifier, a display name and the lead status transition it proposes. A category proposing a transition the lead transition map does not permit SHALL fail at load, so a configured category can never propose an impossible change.
+
+#### Scenario: A category proposing an impermissible transition fails at load
+
+- **WHEN** a response category proposes a status transition the transition map does not permit
+- **THEN** loading the configuration fails naming the category and the transition
+
+#### Scenario: A duplicate category identifier fails at load
+
+- **WHEN** two response categories declare the same identifier
+- **THEN** loading the configuration fails naming the duplicate
+
+#### Scenario: A category naming an unknown status fails at load
+
+- **WHEN** a response category names a lead status that is not configured
+- **THEN** loading the configuration fails naming the category and the unknown status
+
+#### Scenario: An unknown category is refused, not defaulted
+
+- **WHEN** a response category identifier that is not configured is resolved
+- **THEN** the call fails naming the requested identifier and listing the configured ones
+
+### Requirement: Reporting thresholds are configuration
+
+The system SHALL declare as validated configuration the interval after which a message may be recorded as having received no response, and the minimum sample size below which a rate is marked as below the reporting minimum. Both SHALL be positive, validated at load.
+
+#### Scenario: A non-positive no-response interval fails at load
+
+- **WHEN** the no-response interval is configured as zero or negative
+- **THEN** loading the configuration fails naming the setting
+
+#### Scenario: A non-positive reporting minimum fails at load
+
+- **WHEN** the minimum sample size is configured as zero or negative
+- **THEN** loading the configuration fails naming the setting
+

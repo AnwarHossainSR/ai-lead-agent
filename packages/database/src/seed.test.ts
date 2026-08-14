@@ -7,7 +7,10 @@ import { leads } from "./schema/leads";
 import { outreach } from "./schema/outreach";
 import { websiteAnalysis } from "./schema/website-analysis";
 import { SeedRefusedError, assertSeedable, seed } from "./seed";
+import { EXAMPLE_COMPANIES } from "./seed-data";
+import { accountInput } from "./testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "./testing/harness";
+import { insertAccount } from "./write/accounts";
 
 let harness: TestDatabase;
 
@@ -22,6 +25,16 @@ beforeEach(async () => {
 afterAll(async () => {
   await harness.close();
 });
+
+/**
+ * The seed attributes approvals, rejections, sends and do-not-contact markers
+ * to a real account, because the database refuses those rows otherwise. Every
+ * test that seeds therefore needs an operator to exist first — which is the
+ * same ordering `pnpm db:fresh:seed` enforces.
+ */
+async function givenAnOperator(): Promise<void> {
+  await insertAccount(harness.database, accountInput({ role: "operator" }));
+}
 
 async function counts(): Promise<Record<string, number>> {
   const [row] = await harness.database
@@ -39,19 +52,21 @@ async function counts(): Promise<Record<string, number>> {
 
 describe("seeding", () => {
   it("writes an example dataset across every table", async () => {
+    await givenAnOperator();
+
     const result = await seed(harness.database);
 
     expect(result.seeded).toBe(true);
-    expect(await counts()).toEqual({
-      companies: 2,
-      contacts: 1,
-      analyses: 1,
-      leads: 1,
-      outreach: 1,
-    });
+
+    const written = await counts();
+    expect(written.companies).toBe(EXAMPLE_COMPANIES.length);
+    for (const [table, count] of Object.entries(written)) {
+      expect(count, `${table} should have rows`).toBeGreaterThan(0);
+    }
   });
 
   it("is idempotent — a second run leaves the counts unchanged", async () => {
+    await givenAnOperator();
     await seed(harness.database);
     const afterFirst = await counts();
 
@@ -60,12 +75,22 @@ describe("seeding", () => {
     expect(second.seeded).toBe(false);
     expect(await counts()).toEqual(afterFirst);
   });
+
+  it("refuses, rather than writing unattributed rows, when no operator exists", async () => {
+    await expect(seed(harness.database)).rejects.toThrow(SeedRefusedError);
+    await expect(seed(harness.database)).rejects.toThrow(/no enabled operator account/);
+
+    expect((await counts()).companies).toBe(0);
+  });
 });
 
 describe("seeded records", () => {
-  it("are all marked as example data", async () => {
+  beforeEach(async () => {
+    await givenAnOperator();
     await seed(harness.database);
+  });
 
+  it("are all marked as example data", async () => {
     const companyRows = await harness.database.select().from(companies);
     const contactRows = await harness.database.select().from(contacts);
     const analysisRows = await harness.database.select().from(websiteAnalysis);
@@ -79,27 +104,74 @@ describe("seeded records", () => {
   });
 
   it("are named so they cannot be mistaken for researched data", async () => {
-    await seed(harness.database);
-
     const rows = await harness.database.select().from(companies);
+
+    expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((row) => row.name.startsWith("Example"))).toBe(true);
   });
 
   it("include an unmeasured score, so unknown is visible in local data", async () => {
-    await seed(harness.database);
+    const rows = await harness.database.select().from(websiteAnalysis);
 
-    const [analysis] = await harness.database.select().from(websiteAnalysis);
-    expect(analysis?.accessibilityScore).toBeNull();
-    expect(analysis?.performanceScore).toBe(42);
+    expect(rows.some((row) => row.accessibilityScore === null)).toBe(true);
+    expect(rows.some((row) => row.performanceScore !== null)).toBe(true);
   });
 
-  it("leave the outreach draft unapproved and unsent", async () => {
-    await seed(harness.database);
+  /**
+   * A seed containing only complete rows teaches the interface to look good on
+   * data it will never see. These are the states most easily forgotten.
+   */
+  it("includes a company with no website at all", async () => {
+    const rows = await harness.database.select().from(companies);
 
-    const [draft] = await harness.database.select().from(outreach);
-    expect(draft?.status).toBe("draft");
-    expect(draft?.approvedAt).toBeNull();
-    expect(draft?.sentAt).toBeNull();
+    expect(rows.some((row) => row.website === null)).toBe(true);
+  });
+
+  it("includes an analysis that was blocked, not merely low-scoring", async () => {
+    const rows = await harness.database.select().from(websiteAnalysis);
+
+    expect(rows.some((row) => row.outcome === "blocked")).toBe(true);
+    expect(rows.some((row) => row.outcome === "partial")).toBe(true);
+    expect(rows.some((row) => row.outcome === "completed")).toBe(true);
+  });
+
+  it("covers every outreach status a reviewer can encounter", async () => {
+    const rows = await harness.database.select().from(outreach);
+    const statuses = new Set(rows.map((row) => row.status));
+
+    for (const status of ["draft", "pending_approval", "approved", "sent", "replied", "rejected"]) {
+      expect(statuses, `expected a ${status} record`).toContain(status);
+    }
+  });
+
+  it("attributes every approval, rejection and send to the account that acted", async () => {
+    const rows = await harness.database.select().from(outreach);
+
+    for (const row of rows) {
+      expect(row.approvedAt === null).toBe(row.approvedByAccountId === null);
+      expect(row.rejectedAt === null).toBe(row.rejectedByAccountId === null);
+      expect(row.sentAt === null).toBe(row.sentByAccountId === null);
+    }
+
+    expect(rows.some((row) => row.approvedByAccountId !== null)).toBe(true);
+    expect(rows.some((row) => row.rejectedByAccountId !== null)).toBe(true);
+    expect(rows.some((row) => row.sentByAccountId !== null)).toBe(true);
+  });
+
+  it("marks one company and one contact as do-not-contact", async () => {
+    const companyRows = await harness.database.select().from(companies);
+    const contactRows = await harness.database.select().from(contacts);
+
+    expect(companyRows.some((row) => row.doNotContactAt !== null)).toBe(true);
+    expect(contactRows.some((row) => row.doNotContactAt !== null)).toBe(true);
+  });
+
+  it("spreads leads across the score range rather than clustering them", async () => {
+    const rows = await harness.database.select().from(leads);
+    const scores = rows.map((row) => row.leadScore);
+
+    expect(rows.length).toBeGreaterThan(5);
+    expect(Math.max(...scores) - Math.min(...scores)).toBeGreaterThan(30);
   });
 });
 

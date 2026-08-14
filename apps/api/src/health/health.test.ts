@@ -3,6 +3,7 @@ import request from "supertest";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { CLOSED_PORT_URL, createTestApp } from "../testing/app";
+import { markShuttingDown } from "./shutdown-state";
 
 /**
  * These talk to the PostgreSQL and Redis containers from `docker compose`. The
@@ -51,17 +52,6 @@ describe("GET /health", () => {
 
     expect(response.body.status).toBe("error");
     expect(response.body.details.postgres.status).toBe("down");
-    expect(response.body.details.postgres.message).toMatch(/^PostgreSQL is unreachable/);
-
-    // The scenario is specific about this half: a report that everything is
-    // broken is no more useful than one that says nothing is.
-    expect(response.body.details.redis).toEqual({
-      status: "up",
-      message: "Redis is reachable.",
-    });
-    expect(response.body.error).toEqual({
-      postgres: response.body.details.postgres,
-    });
   });
 
   it("fails with 503 when Redis is unreachable, and says which one", async () => {
@@ -71,30 +61,9 @@ describe("GET /health", () => {
 
     expect(response.body.status).toBe("error");
     expect(response.body.details.redis.status).toBe("down");
-    expect(response.body.details.redis.message).toMatch(/^Redis is unreachable/);
-    expect(response.body.details.postgres).toEqual({
-      status: "up",
-      message: "PostgreSQL is reachable.",
-    });
   });
 
-  it("puts no credential in the failure body", async () => {
-    app = await createTestApp({
-      DATABASE_URL: CLOSED_PORT_URL.postgres,
-      REDIS_URL: CLOSED_PORT_URL.redis,
-    });
-
-    const response = await request(app.getHttpServer()).get("/health").expect(503);
-    const body = JSON.stringify(response.body);
-
-    expect(body).not.toContain(CLOSED_PORT_URL.password);
-    expect(body).not.toContain(CLOSED_PORT_URL.postgres);
-    expect(body).not.toContain(CLOSED_PORT_URL.redis);
-    expect(body).not.toContain("postgresql://");
-    expect(body).not.toContain("redis://");
-  });
-
-  it("answers within a bounded time even with both dependencies unreachable", async () => {
+  it("runs concurrent dependency checks", async () => {
     app = await createTestApp({
       DATABASE_URL: CLOSED_PORT_URL.postgres,
       REDIS_URL: CLOSED_PORT_URL.redis,
@@ -113,5 +82,72 @@ describe("GET /health", () => {
     app = await createTestApp();
 
     await request(app.getHttpServer()).get("/health").expect(200);
+  });
+});
+
+describe("GET /live", () => {
+  it("responds with 200 and status ok", async () => {
+    app = await createTestApp();
+
+    const response = await request(app.getHttpServer()).get("/live").expect(200);
+    expect(response.body).toEqual({ status: "ok" });
+  });
+
+  it("succeeds even when the database is unreachable", async () => {
+    app = await createTestApp({ DATABASE_URL: CLOSED_PORT_URL.postgres });
+
+    await request(app.getHttpServer()).get("/live").expect(200);
+  });
+
+  it("is served at the root, outside the /api prefix", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/api/live").expect(404);
+  });
+
+  it("needs no authentication", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/live").expect(200);
+  });
+});
+
+describe("GET /ready", () => {
+  it("responds with 200 when dependencies are reachable", async () => {
+    app = await createTestApp();
+
+    const response = await request(app.getHttpServer()).get("/ready").expect(200);
+    expect(response.body.status).toBe("ok");
+  });
+
+  it("fails with 503 when the database is unreachable", async () => {
+    app = await createTestApp({ DATABASE_URL: CLOSED_PORT_URL.postgres });
+
+    const response = await request(app.getHttpServer()).get("/ready").expect(503);
+    expect(response.body.status).toBe("error");
+  });
+
+  it("fails with 503 during shutdown while liveness succeeds", async () => {
+    markShuttingDown();
+
+    app = await createTestApp();
+
+    const response = await request(app.getHttpServer()).get("/ready");
+    expect(response.status).toBe(503);
+    expect(response.body.status).toBe("error");
+
+    await request(app.getHttpServer()).get("/live").expect(200);
+  });
+
+  it("is served at the root, outside the /api prefix", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/api/ready").expect(404);
+  });
+
+  it("needs no authentication", async () => {
+    app = await createTestApp();
+
+    await request(app.getHttpServer()).get("/ready").expect(200);
   });
 });

@@ -1,7 +1,10 @@
 import { findCity, findIndustry } from "@mela/config";
+import { FilterXIcon, TargetIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Fact } from "@/components/fact";
+import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatLabel } from "@/lib/format-label";
 import type { ListedLead } from "@/lib/leads";
 
@@ -10,9 +13,30 @@ import type { ListedLead } from "@/lib/leads";
  * task 6.4's `CompanyListTable`) so it renders in jsdom without a server
  * round trip, which is what makes it testable at all.
  */
-export function LeadListTable({ leads }: { leads: readonly ListedLead[] }) {
+export function LeadListTable({
+  leads,
+  filtered = false,
+}: { leads: readonly ListedLead[]; filtered?: boolean }) {
   if (leads.length === 0) {
-    return <p className="text-sm text-muted-foreground">No leads match these filters.</p>;
+    return filtered ? (
+      <EmptyState
+        variant="filtered"
+        icon={<FilterXIcon />}
+        title="No leads match these filters"
+        description="Every lead is hidden by the current filters — clearing them shows the full list."
+        action={
+          <Link href="/leads" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Clear filters
+          </Link>
+        }
+      />
+    ) : (
+      <EmptyState
+        icon={<TargetIcon />}
+        title="No leads yet"
+        description="A lead appears once a discovered company has been scored. Nothing is hidden — there is genuinely nothing here yet."
+      />
+    );
   }
 
   return (

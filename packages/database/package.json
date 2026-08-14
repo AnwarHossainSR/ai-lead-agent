@@ -36,7 +36,7 @@
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/scripts/seed.ts",
-    "db:fresh": "pnpm db:reset && pnpm db:migrate && pnpm db:seed"
+    "db:fresh": "pnpm db:reset && pnpm db:migrate"
   },
   "dependencies": {
     "@mela/config": "workspace:*",

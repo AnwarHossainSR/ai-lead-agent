@@ -271,3 +271,15 @@ export {
   sessionCookieAttributes,
   type SessionCookieAttributes,
 } from "./session-cookie";
+
+export {
+  OBSERVABILITY_CONFIG,
+  REDACTION_PATTERNS,
+  metricLabelSetSchema,
+  observabilityConfigSchema,
+  redactionConfigSchema,
+  registerSecretForRedaction,
+  type MetricLabelSet,
+  type ObservabilityConfig,
+  type RedactionConfig,
+} from "./observability";

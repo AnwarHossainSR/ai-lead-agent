@@ -67,7 +67,7 @@ Implications can form chains (A implies B implies C), but cycles are rejected at
 To re-run detection against an existing analysis:
 
 ```bash
-curl -X POST http://localhost:3001/api/analysis/{analysisId}/detect
+curl -X POST http://localhost:4000/api/analysis/{analysisId}/detect
 ```
 
 This re-runs the matcher against the stored capture without making any network requests.
@@ -77,7 +77,7 @@ This re-runs the matcher against the stored capture without making any network r
 To get the latest detected technologies for a company:
 
 ```bash
-curl http://localhost:3001/api/companies/{companyId}/technologies
+curl http://localhost:4000/api/companies/{companyId}/technologies
 ```
 
 Returns the detections from the most recent completed analysis.

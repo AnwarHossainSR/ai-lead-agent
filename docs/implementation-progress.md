@@ -22,10 +22,10 @@
 
 | Done | #   | Change                | Depends on                          | Tasks |
 | ---- | --- | --------------------- | ----------------------------------- | ----- |
-| [ ]  | 12  | `add-background-jobs` | 2–11                                | 52    |
-| [ ]  | 13  | `add-dashboard`       | 8, 11                               | 50    |
-| [ ]  | 14  | `add-authentication`  | — for the API; 13 for its UI half   | 51    |
-| [ ]  | 15  | `add-observability`   | — for logging; 12 for queue metrics | 48    |
+| [x]  | 12  | `add-background-jobs` | 2–11                                | 52    |
+| [x]  | 13  | `add-dashboard`       | 8, 11                               | 50    |
+| [x]  | 14  | `add-authentication`  | — for the API; 13 for its UI half   | 51    |
+| [x]  | 15  | `add-observability`   | — for logging; 12 for queue metrics | 48    |
 | [ ]  | 16  | `add-deployment`      | 14, 15                              | 55    |
 
 ### What can be built in parallel

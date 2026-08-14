@@ -1,6 +1,8 @@
+import { Unavailable } from "@/components/data-state";
 import { LeadFiltersBar } from "@/components/lead-filters-bar";
 import { LeadListTable } from "@/components/lead-list-table";
 import { Panel } from "@/components/panel";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { buildLeadsQuery, leadListFiltersSchema } from "@/lib/lead-filters";
@@ -12,7 +14,7 @@ import { type RawSearchParams, parseSearchParams } from "@/lib/search-params";
  * kept it from loading (design D7) — this panel's failure never takes the
  * rest of the page, including the filter controls, down with it.
  */
-async function LeadList({ query }: { query: string }) {
+async function LeadList({ query, filtered }: { query: string; filtered: boolean }) {
   const url = apiUrl(`/leads${query}`);
 
   const result =
@@ -21,15 +23,10 @@ async function LeadList({ query }: { query: string }) {
       : await fetchWithTimeout<ListedLead[]>(url);
 
   if (result.status !== "ok") {
-    return (
-      <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-        <p className="text-sm font-medium text-destructive">Leads are unavailable</p>
-        <p className="mt-1 text-sm text-muted-foreground">{result.error}</p>
-      </div>
-    );
+    return <Unavailable title="Leads" status={result.status} error={result.error} />;
   }
 
-  return <LeadListTable leads={result.data} />;
+  return <LeadListTable leads={result.data} filtered={filtered} />;
 }
 
 interface LeadsPageProps {
@@ -40,6 +37,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
   const rawParams = await searchParams;
   const filters = parseSearchParams(rawParams, leadListFiltersSchema);
   const query = buildLeadsQuery(filters);
+  const hasFilters = Object.values(filters).some((value) => value !== undefined);
 
   return (
     <div className="space-y-6">
@@ -57,8 +55,8 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
         stale={filters.stale}
       />
 
-      <Panel title="Leads">
-        <LeadList query={query} />
+      <Panel title="Leads" fallback={<TableSkeleton rows={8} columns={7} label="Loading leads" />}>
+        <LeadList query={query} filtered={hasFilters} />
       </Panel>
     </div>
   );

@@ -16,7 +16,13 @@
     "test": "turbo run test",
     "biome": "biome check --write .",
     "biome:check": "biome check .",
-    "db:fresh": "pnpm --filter @mela/database db:fresh"
+    "db:fresh": "pnpm db:reset && pnpm db:migrate && pnpm db:seed:accounts",
+    "db:seed:dev": "pnpm db:seed:accounts",
+    "db:reset": "pnpm --filter @mela/database db:reset",
+    "db:migrate": "pnpm --filter @mela/database db:migrate",
+    "db:seed:accounts": "pnpm --filter @mela/api seed:accounts",
+    "db:seed:data": "pnpm --filter @mela/database db:seed",
+    "db:fresh:seed": "pnpm db:fresh && pnpm db:seed:data"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

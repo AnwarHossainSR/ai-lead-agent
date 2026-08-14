@@ -4,6 +4,7 @@ import { QUEUE_CONFIGS, type QueueConfig } from "@mela/config";
 
 const baseJobPayloadSchema = z.object({
   force: z.boolean().default(false),
+  correlationId: z.string().optional(),
 });
 
 export type BaseJobPayload = z.infer<typeof baseJobPayloadSchema>;

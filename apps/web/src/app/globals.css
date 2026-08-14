@@ -2,14 +2,31 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * `dark:` applies either when an ancestor carries `.dark` (an explicit choice)
+ * or, with no explicit choice, when the OS asks for a dark scheme — the same
+ * two conditions under which the dark tokens below are selected. `.light` opts
+ * out of the second, so an explicit light choice wins over a dark OS scheme.
+ */
+@custom-variant dark {
+  &:is(.dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:is(:root:not(.light) *) {
+      @slot;
+    }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* `--font-sans` referenced itself here, which resolves to nothing — the app
+     rendered in the browser's default sans, not Geist. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-space-grotesk), var(--font-geist-sans), sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,6 +68,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --font-display: var(--font-space-grotesk);
+  --shadow-xs: var(--elevation-1);
+  --shadow-sm: var(--elevation-2);
+  --shadow-md: var(--elevation-3);
+  --shadow-lg: var(--elevation-4);
+  --animate-rise-in: rise-in var(--duration-base) cubic-bezier(0.22, 1, 0.36, 1) both;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -116,6 +139,20 @@
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
+
+  /*
+   * Elevation is tinted with the primary hue rather than neutral black: a grey
+   * shadow over a blue-tinted canvas reads as dirt, a hue-matched one reads as
+   * depth. The top hairline is what makes a card look lit from above.
+   */
+  --elevation-highlight: color-mix(in oklch, var(--card), white 60%);
+  --elevation-1: 0 1px 2px -1px color-mix(in oklch, var(--primary) 22%, transparent);
+  --elevation-2: 0 1px 2px -1px color-mix(in oklch, var(--primary) 18%, transparent), 0 4px 12px
+    -4px color-mix(in oklch, var(--primary) 16%, transparent);
+  --elevation-3: 0 2px 4px -2px color-mix(in oklch, var(--primary) 18%, transparent), 0 10px 24px
+    -8px color-mix(in oklch, var(--primary) 18%, transparent);
+  --elevation-4: 0 4px 8px -4px color-mix(in oklch, var(--primary) 20%, transparent), 0 20px 48px
+    -12px color-mix(in oklch, var(--primary) 22%, transparent);
 }
 
 .dark {
@@ -162,6 +199,13 @@
   --sidebar-accent-foreground: oklch(0.96 0.01 258);
   --sidebar-border: oklch(0.36 0.02 258);
   --sidebar-ring: oklch(0.62 0.14 258);
+
+  /* On a dark canvas depth comes from a lit top edge and a deep shadow. */
+  --elevation-highlight: color-mix(in oklch, var(--card), white 8%);
+  --elevation-1: 0 1px 2px -1px oklch(0 0 0 / 40%);
+  --elevation-2: 0 1px 2px -1px oklch(0 0 0 / 40%), 0 4px 12px -4px oklch(0 0 0 / 45%);
+  --elevation-3: 0 2px 4px -2px oklch(0 0 0 / 45%), 0 10px 24px -8px oklch(0 0 0 / 50%);
+  --elevation-4: 0 4px 8px -4px oklch(0 0 0 / 50%), 0 20px 48px -12px oklch(0 0 0 / 60%);
 }
 
 /*
@@ -221,11 +265,130 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+    /*
+     * A single wash anchored where the sidebar meets the header, so the canvas
+     * has a light source instead of being a flat fill. Fixed, so it does not
+     * slide around under a scrolling table.
+     */
+    background-image: radial-gradient(
+      120rem 60rem at 8% -10%,
+      color-mix(in oklch, var(--primary) 10%, transparent),
+      transparent 60%
+    );
+    background-attachment: fixed;
   }
+
   html {
     @apply font-sans;
+  }
+
+  /* Headings and metrics carry the display face; body text does not. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), var(--font-sans);
+    letter-spacing: -0.02em;
+  }
+
+  /* Figures line up column-wise wherever numbers are compared. */
+  [data-numeric] {
+    font-family: var(--font-display), var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+}
+
+/*
+ * The certainty rail — this workspace's signature.
+ *
+ * Every card and row that stands for a claim carries a left rail whose *style*
+ * says how well the claim is established: solid for observed, dotted for
+ * inferred, dashed for unknown or unavailable. It is the observed / inferred /
+ * unknown distinction the product is built on, made into the thing the
+ * interface is recognised by — and it survives greyscale, because the pattern
+ * carries the meaning, not the colour.
+ */
+@layer components {
+  [data-rail] {
+    position: relative;
+    isolation: isolate;
+  }
+
+  [data-rail]::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    border-start-start-radius: inherit;
+    border-end-start-radius: inherit;
+    background: var(--rail-color, var(--border));
+    transition: opacity var(--duration-base) ease;
+  }
+
+  [data-rail="observed"]::before {
+    opacity: 1;
+  }
+
+  /* Dotted and dashed are drawn as repeating gradients so the pattern holds at
+     any height without an SVG. */
+  [data-rail="inferred"]::before {
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--rail-color, var(--border)) 0 3px,
+      transparent 3px 6px
+    );
+  }
+
+  [data-rail="unknown"]::before {
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--rail-color, var(--border)) 0 8px,
+      transparent 8px 14px
+    );
+    opacity: 0.7;
+  }
+
+  [data-tone="success"] {
+    --rail-color: var(--success);
+  }
+  [data-tone="warning"] {
+    --rail-color: var(--warning);
+  }
+  [data-tone="danger"] {
+    --rail-color: var(--danger);
+  }
+  [data-tone="info"] {
+    --rail-color: var(--info);
+  }
+  [data-tone="primary"] {
+    --rail-color: var(--primary);
+  }
+}
+
+/*
+ * The load sequence: content rises into place once, in reading order, rather
+ * than every element animating independently. `--enter-index` sets a card's
+ * place in the order.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer components {
+  [data-enter] {
+    animation: rise-in var(--duration-slow) cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--enter-index, 0) * 60ms);
   }
 }
 
@@ -235,6 +398,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

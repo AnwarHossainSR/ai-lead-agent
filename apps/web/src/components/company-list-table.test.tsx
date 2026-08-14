@@ -96,6 +96,27 @@ describe("CompanyListTable", () => {
   it("shows an empty state rather than an empty table", () => {
     render(<CompanyListTable companies={[]} />);
 
-    expect(screen.getByText("No companies match these filters.")).toBeInTheDocument();
+    expect(screen.getByText("No companies yet")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  /**
+   * "Nothing yet" and "a filter is hiding it" are different facts (spec: empty
+   * state). Conflating them is how a reader concludes the pipeline produced
+   * nothing when a filter is simply set.
+   */
+  it("distinguishes a filtered empty list from a genuinely empty one, and offers a way out", () => {
+    const { rerender } = render(<CompanyListTable companies={[]} />);
+
+    expect(screen.getByText("No companies yet")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Clear filters" })).not.toBeInTheDocument();
+
+    rerender(<CompanyListTable companies={[]} filtered />);
+
+    expect(screen.getByText("No companies match these filters")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Clear filters" })).toHaveAttribute(
+      "href",
+      "/companies",
+    );
   });
 });

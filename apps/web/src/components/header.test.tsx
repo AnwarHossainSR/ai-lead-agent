@@ -1,5 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+}));
+
+vi.mock("@/app/theme-actions", () => ({
+  setThemePreferenceAction: vi.fn(async () => {}),
+  setSidebarCollapsedAction: vi.fn(async () => {}),
+}));
 
 import { Header } from "./header";
 
@@ -18,5 +27,17 @@ describe("Header", () => {
 
     expect(screen.getByText(/viewer@example\.com/)).toBeInTheDocument();
     expect(screen.getByText(/viewer/)).toBeInTheDocument();
+  });
+
+  it("offers the theme control and the small-screen navigation control", () => {
+    render(
+      <Header
+        account={{ id: "account-1", email: "ops@example.com", role: "operator" }}
+        theme="dark"
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /^Theme: Dark/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Open navigation" })).toBeInTheDocument();
   });
 });

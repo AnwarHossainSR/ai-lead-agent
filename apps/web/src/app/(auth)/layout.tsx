@@ -1,5 +1,5 @@
 import { ToastProvider } from "@/components/ui/toast";
-import { readFlashToast } from "@/lib/flash-toast";
+import { readFlashToast } from "@/lib/flash-toast.server";
 
 /** No header, no sidebar — the sign-in page is reachable before anyone is signed in. */
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {

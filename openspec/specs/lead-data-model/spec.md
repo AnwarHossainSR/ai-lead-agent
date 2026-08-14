@@ -388,3 +388,233 @@ The system SHALL record each distinct source that has produced a given company, 
 - **WHEN** the same source produces the same company twice
 - **THEN** one source record exists for that pair, with an updated time
 
+### Requirement: Consequential actions carry the account that performed them
+
+The system SHALL record an actor reference on every outreach approval, rejection, manual send record and do-not-contact marker. A write recording one of those actions without an actor SHALL be rejected. Deleting an account SHALL NOT be permitted while actions reference it; an account is disabled instead.
+
+#### Scenario: An approval stores its actor
+
+- **WHEN** an outreach message is approved
+- **THEN** the row carries the account that approved it
+
+#### Scenario: An approval without an actor is refused
+
+- **WHEN** a write attempts to record an approval with no actor reference
+- **THEN** the database rejects it
+
+#### Scenario: A do-not-contact marker stores its actor
+
+- **WHEN** a company or contact is marked as not to be contacted
+- **THEN** the row carries the account that set it
+
+#### Scenario: An account referenced by actions cannot be deleted
+
+- **WHEN** deletion is attempted for an account referenced by a recorded action
+- **THEN** the deletion is refused
+
+### Requirement: Accounts, sessions and audit entries are persisted
+
+The system SHALL persist accounts with a unique identifier, an email address unique across accounts, a password hash, a role, a disabled marker and timestamps; sessions with their account, expiry and revocation state; and audit entries that are append-only. A password hash SHALL never be returned by a read helper.
+
+#### Scenario: A duplicate email is refused
+
+- **WHEN** a second account is created with an existing email address
+- **THEN** the write is refused
+
+#### Scenario: An unrecognised role is refused
+
+- **WHEN** a write attempts to store a role outside the defined set
+- **THEN** the database rejects it
+
+#### Scenario: A password hash is not returned by reads
+
+- **WHEN** an account is read through the public read helpers
+- **THEN** the result carries no password hash
+
+#### Scenario: Audit entries cannot be updated or deleted
+
+- **WHEN** an update or delete is attempted against an audit entry
+- **THEN** it is refused
+
+#### Scenario: Expired and revoked sessions are distinguishable
+
+- **WHEN** an expired session and a revoked session are read
+- **THEN** the two states are distinguishable
+
+### Requirement: Score snapshots are persisted with their inputs
+
+The system SHALL persist one snapshot per scoring run carrying the lead, the component values, the total, the priority, the explanation, the weight version, and identifiers of the evidence the score was computed from. Snapshots SHALL accumulate rather than being overwritten. A snapshot whose total does not equal the weighted sum of its components SHALL be rejected.
+
+#### Scenario: A snapshot is stored with its inputs
+
+- **WHEN** a scoring run completes
+- **THEN** a snapshot row exists carrying the components, total, priority, explanation, weight version and evidence identifiers
+
+#### Scenario: An inconsistent snapshot is refused
+
+- **WHEN** a write attempts to store a snapshot whose total does not match its weighted components
+- **THEN** the database rejects it
+
+#### Scenario: A blank explanation is refused
+
+- **WHEN** a write attempts to store a snapshot with a blank explanation
+- **THEN** the database rejects it
+
+#### Scenario: Rescoring accumulates snapshots
+
+- **WHEN** a lead is scored twice
+- **THEN** two snapshots exist
+
+#### Scenario: Deleting a lead removes its snapshots
+
+- **WHEN** a lead is deleted
+- **THEN** its snapshots are deleted with it
+
+### Requirement: A lead records the weight version it was scored with
+
+The system SHALL record on each lead the weight version used for its current score and the time it was scored. Leads SHALL be listable by a weight version older than the current one without a full scan.
+
+#### Scenario: The weight version is recorded
+
+- **WHEN** a lead is scored
+- **THEN** the lead records the weight version and the time
+
+#### Scenario: Stale leads are listed by version
+
+- **WHEN** leads are queried for a weight version older than the current one
+- **THEN** they are returned using an index
+
+#### Scenario: A score without a weight version is refused
+
+- **WHEN** a write attempts to store a lead score with no weight version
+- **THEN** the database rejects it
+
+### Requirement: Scoring cannot alter a lead's status
+
+The system SHALL prevent a scoring write from changing a lead's status. Status changes SHALL continue to occur only through the controlled transition path.
+
+#### Scenario: A score update leaves the status unchanged
+
+- **WHEN** a lead's score is updated
+- **THEN** its status is unchanged
+
+#### Scenario: A scoring write attempting a status change is refused
+
+- **WHEN** a scoring write includes a status value
+- **THEN** the write is refused with an error stating that status changes go through the transition path
+
+### Requirement: Research summaries are persisted as generated content
+
+The system SHALL persist one record per generated summary carrying the lead, the structured summary sections, the cited facts, the explicit unknown list, the prompt version, a reference to the model invocation, a marker identifying it as model-generated, and the time it was produced. A summary with no cited facts SHALL be rejected. A summary without an invocation reference SHALL be rejected.
+
+#### Scenario: A summary is stored with its provenance
+
+- **WHEN** a summary is generated
+- **THEN** a row exists carrying the sections, citations, unknown list, prompt version and invocation reference
+
+#### Scenario: A summary without citations is refused
+
+- **WHEN** a write attempts to store a summary with no cited facts
+- **THEN** the database rejects it
+
+#### Scenario: A summary without an invocation is refused
+
+- **WHEN** a write attempts to store a summary with no invocation reference
+- **THEN** the database rejects it
+
+#### Scenario: A summary cannot be stored as human-authored
+
+- **WHEN** a write attempts to store a summary marked as not model-generated
+- **THEN** the database rejects it
+
+#### Scenario: Deleting a lead removes its summaries
+
+- **WHEN** a lead is deleted
+- **THEN** its summaries are deleted with it
+
+### Requirement: The current summary is unambiguous
+
+The system SHALL identify one current summary per lead, resolved by the most recent successful generation and broken deterministically on a tie, while retaining earlier summaries.
+
+#### Scenario: The most recent summary is current
+
+- **WHEN** a lead has several summaries
+- **THEN** the most recently generated one is returned as current
+
+#### Scenario: A tie resolves the same way every time
+
+- **WHEN** two summaries share a generation timestamp and the current one is requested repeatedly
+- **THEN** the same one is returned each time
+
+### Requirement: Responses are persisted against the message they answer
+
+The system SHALL persist one record per recorded response carrying the outreach record it answers, the response kind, the time it arrived, its text where supplied, the classification proposed, the category confirmed, and the model invocation where classification was involved. A response whose time precedes its message's send time SHALL be rejected.
+
+#### Scenario: A response is stored with its kind and time
+
+- **WHEN** a response is recorded
+- **THEN** a row exists carrying the outreach record, the kind and the arrival time
+
+#### Scenario: A response before the send is refused
+
+- **WHEN** a write attempts to store a response earlier than the message's send time
+- **THEN** the database rejects it
+
+#### Scenario: A classified response references its invocation
+
+- **WHEN** a response was classified by a model
+- **THEN** the row references the invocation that classified it
+
+#### Scenario: An unrecognised response kind is refused
+
+- **WHEN** a write attempts to store a response kind outside the defined set
+- **THEN** the database rejects it
+
+#### Scenario: Deleting an outreach record removes its responses
+
+- **WHEN** an outreach record is deleted
+- **THEN** its responses are deleted with it
+
+### Requirement: The send record carries how and when a person sent it
+
+The system SHALL record on a sent outreach record the means by which the person sent it and the time they state they sent it, and SHALL reject a send time earlier than the approval time. The existing constraints preventing a sent state without an approval SHALL continue to apply.
+
+#### Scenario: A send records its means
+
+- **WHEN** a send is recorded
+- **THEN** the row carries the means and the stated send time
+
+#### Scenario: A send without an approval is still refused
+
+- **WHEN** a write attempts to mark a record sent with no approval timestamp
+- **THEN** the database rejects it
+
+#### Scenario: A send before its approval is still refused
+
+- **WHEN** a write attempts to store a send time earlier than the approval time
+- **THEN** the database rejects it
+
+### Requirement: Do-not-contact state is persisted and enforced at the database
+
+The system SHALL persist a do-not-contact marker with the time it was set and the reason, on both companies and contacts. The system SHALL reject the creation of an outreach record for a company or contact carrying the marker.
+
+#### Scenario: The marker is stored with its reason and time
+
+- **WHEN** a company or contact is marked as not to be contacted
+- **THEN** the row carries the marker, the time and the reason
+
+#### Scenario: An outreach record for a marked contact is refused
+
+- **WHEN** a write attempts to create an outreach record for a marked contact
+- **THEN** the database rejects it
+
+#### Scenario: An outreach record for a marked company is refused
+
+- **WHEN** a write attempts to create an outreach record for a marked company
+- **THEN** the database rejects it
+
+#### Scenario: A blank reason is refused
+
+- **WHEN** a write attempts to set the marker with a blank reason
+- **THEN** the database rejects it
+
