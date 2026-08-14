@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, UsePipes, ValidationPipe } from "@nestjs/common";
 
 import { z } from "zod";
+import { RequiresRole } from "../auth/requires-role.decorator";
 import { createZodDto } from "../validation/zod-dto";
 import { ResearchSummaryService } from "./research-summary.service";
 
@@ -13,6 +14,7 @@ export class ResearchSummaryController {
   constructor(private readonly researchSummaryService: ResearchSummaryService) {}
 
   @Post("leads/:id/research-summary")
+  @RequiresRole("operator", "Generating a research summary")
   @UsePipes(new ValidationPipe({ transform: true }))
   async generateSummary(@Param("id") leadId: string, @Body() _body: GenerateSummaryRequestDto) {
     return this.researchSummaryService.generateSummary({ leadId });

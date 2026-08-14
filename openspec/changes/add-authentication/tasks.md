@@ -41,10 +41,10 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 5. Roles
 
-- [ ] 5.1 Add the `@RequiresRole` decorator read by the same guard, refusing with a message naming the action and the required role
-- [ ] 5.2 Apply it to outreach approval and rejection, manual send recording, do-not-contact marking, and every endpoint that triggers a model call
-- [ ] 5.3 Add API tests: a viewer refused on each consequential action with no model call made, an operator permitted
-- [ ] 5.4 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 5.1 Add the `@RequiresRole` decorator read by the same guard, refusing with a message naming the action and the required role — `auth/requires-role.decorator.ts` (`SetMetadata`, read by `SessionGuard.canActivate` after it sets `request.account`); throws `ForbiddenException` with `"${action} requires the ${role} role."`
+- [x] 5.2 Apply it to outreach approval and rejection, manual send recording, do-not-contact marking, and every endpoint that triggers a model call — approve/reject/sent and all four do-not-contact set/clear routes on `OutreachController` (clearing included alongside marking: undoing a do-not-contact protection is exactly as consequential as setting it); every AI-invoking route also gated: `draftOutreach`, `classifyResponse` (`OutreachController`), `generateSummary` (`ResearchSummaryController`), `researchContacts` (`ResearchController`), `analyze` (`OpportunityAnalysisController`)
+- [x] 5.3 Add API tests: a viewer refused on each consequential action with no model call made, an operator permitted — `auth/requires-role.test.ts`, table-driven over all 11 HTTP-reachable gated routes plus one metadata-only check (see note below); asserts the 403 message names the action and the role, and that a mocked `AI_SERVICE.run` is never called for the 5 model-triggering routes when refused
+- [x] 5.4 Verify: `pnpm --filter @mela/api lint typecheck test` passes — lint and typecheck clean; targeted run of `auth/`, `outreach/`, `research-summary/`, `research/`, `opportunity/` and `route-coverage.test.ts` is 147/147. **Incidental finding, not caused by this change**: `ResearchController` (contact research) is never imported into `AppModule` — `research/research.module.ts` exists but nothing wires it in, so `POST /api/companies/:id/contacts/research` is unreachable in the running app today. Out of scope to fix here (module composition, not authentication); `@RequiresRole` is applied to it regardless so it is correctly gated whenever it is wired up, and its gating is verified directly via decorator metadata since it cannot be reached over HTTP
 
 ## 6. Accounts and attribution
 

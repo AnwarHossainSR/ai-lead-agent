@@ -3,6 +3,7 @@ import type { PublicAccountRow } from "@mela/database";
 import {
   type CanActivate,
   type ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -12,6 +13,7 @@ import { AuthService } from "./auth.service";
 import { parseCookieHeader } from "./cookie";
 import type { RequestWithCookieHeader } from "./http-types";
 import { IS_PUBLIC_KEY } from "./public.decorator";
+import { REQUIRES_ROLE_KEY, type RequiresRoleMetadata } from "./requires-role.decorator";
 
 export interface RequestWithAccount extends RequestWithCookieHeader {
   account?: PublicAccountRow;
@@ -62,6 +64,17 @@ export class SessionGuard implements CanActivate {
 
     request.account = authenticated.account;
     request.sessionId = authenticated.sessionId;
+
+    const requiresRole = this.reflector.getAllAndOverride<RequiresRoleMetadata | undefined>(
+      REQUIRES_ROLE_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (requiresRole !== undefined && authenticated.account.role !== requiresRole.role) {
+      throw new ForbiddenException(
+        `${requiresRole.action} requires the ${requiresRole.role} role.`,
+      );
+    }
 
     return true;
   }

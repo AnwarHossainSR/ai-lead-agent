@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 
 import { type Database } from "@mela/database";
 import { companies, opportunities, opportunityAnalysisRuns } from "@mela/database";
+import { RequiresRole } from "../auth/requires-role.decorator";
 import { DATABASE } from "../database/database.module";
 
 import { OpportunityAnalysisService } from "./opportunity-analysis.service";
@@ -36,6 +37,7 @@ export class OpportunityAnalysisController {
    * POST /api/opportunity/analysis/:companyId — run opportunity analysis.
    */
   @Post(":companyId")
+  @RequiresRole("operator", "Running opportunity analysis")
   @HttpCode(HttpStatus.OK)
   async analyze(@Param("companyId") companyId: string): Promise<{
     readonly run: Record<string, unknown>;

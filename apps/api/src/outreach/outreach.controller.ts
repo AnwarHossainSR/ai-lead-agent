@@ -14,6 +14,7 @@ import {
 
 import { OUTREACH_STATUSES, type OutreachStatus } from "@mela/database";
 import { z } from "zod";
+import { RequiresRole } from "../auth/requires-role.decorator";
 import { createZodDto } from "../validation/zod-dto";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 
@@ -96,6 +97,7 @@ export class OutreachController {
   constructor(private readonly outreachDraftingService: OutreachDraftingService) {}
 
   @Post("leads/:id/outreach/draft")
+  @RequiresRole("operator", "Drafting outreach")
   @UsePipes(new ValidationPipe({ transform: true }))
   async draftOutreach(@Param("id") leadId: string, @Body() body: DraftOutreachRequestDto) {
     return this.outreachDraftingService.draftOutreach({
@@ -148,17 +150,20 @@ export class OutreachController {
   }
 
   @Post("outreach/:id/approve")
+  @RequiresRole("operator", "Approving outreach")
   async approveOutreach(@Param("id") outreachId: string) {
     return this.outreachDraftingService.approveOutreach(outreachId);
   }
 
   @Post("outreach/:id/reject")
+  @RequiresRole("operator", "Rejecting outreach")
   @UsePipes(new ValidationPipe({ transform: true }))
   async rejectOutreach(@Param("id") outreachId: string, @Body() body: RejectOutreachRequestDto) {
     return this.outreachDraftingService.rejectOutreach(outreachId, body.reason);
   }
 
   @Post("outreach/:id/sent")
+  @RequiresRole("operator", "Recording outreach as sent")
   @UsePipes(new ValidationPipe({ transform: true }))
   async recordOutreachSent(@Param("id") outreachId: string, @Body() body: RecordOutreachSentDto) {
     try {
@@ -172,6 +177,7 @@ export class OutreachController {
   }
 
   @Post("outreach/:id/responses/classify")
+  @RequiresRole("operator", "Classifying an outreach response")
   async classifyResponse(@Param("id") outreachId: string, @Body() body: ClassifyResponseDto) {
     try {
       return this.outreachDraftingService.classifyResponse(outreachId, body.replyText);
@@ -221,6 +227,7 @@ export class OutreachController {
   }
 
   @Post("companies/:id/do-not-contact")
+  @RequiresRole("operator", "Marking a company do-not-contact")
   @UsePipes(new ValidationPipe({ transform: true }))
   async setCompanyDoNotContact(
     @Param("id") companyId: string,
@@ -230,11 +237,13 @@ export class OutreachController {
   }
 
   @Post("companies/:id/clear-do-not-contact")
+  @RequiresRole("operator", "Clearing a company's do-not-contact marker")
   async clearCompanyDoNotContact(@Param("id") companyId: string) {
     return this.outreachDraftingService.clearCompanyDoNotContact(companyId);
   }
 
   @Post("contacts/:id/do-not-contact")
+  @RequiresRole("operator", "Marking a contact do-not-contact")
   @UsePipes(new ValidationPipe({ transform: true }))
   async setContactDoNotContact(
     @Param("id") contactId: string,
@@ -244,6 +253,7 @@ export class OutreachController {
   }
 
   @Post("contacts/:id/clear-do-not-contact")
+  @RequiresRole("operator", "Clearing a contact's do-not-contact marker")
   async clearContactDoNotContact(@Param("id") contactId: string) {
     return this.outreachDraftingService.clearContactDoNotContact(contactId);
   }
