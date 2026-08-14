@@ -8,6 +8,7 @@ import { QUEUE_CONFIGS } from "@mela/config";
 import { hydrateEnvironment, loadApiEnv } from "@mela/config/env";
 import { AppModule } from "./app.module";
 import { createLogger } from "./logging/create-logger";
+import { startMetricsServer, stopMetricsServer } from "./observability/metrics";
 import { QueueService } from "./worker/queue.service";
 
 async function bootstrap(): Promise<void> {
@@ -40,6 +41,9 @@ async function bootstrap(): Promise<void> {
   const queueService = new QueueService(qstash, env.QSTASH_URL);
   queueService.setup();
 
+  await startMetricsServer(env.METRICS_PORT);
+  workerLogger.log(`Metrics listening on http://localhost:${env.METRICS_PORT}/metrics`);
+
   const shutdown = async (signal: string): Promise<void> => {
     workerLogger.log(`Received ${signal}, shutting down gracefully...`);
 
@@ -55,6 +59,7 @@ async function bootstrap(): Promise<void> {
       workerLogger.error(error instanceof Error ? error.message : String(error));
     }
 
+    await stopMetricsServer();
     await app.close();
     workerLogger.log("Shutdown complete.");
     process.exit(0);

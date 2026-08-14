@@ -1,21 +1,20 @@
 import { type ApiEnv } from "@mela/config/env";
-import { ConsoleLogger, type LoggerService } from "@nestjs/common";
+import { type LoggerService } from "@nestjs/common";
+
+import { CorrelatedLogger } from "./correlated-logger";
 
 /**
  * Pretty, coloured output for a human at a terminal; one JSON object per line
  * everywhere else, which is what a log aggregator can actually index.
  *
- * No transport, no correlation IDs and no request logging yet — those arrive
- * with the observability phase. The constraint that matters now is that no
- * credential reaches the output, which is upheld upstream: `@mela/config`
- * strips raw values out of environment validation errors, and the health
- * checks build their messages from a fixed vocabulary rather than from driver
- * error text.
+ * Every log line carries the current correlation identifier and process role
+ * from the `AsyncLocalStorage` context set by the correlation interceptor
+ * (API) or the job processor (worker).
  */
 export function createLogger(nodeEnv: ApiEnv["NODE_ENV"]): LoggerService {
   const development = nodeEnv === "development";
 
-  return new ConsoleLogger({
+  return new CorrelatedLogger({
     json: !development,
     colors: development,
     timestamp: development,

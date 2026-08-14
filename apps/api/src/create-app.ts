@@ -3,6 +3,7 @@ import { type INestApplication, RequestMethod } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
 import { AppModule } from "./app.module";
+import { CorrelationInterceptor } from "./logging/correlation.interceptor";
 import { createLogger } from "./logging/create-logger";
 import { ZodValidationPipe } from "./validation/zod-validation.pipe";
 
@@ -28,6 +29,10 @@ export function configureApp(app: INestApplication, env: ApiEnv): INestApplicati
   // validates with Zod everywhere else, and two validation systems means a
   // rule enforced in one of them and forgotten in the other.
   app.useGlobalPipes(new ZodValidationPipe());
+
+  // Opens an AsyncLocalStorage correlation context per request, so every log
+  // line carries the same identifier and the response echoes it back.
+  app.useGlobalInterceptors(new CorrelationInterceptor());
 
   // Exactly one origin. A wildcard on an API that will later carry lead data
   // is not a default worth inheriting.

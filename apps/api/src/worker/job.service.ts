@@ -1,6 +1,8 @@
+import { randomUUID } from "node:crypto";
 import type { OnApplicationShutdown } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
 
+import { getCorrelationId, runWithCorrelation } from "../logging/correlation-context";
 import { type JobName, type JobPayload, resolveJobDefinition } from "./jobs.registry";
 import type { QueueService } from "./queue.service";
 
@@ -28,7 +30,13 @@ export class JobService implements OnApplicationShutdown {
   ): Promise<void> {
     const definition = resolveJobDefinition(name);
     const parsed = this.validatePayload(name, payload);
-    await this.queueService.publish(definition.queueName, parsed, options);
+
+    // Copy the current correlation identifier into the payload so the job
+    // inherits the request's identifier when enqueued during request handling.
+    const correlationId = getCorrelationId();
+    const enriched = correlationId !== undefined ? { ...parsed, correlationId } : parsed;
+
+    await this.queueService.publish(definition.queueName, enriched, options);
   }
 
   wrapProcessor<T extends JobName>(
@@ -38,7 +46,15 @@ export class JobService implements OnApplicationShutdown {
     return async (payload: JobPayload<T>): Promise<Skipped | undefined> => {
       try {
         const validated = this.validatePayload(name, payload);
-        return await processor(validated);
+
+        // Open a correlation context per job. Scheduled jobs without an
+        // originating request get their own identifier.
+        const correlationId =
+          (validated as { correlationId?: string }).correlationId ?? randomUUID();
+
+        return await runWithCorrelation({ correlationId, role: "worker" }, () =>
+          processor(validated),
+        );
       } catch (error) {
         if (error instanceof ValidationError) {
           this.logger.error(`Validation failed: ${error.message}`);

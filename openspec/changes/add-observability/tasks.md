@@ -23,13 +23,13 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 3. Correlation
 
-- [ ] 3.1 Add the `AsyncLocalStorage` context holding the correlation identifier and the process role
-- [ ] 3.2 Add middleware opening the context per request, adopting an inbound header and echoing it in the response
-- [ ] 3.3 Open the context per job, taking the identifier from the payload and generating one for a scheduled job
-- [ ] 3.4 Copy the current correlation identifier into every enqueued payload, validated by the job schema
-- [ ] 3.5 Make the logger read the identifier from the context so no call site passes it
-- [ ] 3.6 Add tests: lines from one request share an identifier, an inbound header is adopted and echoed, an enqueued job inherits it, a scheduled job gets its own
-- [ ] 3.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 3.1 Add the `AsyncLocalStorage` context holding the correlation identifier and the process role
+- [x] 3.2 Add middleware opening the context per request, adopting an inbound header and echoing it in the response
+- [x] 3.3 Open the context per job, taking the identifier from the payload and generating one for a scheduled job
+- [x] 3.4 Copy the current correlation identifier into every enqueued payload, validated by the job schema
+- [x] 3.5 Make the logger read the identifier from the context so no call site passes it
+- [x] 3.6 Add tests: lines from one request share an identifier, an inbound header is adopted and echoed, an enqueued job inherits it, a scheduled job gets its own
+- [x] 3.7 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 4. Metrics
 

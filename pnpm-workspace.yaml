@@ -74,6 +74,9 @@ catalog:
   # AI
   "@google/genai": 2.16.0
 
+  # Observability
+  "prom-client": 15.1.3
+
   # Authentication — Argon2id password hashing (design D3). Ships prebuilt
   # native binaries via node-gyp-build; no compiler needed on a normal install.
   argon2: 0.45.1

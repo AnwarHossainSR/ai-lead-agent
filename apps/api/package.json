@@ -28,6 +28,7 @@
     "argon2": "catalog:",
     "drizzle-orm": "catalog:",
     "ioredis": "catalog:",
+    "prom-client": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "zod": "catalog:"
