@@ -20,7 +20,7 @@ export interface ProviderOverride {
  * `process.env`.
  */
 const TEST_ENV: Record<string, string> = {
-  NODE_ENV: "test",
+  NODE_ENV: "development",
   DATABASE_URL: "postgresql://test:test@127.0.0.1:1/test",
   REDIS_URL: "redis://127.0.0.1:1",
   GEMINI_API_KEY: "test-gemini-key",
@@ -48,7 +48,7 @@ export async function createTestApp(
   overrides: Partial<ApiEnv> = {},
   providerOverrides: readonly ProviderOverride[] = [],
 ): Promise<INestApplication> {
-  const env: ApiEnv = { ...loadApiEnv({ ...TEST_ENV, ...overrides }), ...overrides };
+  const env: ApiEnv = { ...loadApiEnv(TEST_ENV), ...overrides };
 
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(API_ENV)
