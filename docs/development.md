@@ -1,5 +1,7 @@
 # Development Guide
 
+> **No authentication.** The web application and the API carry no authentication layer. Both are intended to be run locally only, until an authentication capability is added — do not expose either to a network beyond your own machine.
+
 ## Pinned Versions
 
 - **Node.js**: 22.x
