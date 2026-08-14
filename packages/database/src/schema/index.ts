@@ -27,4 +27,5 @@ export * from "./outreach";
 export * from "./outreach-responses";
 export * from "./ai-invocations";
 export * from "./verification-checks";
+export * from "./dependency-health-samples";
 export * from "./relations";

@@ -8,6 +8,7 @@ import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { CompaniesModule } from "./companies/companies.module";
 import { EnvModule } from "./config/env.module";
+import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { DiscoveryModule } from "./discovery/discovery.module";
 import { HealthModule } from "./health/health.module";
@@ -17,6 +18,7 @@ import { OutreachModule } from "./outreach/outreach.module";
 import { RedisModule } from "./redis/redis.module";
 import { ResearchSummaryModule } from "./research-summary/research-summary.module";
 import { ScoringModule } from "./scoring/scoring.module";
+import { SearchModule } from "./search/search.module";
 import { VerificationModule } from "./verification/verification.module";
 
 /**
@@ -45,6 +47,8 @@ import { VerificationModule } from "./verification/verification.module";
     AnalyticsModule,
     ResearchSummaryModule,
     OperationsModule,
+    DashboardModule,
+    SearchModule,
   ],
 })
 export class AppModule {}

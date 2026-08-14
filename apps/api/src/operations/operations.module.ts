@@ -2,11 +2,13 @@ import type { ApiEnv } from "@mela/config/env";
 import { Module } from "@nestjs/common";
 
 import { API_ENV } from "../config/env.module";
+import { DatabaseModule } from "../database/database.module";
 import { OperationsController } from "./operations.controller";
 import { OperationsService } from "./operations.service";
 import { QSTASH_CLIENT, createQStashClient } from "./qstash-client.provider";
 
 @Module({
+  imports: [DatabaseModule],
   controllers: [OperationsController],
   providers: [
     OperationsService,

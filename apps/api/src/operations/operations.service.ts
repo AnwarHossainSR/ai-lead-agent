@@ -1,6 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { QUEUE_CONFIGS } from "@mela/config";
+import { DISCOVERY_SOURCES, QUEUE_CONFIGS } from "@mela/config";
+import type { ApiEnv } from "@mela/config/env";
+import {
+  type Database,
+  type RateLimitStatus,
+  type SpendReport,
+  readRateLimits,
+  readSpend,
+} from "@mela/database";
+import { API_ENV } from "../config/env.module";
+import { DATABASE } from "../database/database.module";
 import { QSTASH_CLIENT, type QStashDlqClient } from "./qstash-client.provider";
 
 export interface QueueSummary {
@@ -55,7 +65,42 @@ function summarizeReason(responseStatus?: number, responseBody?: string): string
  */
 @Injectable()
 export class OperationsService {
-  constructor(@Inject(QSTASH_CLIENT) private readonly qstash: QStashDlqClient) {}
+  constructor(
+    @Inject(QSTASH_CLIENT) private readonly qstash: QStashDlqClient,
+    @Inject(DATABASE) private readonly database: Database,
+    @Inject(API_ENV) private readonly env: ApiEnv,
+  ) {}
+
+  /**
+   * Model spend against the ceiling that governs it.
+   *
+   * The window and the ceiling come from the same environment values the AI
+   * service enforces, so the panel reports the limit actually in force rather
+   * than a second copy of it that could drift.
+   */
+  async getSpend(): Promise<SpendReport> {
+    return readSpend(this.database, {
+      windowHours: this.env.AI_SPEND_WINDOW_HOURS,
+      ceilingUsd: this.env.AI_SPEND_CEILING_USD,
+    });
+  }
+
+  /**
+   * Each configured discovery source's rate limit, and what the database can
+   * honestly say about its use — which today is the last time a run used it,
+   * and explicitly *not* a request count, because none is persisted.
+   */
+  async getRateLimits(): Promise<readonly RateLimitStatus[]> {
+    return readRateLimits(
+      this.database,
+      DISCOVERY_SOURCES.map((source) => ({
+        id: source.id,
+        name: source.name,
+        enabled: source.enabled,
+        maxRequestRatePerMinute: source.maxRequestRatePerMinute,
+      })),
+    );
+  }
 
   async getQueues(): Promise<QueueSummary[]> {
     const { messages } = await this.qstash.dlq.listMessages({ count: MAX_DLQ_MESSAGES });

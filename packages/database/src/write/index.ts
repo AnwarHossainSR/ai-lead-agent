@@ -151,6 +151,12 @@ export {
 } from "./outreach";
 
 export {
+  recordDependencyHealthSample,
+  recordDependencyHealthSampleInputSchema,
+  type RecordDependencyHealthSampleInput,
+} from "./dependency-health";
+
+export {
   insertAIInvocation,
   insertAIInvocationInputSchema,
   spendInWindow,

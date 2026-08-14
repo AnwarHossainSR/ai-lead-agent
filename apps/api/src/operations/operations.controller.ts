@@ -1,3 +1,4 @@
+import type { RateLimitStatus, SpendReport } from "@mela/database";
 import { Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 
 import { type FailedJob, OperationsService, type QueueSummary } from "./operations.service";
@@ -14,6 +15,18 @@ export class OperationsController {
   @Get("failed-jobs")
   async getFailedJobs(): Promise<FailedJob[]> {
     return this.operationsService.getFailedJobs();
+  }
+
+  /** Spend for the ceiling's own window, with the ceiling and what remains. */
+  @Get("spend")
+  async getSpend(): Promise<SpendReport> {
+    return this.operationsService.getSpend();
+  }
+
+  /** Configured per-source limits, and what is recorded about their use. */
+  @Get("rate-limits")
+  async getRateLimits(): Promise<readonly RateLimitStatus[]> {
+    return this.operationsService.getRateLimits();
   }
 
   /**
