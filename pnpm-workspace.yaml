@@ -42,7 +42,6 @@ catalog:
   # Without it Nest's dependency injection has no constructor parameter types
   # to read and every provider fails to resolve.
   "@swc/core": 1.15.47
-  "@swc-node/register": 1.12.1
   unplugin-swc: 1.5.10
   supertest: 7.2.2
   "@types/supertest": 7.2.1
