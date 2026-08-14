@@ -51,16 +51,16 @@
 
 ## 6. Application shell
 
-- [ ] 6.1 Add the theme cookie: read it in `app/layout.tsx` and write `class="dark"` plus `color-scheme` onto `<html>` during server rendering (design D4)
-- [ ] 6.2 Add the `system` path — no class written, with `.dark` styles additionally selected by `@media (prefers-color-scheme: dark)` so the OS preference works with no JavaScript
-- [ ] 6.3 Add `components/ui/theme-toggle.tsx` — a client control cycling light / dark / system, applying the change immediately and persisting it via a Server Action
-- [ ] 6.4 Restyle `components/header.tsx`: page-level actions, the theme toggle, and the account's email, role and sign-out control kept exactly as they are today
-- [ ] 6.5 Rebuild `components/sidebar.tsx` as icon + label with a persisted collapsed state and the active-route treatment (design D10)
-- [ ] 6.6 Add the mobile navigation drawer — opened from a header control, closing on route change and `Escape`, focus trapped while open (spec: navigation on a small screen)
-- [ ] 6.7 Restyle `app/(auth)/layout.tsx` and the sign-in page, and wire `components/sign-in-form.tsx`'s existing `useActionState` result to a toast on failure
-- [ ] 6.8 Restyle `components/panel.tsx`'s error state onto the designed error treatment, keeping its Suspense and error-boundary structure unchanged
-- [ ] 6.9 Add tests: the theme cookie round-trips and renders the right class on first paint, the toggle cycles all three states, the drawer opens and closes by keyboard, and the header still shows the account and sign-out control
-- [ ] 6.10 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 6.1 Add the theme cookie: read it in `app/layout.tsx` and write `class="dark"` plus `color-scheme` onto `<html>` during server rendering (design D4)
+- [x] 6.2 Add the `system` path — no class written, with `.dark` styles additionally selected by `@media (prefers-color-scheme: dark)` so the OS preference works with no JavaScript
+- [x] 6.3 Add `components/ui/theme-toggle.tsx` — a client control cycling light / dark / system, applying the change immediately and persisting it via a Server Action
+- [x] 6.4 Restyle `components/header.tsx`: page-level actions, the theme toggle, and the account's email, role and sign-out control kept exactly as they are today
+- [x] 6.5 Rebuild `components/sidebar.tsx` as icon + label with a persisted collapsed state and the active-route treatment (design D10)
+- [x] 6.6 Add the mobile navigation drawer — opened from a header control, closing on route change and `Escape`, focus trapped while open (spec: navigation on a small screen)
+- [x] 6.7 Restyle `app/(auth)/layout.tsx` and the sign-in page, and wire `components/sign-in-form.tsx`'s existing `useActionState` result to a toast on failure
+- [x] 6.8 Restyle `components/panel.tsx`'s error state onto the designed error treatment, keeping its Suspense and error-boundary structure unchanged
+- [x] 6.9 Add tests: the theme cookie round-trips and renders the right class on first paint, the toggle cycles all three states, the drawer opens and closes by keyboard, and the header still shows the account and sign-out control
+- [x] 6.10 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 7. Data-state coverage
 
