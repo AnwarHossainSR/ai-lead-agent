@@ -261,23 +261,28 @@ export class OutreachDraftingService {
     return submitOutreachForApproval(this.database, outreachId);
   }
 
-  async approveOutreach(outreachId: string) {
-    return approveOutreach(this.database, outreachId);
+  async approveOutreach(outreachId: string, actorAccountId: string) {
+    return approveOutreach(this.database, outreachId, actorAccountId);
   }
 
-  async rejectOutreach(outreachId: string, reason: string) {
-    return rejectOutreach(this.database, outreachId, reason);
+  async rejectOutreach(outreachId: string, reason: string, actorAccountId: string) {
+    return rejectOutreach(this.database, outreachId, reason, actorAccountId);
   }
 
   async cancelOutreach(outreachId: string) {
     return cancelOutreach(this.database, outreachId);
   }
 
-  async recordOutreachSent(outreachId: string, body: { sentAt: Date; means: string }) {
+  async recordOutreachSent(
+    outreachId: string,
+    body: { sentAt: Date; means: string },
+    actorAccountId: string,
+  ) {
     return recordOutreachSend(this.database, {
       outreachId,
       sentAt: body.sentAt,
       means: body.means,
+      actorAccountId,
     });
   }
 
@@ -342,6 +347,7 @@ export class OutreachDraftingService {
       proposedCategoryId?: string;
       aiInvocationId?: string;
     },
+    actorAccountId: string,
   ): Promise<{ outreachId: string; responseId: string; leadStatus: string }> {
     const [outreach] = await this.database
       .select()
@@ -385,6 +391,7 @@ export class OutreachDraftingService {
         await setCompanyDoNotContact(this.database, {
           companyId: company.id,
           reason: "Unsubscribe request",
+          actorAccountId,
         });
       }
     }
@@ -435,16 +442,16 @@ export class OutreachDraftingService {
     };
   }
 
-  async setCompanyDoNotContact(companyId: string, reason: string) {
-    return setCompanyDoNotContact(this.database, { companyId, reason });
+  async setCompanyDoNotContact(companyId: string, reason: string, actorAccountId: string) {
+    return setCompanyDoNotContact(this.database, { companyId, reason, actorAccountId });
   }
 
   async clearCompanyDoNotContact(companyId: string) {
     return clearCompanyDoNotContact(this.database, companyId);
   }
 
-  async setContactDoNotContact(contactId: string, reason: string) {
-    return setContactDoNotContact(this.database, { contactId, reason });
+  async setContactDoNotContact(contactId: string, reason: string, actorAccountId: string) {
+    return setContactDoNotContact(this.database, { contactId, reason, actorAccountId });
   }
 
   async clearContactDoNotContact(contactId: string) {

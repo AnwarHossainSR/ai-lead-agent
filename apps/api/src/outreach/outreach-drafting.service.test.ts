@@ -6,6 +6,7 @@ import { hydrateEnvironment } from "@mela/config/env";
 import {
   applyLeadStatusChange,
   getOutreach,
+  insertAccount,
   insertAIInvocation,
   insertCompany,
   insertContact,
@@ -20,7 +21,7 @@ import {
   setContactDoNotContact,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { companyInput, contactInput, leadInput } from "@mela/database/testing/fixtures";
+import { accountInput, companyInput, contactInput, leadInput } from "@mela/database/testing/fixtures";
 import { eq } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
@@ -29,11 +30,15 @@ describe("outreach-drafting service", () => {
   let harness: TestDatabase;
   let service: OutreachDraftingService;
   let companyId: string;
+  let actorAccountId: string;
 
   beforeEach(async () => {
     hydrateEnvironment();
 
     harness = await setupTestDatabase();
+
+    const actor = await insertAccount(harness.database, accountInput());
+    actorAccountId = actor.id;
 
     const company = await insertCompany(harness.database, companyInput());
     companyId = company.id;
@@ -282,11 +287,12 @@ describe("outreach-drafting service", () => {
         isExample: false,
       });
       outreachId = draft.id;
-      const approval = await service.approveOutreach(outreachId);
+      const approval = await service.approveOutreach(outreachId, actorAccountId);
       await recordOutreachSend(harness.database, {
         outreachId,
         sentAt: new Date(approval.approvedAt!.getTime() + 1_000),
         means: "gmail",
+        actorAccountId,
       });
       await applyLeadStatusChange(harness.database, leadId, "verified");
       await applyLeadStatusChange(harness.database, leadId, "analyzing");
@@ -296,41 +302,57 @@ describe("outreach-drafting service", () => {
     });
 
     it("records the response and applies the lead transition", async () => {
-      const result = await service.recordResponse(outreachId, {
-        categoryId: "not_interested",
-        receivedAt: new Date(Date.now() + 60_000),
-        body: "Not interested.",
-      });
+      const result = await service.recordResponse(
+        outreachId,
+        {
+          categoryId: "not_interested",
+          receivedAt: new Date(Date.now() + 60_000),
+          body: "Not interested.",
+        },
+        actorAccountId,
+      );
 
       expect(result.outreachId).toBe(outreachId);
       expect(result.leadStatus).toBe("not_interested");
     });
 
     it("allows overriding the proposed category", async () => {
-      const result = await service.recordResponse(outreachId, {
-        categoryId: "not_interested",
-        receivedAt: new Date(Date.now() + 60_000),
-        body: "Not interested.",
-      });
+      const result = await service.recordResponse(
+        outreachId,
+        {
+          categoryId: "not_interested",
+          receivedAt: new Date(Date.now() + 60_000),
+          body: "Not interested.",
+        },
+        actorAccountId,
+      );
 
       expect(result.leadStatus).toBe("not_interested");
     });
 
     it("refuses an unknown category", async () => {
       await expect(
-        service.recordResponse(outreachId, {
-          categoryId: "unknown",
-          receivedAt: new Date(Date.now() + 60_000),
-        }),
+        service.recordResponse(
+          outreachId,
+          {
+            categoryId: "unknown",
+            receivedAt: new Date(Date.now() + 60_000),
+          },
+          actorAccountId,
+        ),
       ).rejects.toThrow("Unknown response category");
     });
 
     it("refuses an impermissible transition", async () => {
       await expect(
-        service.recordResponse(outreachId, {
-          categoryId: "interested",
-          receivedAt: new Date(Date.now() + 60_000),
-        }),
+        service.recordResponse(
+          outreachId,
+          {
+            categoryId: "interested",
+            receivedAt: new Date(Date.now() + 60_000),
+          },
+          actorAccountId,
+        ),
       ).rejects.toThrow("Cannot move a lead from");
     });
   });
@@ -345,11 +367,12 @@ describe("outreach-drafting service", () => {
         isExample: false,
       });
 
-      await service.approveOutreach(draft.id);
+      await service.approveOutreach(draft.id, actorAccountId);
       await recordOutreachSend(harness.database, {
         outreachId: draft.id,
         sentAt: new Date(Date.now() + 60_000),
         means: "gmail",
+        actorAccountId,
       });
       await applyLeadStatusChange(harness.database, lead.id, "verified");
       await applyLeadStatusChange(harness.database, lead.id, "analyzing");
@@ -370,12 +393,16 @@ describe("outreach-drafting service", () => {
       const classification = await service.classifyResponse(draft.id, "Not interested, thanks.");
       expect(classification.categoryId).toBe("unclassified");
 
-      const response = await service.recordResponse(draft.id, {
-        categoryId: "not_interested",
-        receivedAt: new Date(Date.now() + 120_000),
-        body: "Not interested, thanks.",
-        proposedCategoryId: "not_interested",
-      });
+      const response = await service.recordResponse(
+        draft.id,
+        {
+          categoryId: "not_interested",
+          receivedAt: new Date(Date.now() + 120_000),
+          body: "Not interested, thanks.",
+          proposedCategoryId: "not_interested",
+        },
+        actorAccountId,
+      );
 
       expect(response.leadStatus).toBe("not_interested");
     });
@@ -393,11 +420,12 @@ describe("outreach-drafting service", () => {
         isExample: false,
       });
       outreachId = draft.id;
-      const approved = await service.approveOutreach(outreachId);
+      const approved = await service.approveOutreach(outreachId, actorAccountId);
       await recordOutreachSend(harness.database, {
         outreachId,
         sentAt: new Date(approved.approvedAt!.getTime() + 1_000),
         means: "gmail",
+        actorAccountId,
       });
     });
 
@@ -424,6 +452,7 @@ describe("outreach-drafting service", () => {
       await setCompanyDoNotContact(harness.database, {
         companyId: company.id,
         reason: "Unsubscribe request",
+        actorAccountId,
       });
 
       const lead = await insertLead(harness.database, leadInput(company.id));
@@ -476,6 +505,7 @@ describe("outreach-drafting service", () => {
       await setContactDoNotContact(harness.database, {
         contactId: contact.id,
         reason: "Unsubscribe request",
+        actorAccountId,
       });
 
       const lead = await insertLead(harness.database, leadInput(company.id));
@@ -518,11 +548,12 @@ describe("outreach-drafting service", () => {
         messageBody: "Example draft.",
         isExample: false,
       });
-      await service.approveOutreach(draft.id);
+      await service.approveOutreach(draft.id, actorAccountId);
       await recordOutreachSend(harness.database, {
         outreachId: draft.id,
         sentAt: new Date(Date.now() + 60_000),
         means: "gmail",
+        actorAccountId,
       });
       await applyLeadStatusChange(harness.database, lead.id, "verified");
       await applyLeadStatusChange(harness.database, lead.id, "analyzing");
@@ -530,10 +561,14 @@ describe("outreach-drafting service", () => {
       await applyLeadStatusChange(harness.database, lead.id, "high_priority");
       await applyLeadStatusChange(harness.database, lead.id, "contacted");
 
-      await service.recordResponse(draft.id, {
-        categoryId: "unsubscribe",
-        receivedAt: new Date(Date.now() + 120_000),
-      });
+      await service.recordResponse(
+        draft.id,
+        {
+          categoryId: "unsubscribe",
+          receivedAt: new Date(Date.now() + 120_000),
+        },
+        actorAccountId,
+      );
 
       const [updatedCompany] = await harness.database
         .select()

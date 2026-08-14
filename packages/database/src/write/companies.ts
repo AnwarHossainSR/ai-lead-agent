@@ -391,6 +391,7 @@ export async function listStaleCompanies(
 export const setCompanyDoNotContactInputSchema = z.object({
   companyId: z.string().uuid("Expected the company identifier."),
   reason: z.string().trim().min(1, "Expected a non-blank reason."),
+  actorAccountId: z.string().uuid("Expected the acting account identifier."),
 });
 
 export type SetCompanyDoNotContactInput = z.input<typeof setCompanyDoNotContactInputSchema>;
@@ -409,6 +410,7 @@ export async function setCompanyDoNotContact(
     .set({
       doNotContactAt: databaseNow(),
       doNotContactReason: value.reason,
+      doNotContactByAccountId: value.actorAccountId,
       updatedAt: databaseNow(),
     })
     .where(eq(companies.id, value.companyId))
@@ -433,6 +435,7 @@ export async function clearCompanyDoNotContact(
     .set({
       doNotContactAt: null,
       doNotContactReason: null,
+      doNotContactByAccountId: null,
       updatedAt: databaseNow(),
     })
     .where(eq(companies.id, companyId))

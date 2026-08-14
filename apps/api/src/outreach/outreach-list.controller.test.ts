@@ -23,6 +23,7 @@ import { createAuthenticatedContext } from "../testing/authenticated-context";
 let harness: TestDatabase;
 let app: INestApplication | undefined;
 let authCookie: string;
+let authAccountId: string;
 
 /** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
 function request(server: Parameters<typeof authedRequest>[0]) {
@@ -36,7 +37,9 @@ beforeAll(async () => {
 beforeEach(async () => {
   await harness.truncate();
   app = await createTestApp({ DATABASE_URL: harness.url });
-  authCookie = (await createAuthenticatedContext(harness.database)).cookie;
+  const context = await createAuthenticatedContext(harness.database);
+  authCookie = context.cookie;
+  authAccountId = context.accountId;
 });
 
 afterEach(async () => {
@@ -118,12 +121,17 @@ describe("GET /api/outreach/count", () => {
 
     const toSend = await draftFor(lead.id, "Will be sent.");
     await submitOutreachForApproval(harness.database, toSend.id);
-    await approveOutreach(harness.database, toSend.id);
+    await approveOutreach(harness.database, toSend.id, authAccountId);
 
     // sentAt must not precede the approval timestamp the server just
     // stamped, so it is set slightly in the future rather than backdated.
     const sentAt = new Date(Date.now() + 1_000);
-    await recordOutreachSend(harness.database, { outreachId: toSend.id, sentAt, means: "gmail" });
+    await recordOutreachSend(harness.database, {
+      outreachId: toSend.id,
+      sentAt,
+      means: "gmail",
+      actorAccountId: authAccountId,
+    });
 
     await draftFor(lead.id, "Still a draft.");
 

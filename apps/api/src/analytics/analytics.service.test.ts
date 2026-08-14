@@ -3,13 +3,14 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   approveOutreach,
+  insertAccount,
   insertCompany,
   insertLead,
   insertOutreachDraft,
   recordOutreachSend,
 } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { companyInput, leadInput } from "@mela/database/testing/fixtures";
+import { accountInput, companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { DATABASE } from "../database/database.module";
 import { AnalyticsService } from "./analytics.service";
 
@@ -53,11 +54,13 @@ describe("analytics service", () => {
       messageBody: "Example draft.",
       isExample: false,
     });
-    const approved = await approveOutreach(harness.database, draft.id);
+    const actor = await insertAccount(harness.database, accountInput());
+    const approved = await approveOutreach(harness.database, draft.id, actor.id);
     await recordOutreachSend(harness.database, {
       outreachId: draft.id,
       sentAt: new Date(approved.approvedAt!.getTime() + 1_000),
       means: "gmail",
+      actorAccountId: actor.id,
     });
 
     const result = await service.getOutreachAggregates({ segment: "industry" });

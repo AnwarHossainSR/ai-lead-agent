@@ -7,8 +7,9 @@ import { contacts } from "../schema/contacts";
 import { leads } from "../schema/leads";
 import { verificationChecks } from "../schema/verification-checks";
 import { expectConstraintViolation } from "../testing/constraints";
-import { companyInput, contactInput, leadInput } from "../testing/fixtures";
+import { accountInput, companyInput, contactInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
+import { insertAccount } from "./accounts";
 import {
   applyVerificationResult,
   clearCompanyDoNotContact,
@@ -604,20 +605,24 @@ describe("deriveVerificationState", () => {
 });
 
 describe("do-not-contact markers", () => {
-  it("stores the marker with its reason and time", async () => {
+  it("stores the marker with its reason, time and acting account", async () => {
     const company = await insertCompany(harness.database, companyInput());
+    const actor = await insertAccount(harness.database, accountInput());
 
     const marked = await setCompanyDoNotContact(harness.database, {
       companyId: company.id,
       reason: "Unsubscribe request",
+      actorAccountId: actor.id,
     });
 
     expect(marked.doNotContactAt).toBeInstanceOf(Date);
     expect(marked.doNotContactReason).toBe("Unsubscribe request");
+    expect(marked.doNotContactByAccountId).toBe(actor.id);
   });
 
   it("refuses a blank reason via the database", async () => {
     const company = await insertCompany(harness.database, companyInput());
+    const actor = await insertAccount(harness.database, accountInput());
 
     await expectConstraintViolation(
       harness.database
@@ -625,23 +630,27 @@ describe("do-not-contact markers", () => {
         .set({
           doNotContactAt: new Date(),
           doNotContactReason: "   ",
+          doNotContactByAccountId: actor.id,
         })
         .where(eq(companies.id, company.id)),
       "companies_do_not_contact_requires_reason",
     );
   });
 
-  it("clears the marker", async () => {
+  it("clears the marker and its acting account", async () => {
     const company = await insertCompany(harness.database, companyInput());
+    const actor = await insertAccount(harness.database, accountInput());
 
     await setCompanyDoNotContact(harness.database, {
       companyId: company.id,
       reason: "Unsubscribe request",
+      actorAccountId: actor.id,
     });
 
     const cleared = await clearCompanyDoNotContact(harness.database, company.id);
 
     expect(cleared.doNotContactAt).toBeNull();
     expect(cleared.doNotContactReason).toBeNull();
+    expect(cleared.doNotContactByAccountId).toBeNull();
   });
 });

@@ -6,8 +6,9 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { outreach } from "../schema/outreach";
 import { outreachResponses } from "../schema/outreach-responses";
 import { expectConstraintViolation } from "../testing/constraints";
-import { companyInput, leadInput } from "../testing/fixtures";
+import { accountInput, companyInput, leadInput } from "../testing/fixtures";
 import { type TestDatabase, setupTestDatabase } from "../testing/harness";
+import { insertAccount } from "./accounts";
 import { insertCompany } from "./companies";
 import { WriteValidationError } from "./errors";
 import { insertLead } from "./leads";
@@ -24,6 +25,7 @@ import {
 
 let harness: TestDatabase;
 let leadId: string;
+let actorAccountId: string;
 
 beforeAll(async () => {
   harness = await setupTestDatabase();
@@ -34,6 +36,7 @@ beforeEach(async () => {
   const company = await insertCompany(harness.database, companyInput());
   const lead = await insertLead(harness.database, leadInput(company.id));
   leadId = lead.id;
+  actorAccountId = (await insertAccount(harness.database, accountInput())).id;
 });
 
 afterAll(async () => {
@@ -76,7 +79,7 @@ describe("sending without approval", () => {
       messageBody: "Example draft.",
     });
 
-    await expect(markOutreachSent(harness.database, draft.id, "email")).rejects.toThrow(
+    await expect(markOutreachSent(harness.database, draft.id, "email", actorAccountId)).rejects.toThrow(
       WriteValidationError,
     );
 
@@ -92,11 +95,13 @@ describe("sending without approval", () => {
       messageBody: "Example draft.",
     });
 
-    // What a hand-written UPDATE or a future worker would do.
+    // What a hand-written UPDATE or a future worker would do. The actor is
+    // supplied so the only constraint this violates is the one under test —
+    // the actor/timestamp pairing constraint is satisfied on its own.
     await expectConstraintViolation(
       harness.database
         .update(outreach)
-        .set({ status: "sent", sentAt: new Date() })
+        .set({ status: "sent", sentAt: new Date(), sentByAccountId: actorAccountId })
         .where(eq(outreach.id, draft.id)),
       "outreach_sent_at_requires_approved_at",
     );
@@ -124,11 +129,11 @@ describe("an approved record", () => {
       messageBody: "Example draft.",
     });
 
-    const approved = await approveOutreach(harness.database, draft.id);
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
     expect(approved.status).toBe("approved");
     expect(approved.approvedAt).toBeInstanceOf(Date);
 
-    const sent = await markOutreachSent(harness.database, draft.id, "email");
+    const sent = await markOutreachSent(harness.database, draft.id, "email", actorAccountId);
     expect(sent.status).toBe("sent");
     expect(sent.sentAt).toBeInstanceOf(Date);
     expect(sent.approvedAt).toBeInstanceOf(Date);
@@ -141,14 +146,14 @@ describe("an approved record", () => {
       channel: "email",
       messageBody: "Example draft.",
     });
-    const approved = await approveOutreach(harness.database, draft.id);
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
 
     const backdated = new Date(approved.approvedAt!.getTime() - 60_000);
 
     await expectConstraintViolation(
       harness.database
         .update(outreach)
-        .set({ status: "sent", sentAt: backdated })
+        .set({ status: "sent", sentAt: backdated, sentByAccountId: actorAccountId })
         .where(eq(outreach.id, draft.id)),
       "outreach_sent_at_not_before_approved_at",
     );
@@ -161,8 +166,8 @@ describe("an approved record", () => {
       messageBody: "Example draft.",
     });
 
-    await approveOutreach(harness.database, draft.id);
-    await markOutreachSent(harness.database, draft.id, "email");
+    await approveOutreach(harness.database, draft.id, actorAccountId);
+    await markOutreachSent(harness.database, draft.id, "email", actorAccountId);
     const replied = await recordOutreachResponse(harness.database, draft.id);
 
     expect(replied.status).toBe("replied");
@@ -225,7 +230,7 @@ describe("editing text", () => {
       messageBody: "Original body.",
     });
 
-    const approved = await approveOutreach(harness.database, draft.id);
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
     expect(approved.status).toBe("approved");
     expect(approved.approvedAt).toBeInstanceOf(Date);
 
@@ -246,7 +251,7 @@ describe("editing text", () => {
       messageBody: "Original body.",
     });
 
-    const approved = await approveOutreach(harness.database, draft.id);
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
     const updated = await updateOutreachText(harness.database, approved.id, {
       messageBody: approved.messageBody,
     });
@@ -268,7 +273,7 @@ describe("rejecting outreach", () => {
     const submitted = await submitOutreachForApproval(harness.database, draft.id);
     expect(submitted.status).toBe("pending_approval");
 
-    const rejected = await rejectOutreach(harness.database, submitted.id, "Too generic.");
+    const rejected = await rejectOutreach(harness.database, submitted.id, "Too generic.", actorAccountId);
 
     expect(rejected.status).toBe("rejected");
     expect(rejected.rejectionReason).toBe("Too generic.");
@@ -284,7 +289,7 @@ describe("rejecting outreach", () => {
 
     const submitted = await submitOutreachForApproval(harness.database, draft.id);
 
-    await expect(rejectOutreach(harness.database, submitted.id, "   ")).rejects.toThrow(
+    await expect(rejectOutreach(harness.database, submitted.id, "   ", actorAccountId)).rejects.toThrow(
       WriteValidationError,
     );
   });
@@ -296,7 +301,7 @@ describe("rejecting outreach", () => {
       messageBody: "Example draft.",
     });
 
-    await expect(rejectOutreach(harness.database, draft.id, "Too generic.")).rejects.toThrow(
+    await expect(rejectOutreach(harness.database, draft.id, "Too generic.", actorAccountId)).rejects.toThrow(
       /reachable only from pending_approval/,
     );
   });
@@ -310,7 +315,7 @@ describe("database constraints", () => {
       messageBody: "Original body.",
     });
 
-    await approveOutreach(harness.database, draft.id);
+    await approveOutreach(harness.database, draft.id, actorAccountId);
 
     await expectConstraintViolation(
       harness.database
@@ -347,8 +352,8 @@ describe("sending records its means", () => {
       messageBody: "Example draft.",
     });
 
-    const approved = await approveOutreach(harness.database, draft.id);
-    const sent = await markOutreachSent(harness.database, approved.id, "gmail");
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
+    const sent = await markOutreachSent(harness.database, approved.id, "gmail", actorAccountId);
 
     expect(sent.sentMeans).toBe("gmail");
   });
@@ -360,13 +365,23 @@ describe("sending records its means", () => {
       messageBody: "Example draft.",
     });
 
-    await approveOutreach(harness.database, draft.id);
+    const approved = await approveOutreach(harness.database, draft.id, actorAccountId);
+    // Derived from the server-stamped approval time, not the client clock:
+    // this asserts the means-required constraint specifically, and a client
+    // clock behind the database server's would otherwise trip the ordering
+    // constraint instead.
+    const sentAt = new Date(approved.approvedAt!.getTime() + 1_000);
 
     try {
       await expectConstraintViolation(
         harness.database
           .update(outreach)
-          .set({ status: "sent", sentAt: new Date(), sentMeans: null })
+          .set({
+            status: "sent",
+            sentAt,
+            sentMeans: null,
+            sentByAccountId: actorAccountId,
+          })
           .where(eq(outreach.id, draft.id)),
         "outreach_sent_means_required",
       );
@@ -385,8 +400,8 @@ describe("recording responses", () => {
       messageBody: "Example draft.",
     });
 
-    await approveOutreach(harness.database, draft.id);
-    const sent = await markOutreachSent(harness.database, draft.id, "email");
+    await approveOutreach(harness.database, draft.id, actorAccountId);
+    const sent = await markOutreachSent(harness.database, draft.id, "email", actorAccountId);
 
     const response = await insertOutreachResponse(harness.database, {
       outreachId: draft.id,
@@ -425,8 +440,8 @@ describe("recording responses", () => {
       messageBody: "Example draft.",
     });
 
-    await approveOutreach(harness.database, draft.id);
-    const sent = await markOutreachSent(harness.database, draft.id, "email");
+    await approveOutreach(harness.database, draft.id, actorAccountId);
+    const sent = await markOutreachSent(harness.database, draft.id, "email", actorAccountId);
 
     const beforeSend = new Date(sent.sentAt!.getTime() - 60_000);
 
@@ -448,8 +463,8 @@ describe("recording responses", () => {
       messageBody: "Example draft.",
     });
 
-    await approveOutreach(harness.database, draft.id);
-    await markOutreachSent(harness.database, draft.id, "email");
+    await approveOutreach(harness.database, draft.id, actorAccountId);
+    await markOutreachSent(harness.database, draft.id, "email", actorAccountId);
 
     await expect(
       harness.database.insert(outreachResponses).values({
@@ -469,8 +484,8 @@ describe("recording responses", () => {
       messageBody: "Example draft.",
     });
 
-    await approveOutreach(harness.database, draft.id);
-    const sent = await markOutreachSent(harness.database, draft.id, "email");
+    await approveOutreach(harness.database, draft.id, actorAccountId);
+    const sent = await markOutreachSent(harness.database, draft.id, "email", actorAccountId);
     await insertOutreachResponse(harness.database, {
       outreachId: draft.id,
       kind: "replied",

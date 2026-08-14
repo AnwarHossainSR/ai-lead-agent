@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/main.ts",
     "worker": "node --watch --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/worker.ts",
+    "create-account": "node --no-experimental-strip-types --disable-warning=ExperimentalWarning -r @swc-node/register src/scripts/create-account.ts",
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit --incremental false",

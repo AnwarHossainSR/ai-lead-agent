@@ -12,8 +12,9 @@ import {
   ValidationPipe,
 } from "@nestjs/common";
 
-import { OUTREACH_STATUSES, type OutreachStatus } from "@mela/database";
+import { OUTREACH_STATUSES, type OutreachStatus, type PublicAccountRow } from "@mela/database";
 import { z } from "zod";
+import { CurrentAccount } from "../auth/current-account.decorator";
 import { RequiresRole } from "../auth/requires-role.decorator";
 import { createZodDto } from "../validation/zod-dto";
 import { OutreachDraftingService } from "./outreach-drafting.service";
@@ -151,23 +152,34 @@ export class OutreachController {
 
   @Post("outreach/:id/approve")
   @RequiresRole("operator", "Approving outreach")
-  async approveOutreach(@Param("id") outreachId: string) {
-    return this.outreachDraftingService.approveOutreach(outreachId);
+  async approveOutreach(
+    @Param("id") outreachId: string,
+    @CurrentAccount() account: PublicAccountRow,
+  ) {
+    return this.outreachDraftingService.approveOutreach(outreachId, account.id);
   }
 
   @Post("outreach/:id/reject")
   @RequiresRole("operator", "Rejecting outreach")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async rejectOutreach(@Param("id") outreachId: string, @Body() body: RejectOutreachRequestDto) {
-    return this.outreachDraftingService.rejectOutreach(outreachId, body.reason);
+  async rejectOutreach(
+    @Param("id") outreachId: string,
+    @Body() body: RejectOutreachRequestDto,
+    @CurrentAccount() account: PublicAccountRow,
+  ) {
+    return this.outreachDraftingService.rejectOutreach(outreachId, body.reason, account.id);
   }
 
   @Post("outreach/:id/sent")
   @RequiresRole("operator", "Recording outreach as sent")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async recordOutreachSent(@Param("id") outreachId: string, @Body() body: RecordOutreachSentDto) {
+  async recordOutreachSent(
+    @Param("id") outreachId: string,
+    @Body() body: RecordOutreachSentDto,
+    @CurrentAccount() account: PublicAccountRow,
+  ) {
     try {
-      return this.outreachDraftingService.recordOutreachSent(outreachId, body);
+      return this.outreachDraftingService.recordOutreachSent(outreachId, body, account.id);
     } catch (error) {
       if (error instanceof Error && error.name === "WriteValidationError") {
         throw new BadRequestException(error.message);
@@ -191,15 +203,23 @@ export class OutreachController {
 
   @Post("outreach/:id/responses")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async recordResponse(@Param("id") outreachId: string, @Body() body: RecordResponseDto) {
+  async recordResponse(
+    @Param("id") outreachId: string,
+    @Body() body: RecordResponseDto,
+    @CurrentAccount() account: PublicAccountRow,
+  ) {
     try {
-      return this.outreachDraftingService.recordResponse(outreachId, {
-        categoryId: body.categoryId,
-        receivedAt: body.receivedAt,
-        body: body.body,
-        proposedCategoryId: body.proposedCategoryId,
-        aiInvocationId: body.aiInvocationId,
-      });
+      return this.outreachDraftingService.recordResponse(
+        outreachId,
+        {
+          categoryId: body.categoryId,
+          receivedAt: body.receivedAt,
+          body: body.body,
+          proposedCategoryId: body.proposedCategoryId,
+          aiInvocationId: body.aiInvocationId,
+        },
+        account.id,
+      );
     } catch (error) {
       if (error instanceof Error && error.name === "WriteValidationError") {
         throw new BadRequestException(error.message);
@@ -232,8 +252,9 @@ export class OutreachController {
   async setCompanyDoNotContact(
     @Param("id") companyId: string,
     @Body() body: SetCompanyDoNotContactDto,
+    @CurrentAccount() account: PublicAccountRow,
   ) {
-    return this.outreachDraftingService.setCompanyDoNotContact(companyId, body.reason);
+    return this.outreachDraftingService.setCompanyDoNotContact(companyId, body.reason, account.id);
   }
 
   @Post("companies/:id/clear-do-not-contact")
@@ -248,8 +269,9 @@ export class OutreachController {
   async setContactDoNotContact(
     @Param("id") contactId: string,
     @Body() body: SetContactDoNotContactDto,
+    @CurrentAccount() account: PublicAccountRow,
   ) {
-    return this.outreachDraftingService.setContactDoNotContact(contactId, body.reason);
+    return this.outreachDraftingService.setContactDoNotContact(contactId, body.reason, account.id);
   }
 
   @Post("contacts/:id/clear-do-not-contact")

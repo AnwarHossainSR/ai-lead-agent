@@ -2,9 +2,9 @@ import { Test } from "@nestjs/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AIService } from "@mela/ai";
-import { insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
+import { insertAccount, insertCompany, insertLead, insertOutreachDraft } from "@mela/database";
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
-import { companyInput, leadInput } from "@mela/database/testing/fixtures";
+import { accountInput, companyInput, leadInput } from "@mela/database/testing/fixtures";
 import { DATABASE } from "../database/database.module";
 import { OutreachDraftingService } from "./outreach-drafting.service";
 
@@ -14,9 +14,13 @@ describe("outreach workflow", () => {
   let companyId: string;
   let leadId: string;
   let outreachId: string;
+  let actorAccountId: string;
 
   beforeEach(async () => {
     harness = await setupTestDatabase();
+
+    const actor = await insertAccount(harness.database, accountInput());
+    actorAccountId = actor.id;
 
     const company = await insertCompany(harness.database, companyInput());
     companyId = company.id;
@@ -68,7 +72,7 @@ describe("outreach workflow", () => {
     const submitted = await service.submitOutreach(outreachId);
     expect(submitted.status).toBe("pending_approval");
 
-    const approved = await service.approveOutreach(outreachId);
+    const approved = await service.approveOutreach(outreachId, actorAccountId);
     expect(approved.status).toBe("approved");
     expect(approved.approvedAt).toBeInstanceOf(Date);
 
@@ -77,7 +81,7 @@ describe("outreach workflow", () => {
     expect(updated.approvedAt).toBeNull();
     expect(updated.approvalRevokedAt).toBeInstanceOf(Date);
 
-    const reapproved = await service.approveOutreach(outreachId);
+    const reapproved = await service.approveOutreach(outreachId, actorAccountId);
     expect(reapproved.status).toBe("approved");
     expect(reapproved.approvedAt).toBeInstanceOf(Date);
   });
@@ -85,7 +89,7 @@ describe("outreach workflow", () => {
   it("rejects a pending approval with a reason", async () => {
     await service.submitOutreach(outreachId);
 
-    const rejected = await service.rejectOutreach(outreachId, "Too generic.");
+    const rejected = await service.rejectOutreach(outreachId, "Too generic.", actorAccountId);
 
     expect(rejected.status).toBe("rejected");
     expect(rejected.rejectionReason).toBe("Too generic.");
@@ -111,8 +115,8 @@ describe("outreach workflow", () => {
 
   it("refuses to approve from a non-draft state", async () => {
     await service.submitOutreach(outreachId);
-    await service.rejectOutreach(outreachId, "Too generic.");
+    await service.rejectOutreach(outreachId, "Too generic.", actorAccountId);
 
-    await expect(service.approveOutreach(outreachId)).rejects.toThrow();
+    await expect(service.approveOutreach(outreachId, actorAccountId)).rejects.toThrow();
   });
 });
