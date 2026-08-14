@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar";
+import { ToastProvider } from "@/components/ui/toast";
+import { readFlashToast } from "@/lib/flash-toast";
 import { getCurrentAccount } from "@/lib/session";
 
 /**
@@ -21,13 +23,17 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
     redirect("/sign-in");
   }
 
+  // An action that redirected here left its outcome in the flash cookie; the
+  // provider raises it once and clears the cookie (design D6).
+  const flashToast = await readFlashToast();
+
   return (
-    <>
+    <ToastProvider initialToast={flashToast}>
       <Header account={account} />
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 p-6">{children}</main>
       </div>
-    </>
+    </ToastProvider>
   );
 }

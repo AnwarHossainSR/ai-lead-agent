@@ -32,7 +32,12 @@ export function Fact<T>({ fact, format, className }: FactProps<T>) {
       <span
         data-slot="fact"
         data-certainty="unknown"
-        className={cn("text-muted-foreground italic", className)}
+        className={cn(
+          // A dashed chip: not a value, not a placeholder waiting to be
+          // replaced, and impossible to mistake for an empty cell or a zero.
+          "inline-flex items-center rounded border border-dashed border-border px-1.5 py-0 align-baseline text-xs text-muted-foreground italic",
+          className,
+        )}
       >
         unknown
       </span>
@@ -54,7 +59,10 @@ export function Fact<T>({ fact, format, className }: FactProps<T>) {
         title={reason}
         aria-label={`${String(rendered)} (${reason})`}
         className={cn(
-          "cursor-help border-0 bg-transparent p-0 font-inherit underline decoration-muted-foreground decoration-dotted underline-offset-4",
+          // The dotted underline and the trailing "≈" are two carriers of the
+          // same fact — this value was reasoned, not seen — so neither colour
+          // nor a single cue is doing the work alone.
+          "cursor-help border-0 bg-transparent p-0 font-inherit underline decoration-info decoration-dotted underline-offset-4 transition-colors duration-(--duration-fast) after:ml-0.5 after:align-super after:text-[0.7em] after:text-info after:content-['≈'] hover:decoration-solid focus-visible:rounded-xs focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
           className,
         )}
       >

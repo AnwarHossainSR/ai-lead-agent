@@ -35,7 +35,9 @@ export function Evidence({ sourceUrl, recordedAt, detail, children, className }:
       <PopoverTrigger
         data-slot="evidence-trigger"
         className={cn(
-          "cursor-help border-0 bg-transparent p-0 font-inherit underline decoration-muted-foreground decoration-dotted underline-offset-4",
+          // Same dotted-underline vocabulary as `<Fact>`'s inferred branch, with
+          // a trailing marker saying a source is one activation away.
+          "cursor-help border-0 bg-transparent p-0 font-inherit underline decoration-primary/60 decoration-dotted underline-offset-4 transition-colors duration-(--duration-fast) after:ml-0.5 after:align-super after:text-[0.7em] after:text-primary after:content-['※'] hover:decoration-solid focus-visible:rounded-xs focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
           className,
         )}
       >
@@ -45,13 +47,13 @@ export function Evidence({ sourceUrl, recordedAt, detail, children, className }:
         <PopoverHeader>
           <PopoverTitle>Evidence</PopoverTitle>
         </PopoverHeader>
-        <p className="text-sm">{detail}</p>
+        <p className="border-l-2 border-border pl-2.5 text-sm">{detail}</p>
         <div className="flex flex-col gap-1 text-xs text-muted-foreground">
           <a
             href={sourceUrl}
             target="_blank"
             rel="noreferrer"
-            className="truncate text-primary underline underline-offset-4"
+            className="truncate text-primary underline underline-offset-4 transition-colors duration-(--duration-fast) hover:text-primary/80 focus-visible:rounded-xs focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             {sourceUrl}
           </a>

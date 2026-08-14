@@ -1,53 +1,53 @@
 ## 1. Theme foundation
 
-- [ ] 1.1 Rewrite the `:root` palette in `apps/web/src/app/globals.css` with the OKLCH scale from design D2 — branded primary, lifted `--card` over `--background`, tinted neutrals — replacing every chroma-zero value
-- [ ] 1.2 Rewrite the `.dark` palette to match, keeping the same hue and chroma per role at dark-mode lightness
-- [ ] 1.3 Add the semantic status tokens (`--success`, `--warning`, `--info`, `--danger` and each one's `-foreground` / `-subtle`) to `:root`, `.dark` and the `@theme inline` mapping, aliasing `--danger` onto the existing `--destructive` hue
-- [ ] 1.4 Replace `--chart-1` … `--chart-5` with the five-hue ramp, matched for lightness and chroma so adjacent series stay distinguishable
-- [ ] 1.5 Add the motion duration tokens (`--duration-fast|base|slow`) and the global `@media (prefers-reduced-motion: reduce)` block that collapses transition and animation durations (design D11)
-- [ ] 1.6 Add `apps/web/src/lib/theme-tokens.ts` exporting the token definitions as data, and `theme-contrast.test.ts` asserting WCAG AA (4.5:1 text, 3:1 non-text) for every foreground/background pair in both themes (design D13)
-- [ ] 1.7 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit` — the app renders with the new palette and no component has changed yet
+- [x] 1.1 Rewrite the `:root` palette in `apps/web/src/app/globals.css` with the OKLCH scale from design D2 — branded primary, lifted `--card` over `--background`, tinted neutrals — replacing every chroma-zero value
+- [x] 1.2 Rewrite the `.dark` palette to match, keeping the same hue and chroma per role at dark-mode lightness
+- [x] 1.3 Add the semantic status tokens (`--success`, `--warning`, `--info`, `--danger` and each one's `-foreground` / `-subtle`) to `:root`, `.dark` and the `@theme inline` mapping, aliasing `--danger` onto the existing `--destructive` hue
+- [x] 1.4 Replace `--chart-1` … `--chart-5` with the five-hue ramp, matched for lightness and chroma so adjacent series stay distinguishable
+- [x] 1.5 Add the motion duration tokens (`--duration-fast|base|slow`) and the global `@media (prefers-reduced-motion: reduce)` block that collapses transition and animation durations (design D11)
+- [x] 1.6 Add `apps/web/src/lib/theme-tokens.ts` exporting the token definitions as data, and `theme-contrast.test.ts` asserting WCAG AA (4.5:1 text, 3:1 non-text) for every foreground/background pair in both themes (design D13)
+- [x] 1.7 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit` — the app renders with the new palette and no component has changed yet
 
 ## 2. Status semantics
 
-- [ ] 2.1 Add `apps/web/src/lib/status-tone.ts` mapping lead priority, lead status, outreach status, staleness, job state and health onto `success | warning | danger | info | neutral` (design D3)
-- [ ] 2.2 Add `status-tone.test.ts` covering every domain value, including that an unrecognised value falls back to `neutral` rather than throwing
-- [ ] 2.3 Verify: `pnpm --filter @mela/web test:unit`
+- [x] 2.1 Add `apps/web/src/lib/status-tone.ts` mapping lead priority, lead status, outreach status, staleness, job state and health onto `success | warning | danger | info | neutral` (design D3)
+- [x] 2.2 Add `status-tone.test.ts` covering every domain value, including that an unrecognised value falls back to `neutral` rather than throwing
+- [x] 2.3 Verify: `pnpm --filter @mela/web test:unit`
 
 ## 3. UI primitives
 
-- [ ] 3.1 Restyle `components/ui/button.tsx` for the new tokens and add the full hover / focus-visible / active / disabled / pending state set (spec: consistent interactive states)
-- [ ] 3.2 Add `components/ui/card.tsx` (root, header, title, description, content, footer)
-- [ ] 3.3 Add `components/ui/badge.tsx` driven by a `tone` prop from task 2.1, never a colour, with text as well as colour carrying the meaning (spec: status is not carried by colour alone)
-- [ ] 3.4 Add `components/ui/table.tsx` — the presentational table shell (container, header, row, cell) with hover and zebra treatment
-- [ ] 3.5 Add `components/ui/skeleton.tsx` with `TableSkeleton`, `CardSkeleton`, `StatSkeleton` and `ChartSkeleton` variants, each `aria-hidden` inside an `aria-busy` container (design D8)
-- [ ] 3.6 Add `components/ui/input.tsx` and `components/ui/label.tsx` with error and description slots wired for accessible naming
-- [ ] 3.7 Add `components/ui/dialog.tsx` and `components/ui/tooltip.tsx` on `@base-ui/react`, with focus trap, `Escape` to close and return-focus behaviour
-- [ ] 3.8 Add `components/ui/tabs.tsx` and `components/ui/separator.tsx`
-- [ ] 3.9 Add `components/ui/empty-state.tsx` taking a title, description, optional icon and optional action, and distinguishing the filtered case from the nothing-yet case (spec: empty state)
-- [ ] 3.10 Add `components/ui/page-header.tsx` — title, description, breadcrumb slot, action slot
-- [ ] 3.11 Restyle `components/ui/popover.tsx` and `components/ui/select.tsx` onto the new tokens and interactive states
-- [ ] 3.12 Add co-located unit tests for `badge` (tone → accessible text), `empty-state` (both cases), `skeleton` (hidden from assistive technology) and `dialog` (focus trap, `Escape`)
-- [ ] 3.13 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 3.1 Restyle `components/ui/button.tsx` for the new tokens and add the full hover / focus-visible / active / disabled / pending state set (spec: consistent interactive states)
+- [x] 3.2 Add `components/ui/card.tsx` (root, header, title, description, content, footer)
+- [x] 3.3 Add `components/ui/badge.tsx` driven by a `tone` prop from task 2.1, never a colour, with text as well as colour carrying the meaning (spec: status is not carried by colour alone)
+- [x] 3.4 Add `components/ui/table.tsx` — the presentational table shell (container, header, row, cell) with hover and zebra treatment
+- [x] 3.5 Add `components/ui/skeleton.tsx` with `TableSkeleton`, `CardSkeleton`, `StatSkeleton` and `ChartSkeleton` variants, each `aria-hidden` inside an `aria-busy` container (design D8)
+- [x] 3.6 Add `components/ui/input.tsx` and `components/ui/label.tsx` with error and description slots wired for accessible naming
+- [x] 3.7 Add `components/ui/dialog.tsx` and `components/ui/tooltip.tsx` on `@base-ui/react`, with focus trap, `Escape` to close and return-focus behaviour
+- [x] 3.8 Add `components/ui/tabs.tsx` and `components/ui/separator.tsx`
+- [x] 3.9 Add `components/ui/empty-state.tsx` taking a title, description, optional icon and optional action, and distinguishing the filtered case from the nothing-yet case (spec: empty state)
+- [x] 3.10 Add `components/ui/page-header.tsx` — title, description, breadcrumb slot, action slot
+- [x] 3.11 Restyle `components/ui/popover.tsx` and `components/ui/select.tsx` onto the new tokens and interactive states
+- [x] 3.12 Add co-located unit tests for `badge` (tone → accessible text), `empty-state` (both cases), `skeleton` (hidden from assistive technology) and `dialog` (focus trap, `Escape`)
+- [x] 3.13 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 4. Notifications
 
-- [ ] 4.1 Check whether the installed `@base-ui/react` 1.7.0 exports a `Toast` primitive and record which branch of design D5 is taken in a comment at the top of `components/ui/toast.tsx`
-- [ ] 4.2 Implement `components/ui/toast.tsx` — provider, bounded queue, portal viewport, per-toast dismiss timer, manual dismiss control, and `success` / `error` / `info` tones
-- [ ] 4.3 Put the viewport in a live region — `polite` for success and info, `assertive` for error — and confirm focus is never moved to it (spec: notifications reach assistive technology)
-- [ ] 4.4 Mount the toast provider in `app/(workspace)/layout.tsx` and `app/(auth)/layout.tsx`
-- [ ] 4.5 Add `apps/web/src/lib/action-result.ts` defining the `ActionResult` shape and helpers, and `lib/use-toast-on-action-result.ts` raising a toast when a `useActionState` result changes (design D6)
-- [ ] 4.6 Add the flash-cookie path for actions that redirect — set on the server, read once and cleared by the destination layout, handed to the provider as an initial toast
-- [ ] 4.7 Add tests: the queue is bounded and drops oldest, each toast dismisses after its interval, manual dismiss works, an error toast lands in an assertive region, and the flash cookie is read exactly once
-- [ ] 4.8 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 4.1 Check whether the installed `@base-ui/react` 1.7.0 exports a `Toast` primitive and record which branch of design D5 is taken in a comment at the top of `components/ui/toast.tsx`
+- [x] 4.2 Implement `components/ui/toast.tsx` — provider, bounded queue, portal viewport, per-toast dismiss timer, manual dismiss control, and `success` / `error` / `info` tones
+- [x] 4.3 Put the viewport in a live region — `polite` for success and info, `assertive` for error — and confirm focus is never moved to it (spec: notifications reach assistive technology)
+- [x] 4.4 Mount the toast provider in `app/(workspace)/layout.tsx` and `app/(auth)/layout.tsx`
+- [x] 4.5 Add `apps/web/src/lib/action-result.ts` defining the `ActionResult` shape and helpers, and `lib/use-toast-on-action-result.ts` raising a toast when a `useActionState` result changes (design D6)
+- [x] 4.6 Add the flash-cookie path for actions that redirect — set on the server, read once and cleared by the destination layout, handed to the provider as an initial toast
+- [x] 4.7 Add tests: the queue is bounded and drops oldest, each toast dismisses after its interval, manual dismiss works, an error toast lands in an assertive region, and the flash cookie is read exactly once
+- [x] 4.8 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 5. Provenance components
 
-- [ ] 5.1 Restyle `components/fact.tsx` so an unknown value stays visibly distinct from zero, from an empty string and from a loading placeholder (spec: an unknown value is not shown as a blank)
-- [ ] 5.2 Restyle `components/evidence.tsx` so inferred values keep a visible marker and their source stays reachable
-- [ ] 5.3 Restyle `components/generated.tsx` so AI-generated text stays visibly labelled and does not read as an observed fact
-- [ ] 5.4 Extend the existing `fact`, `evidence` and `generated` tests to assert the certainty distinctions survive the restyle, updating selectors rather than removing assertions
-- [ ] 5.5 Verify: `pnpm --filter @mela/web test:unit`
+- [x] 5.1 Restyle `components/fact.tsx` so an unknown value stays visibly distinct from zero, from an empty string and from a loading placeholder (spec: an unknown value is not shown as a blank)
+- [x] 5.2 Restyle `components/evidence.tsx` so inferred values keep a visible marker and their source stays reachable
+- [x] 5.3 Restyle `components/generated.tsx` so AI-generated text stays visibly labelled and does not read as an observed fact
+- [x] 5.4 Extend the existing `fact`, `evidence` and `generated` tests to assert the certainty distinctions survive the restyle, updating selectors rather than removing assertions
+- [x] 5.5 Verify: `pnpm --filter @mela/web test:unit`
 
 ## 6. Application shell
 
