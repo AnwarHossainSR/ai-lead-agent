@@ -68,7 +68,33 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-surface-sidebar: var(--surface-sidebar);
+  --color-surface-topbar: var(--surface-topbar);
   --font-display: var(--font-space-grotesk);
+
+  /*
+   * The density scale — design D2. The reference's five sizes, named, so a
+   * screen says which rung it is on instead of repeating a number that can be
+   * slightly wrong in 200 places. The px in each comment is what renders at the
+   * browser's default root size; the value is written in rem so a reader who
+   * enlarges text still gets what they asked for.
+   *
+   * The 11px rung is for supporting text that repeats something already legible
+   * — never for the only statement of a fact (design risks).
+   */
+  --text-label: 0.625rem; /* 10px — eyebrows, column headers, field labels */
+  --text-label--line-height: 1.4;
+  --text-meta: 0.6875rem; /* 11px — table cells, timestamps, supporting text */
+  --text-meta--line-height: 1.45;
+  --text-body: 0.8125rem; /* 13px — the base the whole workspace is set in */
+  --text-body--line-height: 1.5;
+  --text-heading: 0.9375rem; /* 15px — panel and section titles */
+  --text-heading--line-height: 1.35;
+  --text-title: 1.875rem; /* 30px — the page title, once per screen */
+  --text-title--line-height: 1.1;
+
+  /* The eyebrow's tracking, named rather than repeated as an arbitrary value. */
+  --tracking-eyebrow: 0.12em;
   --shadow-xs: var(--elevation-1);
   --shadow-sm: var(--elevation-2);
   --shadow-md: var(--elevation-3);
@@ -139,6 +165,27 @@
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
+
+  /*
+   * Layout measurements — design D2. Declared here rather than in `@theme`
+   * because nothing generates a utility from them; they are read by name as
+   * `w-(--size-sidebar)` and friends, the same way `--radius` and the
+   * elevations below are read.
+   */
+  --size-sidebar: 246px;
+  --size-sidebar-collapsed: 72px;
+  --size-topbar: 62px;
+  --size-content-max: 1500px;
+
+  /*
+   * The two chrome surfaces. Both are mixes of `--card` and `--background`,
+   * which are themselves redefined per theme on this same element — so one
+   * declaration is correct in both themes, and a second copy under `.dark`
+   * would be a duplicate that can only drift. The sidebar sits slightly above
+   * the canvas, the top bar slightly below the panels it spans.
+   */
+  --surface-sidebar: color-mix(in oklch, var(--card) 65%, var(--background));
+  --surface-topbar: color-mix(in oklch, var(--background) 85%, var(--card));
 
   /*
    * Elevation is tinted with the primary hue rather than neutral black: a grey
@@ -267,7 +314,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-body text-foreground;
     /*
      * A single wash anchored where the sidebar meets the header, so the canvas
      * has a light source instead of being a flat fill. Fixed, so it does not
@@ -285,12 +332,25 @@
     @apply font-sans;
   }
 
-  /* Headings and metrics carry the display face; body text does not. */
+  /*
+   * Headings and metrics carry the display face; body text does not. The sizes
+   * come from the scale so a page states its title and its section titles the
+   * same way everywhere, and no page sets a size of its own.
+   */
   h1,
   h2,
   h3 {
     font-family: var(--font-display), var(--font-sans);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.035em;
+  }
+
+  h1 {
+    @apply text-title;
+  }
+
+  h2,
+  h3 {
+    @apply text-heading;
   }
 
   /* Figures line up column-wise wherever numbers are compared. */

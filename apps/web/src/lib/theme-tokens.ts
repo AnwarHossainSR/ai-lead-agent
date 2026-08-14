@@ -2,9 +2,13 @@
  * The theme palette as data.
  *
  * `src/app/globals.css` is where the tokens are *applied*; this module mirrors
- * the same values so they can be asserted on (contrast, chart separation) by a
- * unit test. `theme-contrast.test.ts` fails if the two ever drift apart, so the
- * duplication cannot rot silently.
+ * the same values so contrast and chart separation can be computed from data.
+ *
+ * `theme-contrast.test.ts` used to fail if the two drifted apart. It was removed
+ * when the suite was cut to a fifty-case ceiling, so the mirror is now checked by
+ * hand: the ratios in `docs/architecture.md` are recomputed from these values
+ * whenever a token changes, and a token added to `globals.css` is added here.
+ * Stated plainly because an unchecked mirror is worse than no mirror.
  */
 
 export type ThemeName = "light" | "dark";
@@ -52,7 +56,9 @@ export type TokenName =
   | "sidebar-accent"
   | "sidebar-accent-foreground"
   | "sidebar-border"
-  | "sidebar-ring";
+  | "sidebar-ring"
+  | "surface-sidebar"
+  | "surface-topbar";
 
 /** A colour as its three OKLCH components: lightness, chroma, hue. */
 export type Oklch = { l: number; c: number; h: number };
@@ -101,6 +107,10 @@ const light: Record<TokenName, Oklch> = {
   "sidebar-accent-foreground": { l: 0.3, c: 0.07, h: 258 },
   "sidebar-border": { l: 0.86, c: 0.012, h: 255 },
   "sidebar-ring": { l: 0.5, c: 0.15, h: 258 },
+  // Resolved from `color-mix(in oklch, var(--card) 65%, var(--background))`.
+  "surface-sidebar": { l: 0.988, c: 0.0034, h: 255 },
+  // Resolved from `color-mix(in oklch, var(--background) 85%, var(--card))`.
+  "surface-topbar": { l: 0.978, c: 0.0054, h: 255 },
 };
 
 const dark: Record<TokenName, Oklch> = {
@@ -147,6 +157,10 @@ const dark: Record<TokenName, Oklch> = {
   "sidebar-accent-foreground": { l: 0.96, c: 0.01, h: 258 },
   "sidebar-border": { l: 0.36, c: 0.02, h: 258 },
   "sidebar-ring": { l: 0.62, c: 0.14, h: 258 },
+  // Resolved from `color-mix(in oklch, var(--card) 65%, var(--background))`.
+  "surface-sidebar": { l: 0.21925, c: 0.01695, h: 258 },
+  // Resolved from `color-mix(in oklch, var(--background) 85%, var(--card))`.
+  "surface-topbar": { l: 0.19675, c: 0.01545, h: 258 },
 };
 
 export const themeTokens: Record<ThemeName, Record<TokenName, Oklch>> = {
@@ -188,6 +202,12 @@ export const textPairs: ReadonlyArray<{
     foreground: "sidebar-primary-foreground",
     background: "sidebar-primary",
   },
+  { foreground: "foreground", background: "surface-sidebar" },
+  { foreground: "muted-foreground", background: "surface-sidebar" },
+  { foreground: "primary", background: "surface-sidebar" },
+  { foreground: "foreground", background: "surface-topbar" },
+  { foreground: "muted-foreground", background: "surface-topbar" },
+  { foreground: "primary", background: "surface-topbar" },
 ];
 
 /**
@@ -203,6 +223,9 @@ export const nonTextPairs: ReadonlyArray<{
   { foreground: "ring", background: "background" },
   { foreground: "ring", background: "card" },
   { foreground: "sidebar-ring", background: "sidebar" },
+  { foreground: "input", background: "surface-sidebar" },
+  { foreground: "ring", background: "surface-sidebar" },
+  { foreground: "ring", background: "surface-topbar" },
   { foreground: "chart-1", background: "card" },
   { foreground: "chart-2", background: "card" },
   { foreground: "chart-3", background: "card" },
@@ -226,6 +249,8 @@ export const decorativePairs: ReadonlyArray<{
   { foreground: "border", background: "background" },
   { foreground: "border", background: "card" },
   { foreground: "sidebar-border", background: "sidebar" },
+  { foreground: "border", background: "surface-sidebar" },
+  { foreground: "border", background: "surface-topbar" },
 ];
 
 /** The chart ramp, in series order. */

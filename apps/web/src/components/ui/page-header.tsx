@@ -26,9 +26,11 @@ function PageHeader({
       {breadcrumb ? <div data-slot="page-header-breadcrumb">{breadcrumb}</div> : null}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-balance">{title}</h1>
+          {/* Size and tracking come from the scale in `globals.css`; a page
+              title that set its own would be the first of 200 near-misses. */}
+          <h1 className="font-bold text-balance">{title}</h1>
           {description ? (
-            <p className="max-w-prose text-sm text-muted-foreground">{description}</p>
+            <p className="max-w-prose text-meta text-muted-foreground">{description}</p>
           ) : null}
         </div>
         {actions ? (
@@ -47,7 +49,7 @@ function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
     <nav
       data-slot="breadcrumb"
       aria-label="Breadcrumb"
-      className={cn("text-xs text-muted-foreground", className)}
+      className={cn("text-meta text-muted-foreground", className)}
       {...props}
     />
   );
