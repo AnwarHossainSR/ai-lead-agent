@@ -3,79 +3,58 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Every page opens the same way: an optional breadcrumb, the page's single
- * `h1`, a sentence saying what the page is for, and the page-level actions.
+ * Every page opens the same way: an optional eyebrow saying which part of the
+ * workspace this is, the page's single `h1`, a sentence saying what the page is
+ * for, and the page-level actions.
+ *
  * Keeping it in one component is what keeps the heading order correct
- * (spec: accessibility floor).
+ * (spec: accessibility floor) and what makes a page built later match without
+ * its author being told how. Sizes come from the density scale — nothing here
+ * sets a font size of its own.
+ *
+ * The breadcrumb lives in the top bar, which renders on every route and can
+ * derive it from the path; a page does not restate where it is.
  */
 function PageHeader({
   className,
+  eyebrow,
   title,
   description,
-  breadcrumb,
   actions,
   ...props
 }: Omit<React.ComponentProps<"div">, "title"> & {
+  eyebrow?: React.ReactNode;
   title: React.ReactNode;
   description?: React.ReactNode;
-  breadcrumb?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
   return (
-    <div data-slot="page-header" className={cn("flex flex-col gap-2", className)} {...props}>
-      {breadcrumb ? <div data-slot="page-header-breadcrumb">{breadcrumb}</div> : null}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          {/* Size and tracking come from the scale in `globals.css`; a page
-              title that set its own would be the first of 200 near-misses. */}
-          <h1 className="font-bold text-balance">{title}</h1>
-          {description ? (
-            <p className="max-w-prose text-meta text-muted-foreground">{description}</p>
-          ) : null}
-        </div>
-        {actions ? (
-          <div data-slot="page-header-actions" className="flex shrink-0 items-center gap-2">
-            {actions}
-          </div>
+    <div
+      data-slot="page-header"
+      className={cn("mb-7 flex flex-col items-start gap-4 sm:flex-row sm:items-end", className)}
+      {...props}
+    >
+      <div className="min-w-0 flex-1">
+        {eyebrow ? (
+          <p
+            data-slot="page-header-eyebrow"
+            className="mb-1 text-label font-bold tracking-eyebrow text-primary uppercase"
+          >
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className="text-balance">{title}</h1>
+        {description ? (
+          <p className="mt-1.5 max-w-prose text-meta text-muted-foreground">{description}</p>
         ) : null}
       </div>
+      {actions ? (
+        <div data-slot="page-header-actions" className="flex shrink-0 items-center gap-2">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-/** A trail of links to where the current page sits. */
-function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
-  return (
-    <nav
-      data-slot="breadcrumb"
-      aria-label="Breadcrumb"
-      className={cn("text-meta text-muted-foreground", className)}
-      {...props}
-    />
-  );
-}
-
-function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
-  return (
-    <ol
-      data-slot="breadcrumb-list"
-      className={cn("flex flex-wrap items-center gap-1.5", className)}
-      {...props}
-    />
-  );
-}
-
-function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
-  return (
-    <li
-      data-slot="breadcrumb-item"
-      className={cn(
-        "flex items-center gap-1.5 after:text-border after:content-['/'] last:after:content-none",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
-
-export { Breadcrumb, BreadcrumbItem, BreadcrumbList, PageHeader };
+export { PageHeader };

@@ -26,14 +26,14 @@
 
 ## 3. The shell
 
-- [ ] 3.1 Rebuild `sidebar.tsx` — brand, account block, nav with per-entry icon, active marking via `aria-current`, and the collapsed icon rail (spec: the current destination is marked)
-- [ ] 3.2 Add the collapse control and persist the choice in a cookie read server-side, matching the theme's existing pattern (spec: the collapse choice persists)
-- [ ] 3.3 Add the outreach-review count to its nav entry, fetched in the layout, rendering **no badge** when the count cannot be read (design D8, spec: an unread count is not guessed)
-- [ ] 3.4 Rebuild `mobile-nav.tsx` as the drawer opened from the top bar below the tablet breakpoint (spec: small screens get a drawer)
-- [ ] 3.5 Rebuild `header.tsx` — breadcrumb, search trigger with its shortcut hint, notifications, account with role visible without opening a menu (spec: the role is legible)
-- [ ] 3.6 Wire `CommandPalette` to `GET /api/search` with debounce, grouped results and keyboard navigation
-- [ ] 3.7 Rebuild `ui/page-header.tsx` to the eyebrow/title/detail/action composition every page uses (spec: a page identifies itself)
-- [ ] 3.8 Verify: `pnpm --filter @mela/web lint`, `typecheck`
+- [x] 3.1 Rebuild `sidebar.tsx` — brand, account block, nav with per-entry icon, active marking via `aria-current`, and the collapsed icon rail (spec: the current destination is marked) — the shell was restructured to the reference's shape while here: the sidebar is now full height on the left and the top bar spans only the content column, rather than a full-width header above both. The active entry keeps its left rail as well as its fill, so the current page is not marked by colour alone
+- [x] 3.2 Add the collapse control and persist the choice in a cookie read server-side, matching the theme's existing pattern (spec: the collapse choice persists) — the cookie and its server read already existed from `redesign-web-ui`; this rebuild keeps them and adds the collapsed rail's second toggle, so the control is reachable in both states. Collapsed, every label stays in the accessible tree and in a `title`
+- [x] 3.3 Add the outreach-review count to its nav entry, fetched in the layout, rendering **no badge** when the count cannot be read (design D8, spec: an unread count is not guessed) — `readNavigationCounts` returns an **empty record** on failure, not a zero, and the entry renders no badge from it. One more than the cap is requested so the badge can tell "exactly 99" from "99+"
+- [x] 3.4 Rebuild `mobile-nav.tsx` as the drawer opened from the top bar below the tablet breakpoint (spec: small screens get a drawer) — same navigation definition, same counts and the same absent-badge rule as the sidebar, so the two cannot disagree
+- [x] 3.5 Rebuild `header.tsx` — breadcrumb, search trigger with its shortcut hint, notifications, account with role visible without opening a menu (spec: the role is legible) — the breadcrumb is derived from the path in `lib/breadcrumb.ts`; a record's id renders as its first eight characters rather than a label pretending to be the record's name, because the top bar renders on every route and cannot fetch
+- [x] 3.6 Wire `CommandPalette` to `GET /api/search` with debounce, grouped results and keyboard navigation — read through a Server Action rather than a client fetch, since `API_URL` and the session cookie are both server-side and exposing either to save a hop would trade the auth model for a round trip. An out-of-order guard discards a response for a query that is no longer typed. **The endpoint itself lands in 4.11**; until then the palette renders `Unavailable` with the reason, which is the honest interim state rather than an empty result list
+- [x] 3.7 Rebuild `ui/page-header.tsx` to the eyebrow/title/detail/action composition every page uses (spec: a page identifies itself) — the page-level `Breadcrumb` primitives are removed rather than kept unused: the top bar derives the breadcrumb on every route, and a second unused implementation is a thing that drifts
+- [x] 3.8 Verify: `pnpm --filter @mela/web lint`, `typecheck` — both clean (145 files). `build` also run: the first attempt failed because the client sidebar imported the count cap from the module that reads it, dragging `next/headers` into the browser bundle. The cap moved into `navigation.ts`, which both client components already import; 12/12 routes generate
 
 ## 4. Aggregate read endpoints
 
