@@ -1,8 +1,10 @@
 import { SESSION_COOKIE_NAME, sessionCookieAttributes } from "@mela/config";
 import { type ApiEnv } from "@mela/config/env";
+import type { PublicAccountRow } from "@mela/database";
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -18,6 +20,7 @@ import { API_ENV } from "../config/env.module";
 import { createZodDto } from "../validation/zod-dto";
 import { AuthService } from "./auth.service";
 import { parseCookieHeader } from "./cookie";
+import { CurrentAccount } from "./current-account.decorator";
 import type { RequestWithCookieHeader, ResponseWithCookies } from "./http-types";
 import { Public } from "./public.decorator";
 
@@ -90,5 +93,15 @@ export class AuthController {
     res.clearCookie(SESSION_COOKIE_NAME, sessionCookieAttributes(this.env.NODE_ENV));
 
     return { ok: true };
+  }
+
+  /**
+   * The signed-in account for whatever session the guard just validated
+   * (task 8.3) — not gated by `@RequiresRole`, since every role needs to
+   * know who it is signed in as, not only an operator.
+   */
+  @Get("me")
+  me(@CurrentAccount() account: PublicAccountRow): SignInResponseBody["account"] {
+    return { id: account.id, email: account.email, role: account.role };
   }
 }

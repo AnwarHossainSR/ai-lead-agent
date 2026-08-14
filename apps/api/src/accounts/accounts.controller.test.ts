@@ -38,6 +38,21 @@ afterAll(async () => {
   await harness?.close();
 });
 
+describe("GET /api/accounts", () => {
+  it("lists accounts without a password hash, open to a viewer as well as an operator", async () => {
+    const viewerCookie = (await createAuthenticatedContext(harness.database, "viewer")).cookie;
+
+    const response = await authedRequest(app?.getHttpServer(), viewerCookie)
+      .get("/api/accounts")
+      .expect(200);
+
+    expect(response.body.length).toBeGreaterThan(0);
+    expect(response.body[0]).not.toHaveProperty("passwordHash");
+    expect(response.body[0]).toHaveProperty("email");
+    expect(response.body[0]).toHaveProperty("role");
+  });
+});
+
 describe("POST /api/accounts", () => {
   it("creates an account and never returns a password hash", async () => {
     const response = await authedRequest(app?.getHttpServer(), operatorCookie)

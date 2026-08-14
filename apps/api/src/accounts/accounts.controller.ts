@@ -6,11 +6,13 @@ import {
   changeAccountRole,
   disableAccount,
   insertAccount,
+  listAccounts,
 } from "@mela/database";
 import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Inject,
@@ -56,6 +58,17 @@ class ChangeAccountRoleDto extends createZodDto(changeAccountRoleSchema) {}
 @Controller("accounts")
 export class AccountsController {
   constructor(@Inject(DATABASE) private readonly database: Database) {}
+
+  /**
+   * Lists every account (id, email, role — never a password hash), open to
+   * any signed-in role rather than `@RequiresRole("operator", ...)`: a
+   * viewer needs this too, to resolve who approved, rejected or marked
+   * something (task 8.5), not only an operator managing accounts.
+   */
+  @Get()
+  async listAccounts() {
+    return listAccounts(this.database);
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

@@ -159,3 +159,32 @@ describe("POST /api/auth/sign-out", () => {
     await request(app?.getHttpServer()).post("/api/auth/sign-out").expect(200);
   });
 });
+
+describe("GET /api/auth/me", () => {
+  it("returns the signed-in account for a valid session", async () => {
+    const passwordHash = await hashPassword(KNOWN_PASSWORD);
+    const account = await insertAccount(
+      harness.database,
+      accountInput({ email: "me@example.com", passwordHash, role: "viewer" }),
+    );
+
+    const signInResponse = await request(app?.getHttpServer())
+      .post("/api/auth/sign-in")
+      .send({ email: "me@example.com", password: KNOWN_PASSWORD })
+      .expect(200);
+
+    const setCookie = signInResponse.headers["set-cookie"] as unknown as string[] | undefined;
+    const token = cookieValue(setCookie, SESSION_COOKIE_NAME);
+
+    const response = await request(app?.getHttpServer())
+      .get("/api/auth/me")
+      .set("Cookie", `${SESSION_COOKIE_NAME}=${token}`)
+      .expect(200);
+
+    expect(response.body).toEqual({ id: account.id, email: "me@example.com", role: "viewer" });
+  });
+
+  it("401s without a session", async () => {
+    await request(app?.getHttpServer()).get("/api/auth/me").expect(401);
+  });
+});
