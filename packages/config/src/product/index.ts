@@ -274,6 +274,7 @@ export {
 
 export {
   OBSERVABILITY_CONFIG,
+  REDACTION_PATTERNS,
   metricLabelSetSchema,
   observabilityConfigSchema,
   redactionConfigSchema,

@@ -6,33 +6,32 @@ import { deepFreeze } from "../internal/freeze";
 const SUBJECT = "Observability configuration";
 
 // ---------------------------------------------------------------------------
-// Redaction
+// Redaction patterns — runtime RegExp constants, not Zod-validated
 // ---------------------------------------------------------------------------
 
 /**
  * Regex patterns for values that must be replaced in log output. Applied by
- * the serializer at write time, not at call sites.
+ * the serializer at write time, not at call sites. These are runtime
+ * constants, not validated through Zod, because RegExp instances cannot be
+ * round-tripped through schema validation.
+ *
+ * Not frozen: `String.prototype.replaceAll` with a global regex mutates
+ * `lastIndex`, which would fail on a frozen RegExp.
  */
-const REDACTION_PATTERNS_DATA = {
+export const REDACTION_PATTERNS = {
   /** postgres://, postgresql://, redis://, rediss:// URLs. */
   connectionStrings: /(?:postgres(?:ql)?|rediss?):\/\/[^\s"'}{,)]+/gi,
   /** Email addresses. */
   emails: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
   /** Keys named as credential holders at any depth. */
   credentialKeys: /^(?:password|token|secret|authorization|cookie|apiKey)$/i,
-} as const;
+};
 
-export type RedactionPatterns = typeof REDACTION_PATTERNS_DATA;
-
-/**
- * Configured secret values redacted by exact string match. These are the
- * values the environment loader already holds; replacing them wherever they
- * appear — however they got there — is the safety net.
- */
-const SECRET_VALUES_DATA: readonly string[] = [];
+// ---------------------------------------------------------------------------
+// Redaction config — Zod-validated
+// ---------------------------------------------------------------------------
 
 export const redactionConfigSchema = z.object({
-  patterns: z.record(z.string(), z.instanceof(RegExp)),
   secretValues: z.array(z.string()),
   maxLength: z
     .number()
@@ -51,9 +50,6 @@ export type RedactionConfig = z.infer<typeof redactionConfigSchema>;
  * Bounded sets of label values for metrics. Every label on every metric must
  * draw from a configured set; no label may carry a company identifier, URL
  * or email address (both a cardinality rule and a privacy one).
- *
- * The actual runtime sets are populated from other product configs at the
- * callsite; these schemas define the shape and constraints.
  */
 export const metricLabelSetSchema = z.object({
   /** Pipeline stage identifiers (e.g. discovery, verification, scoring). */
@@ -119,10 +115,10 @@ export function registerSecretForRedaction(
   });
 }
 
-/**
- * Default pipeline stages derived from the job registry. These are the stages
- * whose outcomes are counted by the metrics layer.
- */
+// ---------------------------------------------------------------------------
+// Default label sets
+// ---------------------------------------------------------------------------
+
 const PIPELINE_STAGES = [
   "discovery",
   "verification",
@@ -135,10 +131,6 @@ const PIPELINE_STAGES = [
   "reply-classification",
 ] as const;
 
-/**
- * Default outcome values. The pipeline records honest outcomes at every stage;
- * these are the values that appear in counters.
- */
 const OUTCOMES = [
   "completed",
   "blocked",
@@ -193,14 +185,11 @@ const DEFAULT_LABELS: MetricLabelSet = {
   poolStates: [...POOL_STATES],
 };
 
-const DEFAULT_REDACTION_CONFIG: RedactionConfig = {
-  patterns: { ...REDACTION_PATTERNS_DATA },
-  secretValues: [...SECRET_VALUES_DATA],
-  maxLength: 10_000,
-};
-
 export const OBSERVABILITY_CONFIG = parseObservabilityConfig({
-  redaction: DEFAULT_REDACTION_CONFIG,
+  redaction: {
+    secretValues: [],
+    maxLength: 10_000,
+  },
   labels: DEFAULT_LABELS,
   metricsEnabled: true,
 });

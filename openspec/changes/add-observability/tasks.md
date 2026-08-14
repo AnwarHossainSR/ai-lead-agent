@@ -12,14 +12,14 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 2. The redacting logger
 
-- [ ] 2.1 Implement the serializer replacing connection strings, API keys, session identifiers, credential-named keys at any depth, and email addresses
-- [ ] 2.2 Redact the configured secret values by exact value, wherever and however they appear
-- [ ] 2.3 Truncate strings beyond the configured length with a marker, so captured page content cannot fill a log
-- [ ] 2.4 Handle errors, nested arrays and circular structures without throwing
-- [ ] 2.5 Wrap `ConsoleLogger` with the serializer and install it in both the API and the worker
-- [ ] 2.6 Add unit tests for every redaction case, including a credential inside an error message
-- [ ] 2.7 Add a test asserting a redacted line still carries the event, stage, outcome and correlation identifier
-- [ ] 2.8 Verify: `pnpm --filter @mela/api lint typecheck test` passes
+- [x] 2.1 Implement the serializer replacing connection strings, API keys, session identifiers, credential-named keys at any depth, and email addresses
+- [x] 2.2 Redact the configured secret values by exact value, wherever and however they appear
+- [x] 2.3 Truncate strings beyond the configured length with a marker, so captured page content cannot fill a log
+- [x] 2.4 Handle errors, nested arrays and circular structures without throwing
+- [x] 2.5 Wrap `ConsoleLogger` with the serializer and install it in both the API and the worker
+- [x] 2.6 Add unit tests for every redaction case, including a credential inside an error message
+- [x] 2.7 Add a test asserting a redacted line still carries the event, stage, outcome and correlation identifier
+- [x] 2.8 Verify: `pnpm --filter @mela/api lint typecheck test` passes
 
 ## 3. Correlation
 

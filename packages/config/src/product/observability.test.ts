@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   OBSERVABILITY_CONFIG,
+  REDACTION_PATTERNS,
   observabilityConfigSchema,
   registerSecretForRedaction,
 } from "./observability";
@@ -12,10 +13,9 @@ describe("observability config", () => {
   });
 
   it("has redaction patterns for connection strings, emails and credential keys", () => {
-    const { patterns } = OBSERVABILITY_CONFIG.redaction;
-    expect(patterns.connectionStrings).toBeInstanceOf(RegExp);
-    expect(patterns.emails).toBeInstanceOf(RegExp);
-    expect(patterns.credentialKeys).toBeInstanceOf(RegExp);
+    expect(REDACTION_PATTERNS.connectionStrings).toBeInstanceOf(RegExp);
+    expect(REDACTION_PATTERNS.emails).toBeInstanceOf(RegExp);
+    expect(REDACTION_PATTERNS.credentialKeys).toBeInstanceOf(RegExp);
   });
 
   it("has a positive max string length", () => {
@@ -76,7 +76,9 @@ describe("registerSecretForRedaction", () => {
 
   it("ignores empty strings", () => {
     const updated = registerSecretForRedaction(OBSERVABILITY_CONFIG, "");
-    expect(updated.redaction.secretValues).toEqual(OBSERVABILITY_CONFIG.redaction.secretValues);
+    expect(updated.redaction.secretValues).toEqual(
+      OBSERVABILITY_CONFIG.redaction.secretValues,
+    );
   });
 
   it("returns a frozen config", () => {
