@@ -15,6 +15,36 @@ export {
 } from "./errors";
 
 export {
+  changeAccountRole,
+  disableAccount,
+  findAccountByEmailWithHash,
+  getAccount,
+  insertAccount,
+  insertAccountInputSchema,
+  listAccounts,
+  type InsertAccountInput,
+  type PublicAccountRow,
+} from "./accounts";
+
+export {
+  findSessionByTokenHash,
+  insertSession,
+  insertSessionInputSchema,
+  revokeAllSessionsForAccount,
+  revokeSession,
+  touchSession,
+  type InsertSessionInput,
+} from "./sessions";
+
+export {
+  insertAuditEntry,
+  insertAuditEntryInputSchema,
+  listAuditEntries,
+  type AuditLogFilters,
+  type InsertAuditEntryInput,
+} from "./audit-log";
+
+export {
   applyVerificationResult,
   applyVerificationResultInputSchema,
   clearCompanyDoNotContact,

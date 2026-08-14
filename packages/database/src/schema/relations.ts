@@ -1,9 +1,12 @@
 import { relations } from "drizzle-orm";
 
+import { accounts } from "./accounts";
+import { auditLog } from "./audit-log";
 import { companies } from "./companies";
 import { contacts } from "./contacts";
 import { leads } from "./leads";
 import { outreach } from "./outreach";
+import { sessions } from "./sessions";
 import { websiteAnalysis } from "./website-analysis";
 
 /**
@@ -33,4 +36,17 @@ export const leadsRelations = relations(leads, ({ many, one }) => ({
 
 export const outreachRelations = relations(outreach, ({ one }) => ({
   lead: one(leads, { fields: [outreach.leadId], references: [leads.id] }),
+}));
+
+export const accountsRelations = relations(accounts, ({ many }) => ({
+  sessions: many(sessions),
+  auditEntries: many(auditLog),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  account: one(accounts, { fields: [sessions.accountId], references: [accounts.id] }),
+}));
+
+export const auditLogRelations = relations(auditLog, ({ one }) => ({
+  account: one(accounts, { fields: [auditLog.accountId], references: [accounts.id] }),
 }));

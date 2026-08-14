@@ -83,6 +83,9 @@ const TABLES = [
   "discovery_run_sources",
   "discovery_runs",
   "ai_invocations",
+  "audit_log",
+  "sessions",
+  "accounts",
 ] as const;
 
 /**

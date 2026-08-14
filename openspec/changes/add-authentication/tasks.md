@@ -4,22 +4,22 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 1. Configuration and environment
 
-- [ ] 1.1 Add authentication configuration to `packages/config`: session lifetime, absolute maximum lifetime, Argon2id parameters, rate limit window and thresholds, and the minimum password strength
-- [ ] 1.2 Add `SESSION_SECRET` and the authentication variables to the API env schema and `.env.example` with a `.describe()` on each
-- [ ] 1.3 Refuse startup outside development when the session secret is missing, short, or equal to the committed placeholder
-- [ ] 1.4 Add tests: a missing secret aborts naming the variable, the placeholder is refused outside development, the secret never appears in output
-- [ ] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes
+- [x] 1.1 Add authentication configuration to `packages/config`: session lifetime, absolute maximum lifetime, Argon2id parameters, rate limit window and thresholds, and the minimum password strength
+- [x] 1.2 Add `SESSION_SECRET` and the authentication variables to the API env schema and `.env.example` with a `.describe()` on each
+- [x] 1.3 Refuse startup outside development when the session secret is missing, short, or equal to the committed placeholder
+- [x] 1.4 Add tests: a missing secret aborts naming the variable, the placeholder is refused outside development, the secret never appears in output
+- [x] 1.5 Verify: `pnpm --filter @mela/config lint typecheck test` passes — 311/311 config tests pass; `@mela/api` (458/458) and `@mela/web` continue to typecheck/pass with `SESSION_SECRET` added to test fixtures
 
 ## 2. Schema
 
-- [ ] 2.1 Add the `account_role` enum and the `accounts` table with a unique email, password hash, role, disabled marker and timestamps
-- [ ] 2.2 Add the `sessions` table with account, expiry, revocation and last-seen, distinguishing expired from revoked
-- [ ] 2.3 Add the `audit_log` table and the trigger refusing `UPDATE` and `DELETE`
-- [ ] 2.4 Add the attribution columns to `outreach`, `companies` and `contacts` with `ON DELETE RESTRICT` and the `CHECK` pairs requiring an actor whenever the action timestamp is present
-- [ ] 2.5 Add write helpers for accounts, sessions and audit entries, with read helpers that never return a password hash
-- [ ] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift
-- [ ] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including raw `UPDATE`s against the append-only trigger and the attribution constraints
-- [ ] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running
+- [x] 2.1 Add the `account_role` enum and the `accounts` table with a unique email, password hash, role, disabled marker and timestamps
+- [x] 2.2 Add the `sessions` table with account, expiry, revocation and last-seen, distinguishing expired from revoked
+- [x] 2.3 Add the `audit_log` table and the trigger refusing `UPDATE` and `DELETE` — the `UPDATE` trigger carves out one exception: the FK's own `ON DELETE SET NULL` action on `account_id` (design D6 wants both append-only *and* a row that survives its account, and Postgres implements that FK action as an `UPDATE` under the hood)
+- [ ] 2.4 Add the attribution columns to `outreach`, `companies` and `contacts` with `ON DELETE RESTRICT` and the `CHECK` pairs requiring an actor whenever the action timestamp is present — **reordered**: deferred to section 6, alongside the write-helper and controller changes that supply the actor. Adding the columns here without a real authenticated caller yet available in `apps/api` would break every existing approve/reject/send/do-not-contact test the moment the `CHECK` constraint went in; the guard and `CurrentAccount` extraction (sections 3-5) have to exist first
+- [x] 2.5 Add write helpers for accounts, sessions and audit entries, with read helpers that never return a password hash
+- [x] 2.6 Generate and commit the migration; confirm `pnpm db:check` reports no drift — `0013_past_fabian_cortez.sql` (accounts, sessions, audit_log + append-only triggers). A second migration for the attribution columns follows in section 6
+- [ ] 2.7 Add integration tests covering every scenario in `specs/lead-data-model/spec.md`, including raw `UPDATE`s against the append-only trigger and the attribution constraints — the account/session/audit-log scenarios are covered now (`write/accounts.test.ts`: duplicate email, unrecognised role, password hash never read, append-only trigger via raw `UPDATE`/`DELETE`, audit entry outliving its account, expired vs. revoked sessions distinguishable). The attribution-constraint scenarios are covered in section 6 alongside 2.4
+- [x] 2.8 Verify: `pnpm --filter @mela/database lint typecheck test` passes with the Compose stack running — 216/216 (one pre-existing, unrelated flaky test in `write/outreach.test.ts` order-dependently fails in isolation; documented before this change, not caused by it). Re-verified again after section 6 adds the attribution migration
 
 ## 3. Credentials and sessions
 

@@ -1,3 +1,4 @@
+import type { InsertAccountInput } from "../write/accounts";
 import type { InsertAIInvocationInput } from "../write/ai-invocations";
 import type { InsertCompanyInput } from "../write/companies";
 import type { InsertContactInput } from "../write/contacts";
@@ -51,6 +52,23 @@ export function aiInvocationInput(
     latencyMs: 250,
     attempts: 1,
     outcome: "succeeded",
+    ...overrides,
+  };
+}
+
+let accountFixtureCount = 0;
+
+/** A fake, argon2id-shaped hash — long enough to look real, never checkable against any password. */
+const FIXTURE_PASSWORD_HASH =
+  "$argon2id$v=19$m=19456,t=2,p=1$dGVzdC1maXh0dXJlLXNhbHQ$dGVzdC1maXh0dXJlLWhhc2gtbm90LXJlYWw";
+
+export function accountInput(overrides: Partial<InsertAccountInput> = {}): InsertAccountInput {
+  accountFixtureCount += 1;
+
+  return {
+    email: `fixture-account-${accountFixtureCount}@example.com`,
+    passwordHash: FIXTURE_PASSWORD_HASH,
+    role: "operator",
     ...overrides,
   };
 }
