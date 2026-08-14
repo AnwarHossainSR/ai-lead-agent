@@ -1,9 +1,10 @@
 import { type INestApplication } from "@nestjs/common";
-import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
+import { authedRequest } from "../testing/authed-request";
+import { createAuthenticatedContext } from "../testing/authenticated-context";
 
 /**
  * API tests for the analysis controller.
@@ -17,6 +18,21 @@ import { createTestApp } from "../testing/app";
 
 let harness: TestDatabase;
 let app: INestApplication | undefined;
+let authCookie: string;
+
+/** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
+function request(server: Parameters<typeof authedRequest>[0]) {
+  return authedRequest(server, authCookie);
+}
+
+/** Every test here boots its own app rather than sharing one via `beforeEach` — this pairs an authenticated context with it, against the same database the app is configured to query. */
+async function startAuthenticatedApp(
+  overrides: Parameters<typeof createTestApp>[0] = {},
+): Promise<INestApplication> {
+  const nextApp = await createTestApp({ DATABASE_URL: harness.url, ...overrides });
+  authCookie = (await createAuthenticatedContext(harness.database)).cookie;
+  return nextApp;
+}
 
 beforeAll(async () => {
   harness = await setupTestDatabase();
@@ -33,7 +49,7 @@ afterAll(async () => {
 
 describe("POST /api/companies/:id/analysis", () => {
   it("returns 404 for a non-existent company", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .post("/api/companies/00000000-0000-0000-0000-000000000000/analysis")
@@ -42,7 +58,7 @@ describe("POST /api/companies/:id/analysis", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/companies/00000000-0000-0000-0000-000000000000/analysis")
@@ -58,7 +74,7 @@ describe("POST /api/companies/:id/analysis", () => {
 
 describe("GET /api/companies/:id/analysis/latest", () => {
   it("returns 404 for a non-existent company", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/analysis/latest")
@@ -66,7 +82,7 @@ describe("GET /api/companies/:id/analysis/latest", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/analysis/latest")
@@ -81,7 +97,7 @@ describe("GET /api/companies/:id/analysis/latest", () => {
 
 describe("GET /api/companies/:id/analysis", () => {
   it("returns analyses for a company", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/analysis")
@@ -93,7 +109,7 @@ describe("GET /api/companies/:id/analysis", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/analysis")
@@ -108,7 +124,7 @@ describe("GET /api/companies/:id/analysis", () => {
 
 describe("GET /api/companies/:id/technologies", () => {
   it("returns technologies for a company", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer()).get(
       "/api/companies/00000000-0000-0000-0000-000000000000/technologies",
@@ -121,7 +137,7 @@ describe("GET /api/companies/:id/technologies", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/technologies")
@@ -136,7 +152,7 @@ describe("GET /api/companies/:id/technologies", () => {
 
 describe("POST /api/analysis/:id/detect", () => {
   it("returns 404 for a non-existent analysis", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .post("/api/analysis/00000000-0000-0000-0000-000000000000/detect")
@@ -146,7 +162,7 @@ describe("POST /api/analysis/:id/detect", () => {
 
 describe("technology detection module integrity", () => {
   it("does not issue network requests or call a language model", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     // Track network requests
     const networkRequests: string[] = [];

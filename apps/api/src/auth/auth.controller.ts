@@ -19,6 +19,7 @@ import { createZodDto } from "../validation/zod-dto";
 import { AuthService } from "./auth.service";
 import { parseCookieHeader } from "./cookie";
 import type { RequestWithCookieHeader, ResponseWithCookies } from "./http-types";
+import { Public } from "./public.decorator";
 
 const signInBodySchema = z.object({
   email: z.string().trim().min(1, "Expected an email address."),
@@ -43,6 +44,7 @@ export class AuthController {
     @Inject(API_ENV) private readonly env: ApiEnv,
   ) {}
 
+  @Public()
   @Post("sign-in")
   @HttpCode(HttpStatus.OK)
   async signIn(
@@ -72,6 +74,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post("sign-out")
   @HttpCode(HttpStatus.OK)
   async signOut(

@@ -1,6 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { HealthCheck, type HealthCheckResult, HealthCheckService } from "@nestjs/terminus";
 
+import { Public } from "../auth/public.decorator";
 import { PostgresHealthIndicator } from "./postgres.health";
 import { RedisHealthIndicator } from "./redis.health";
 
@@ -21,6 +22,7 @@ export class HealthController {
     private readonly redis: RedisHealthIndicator,
   ) {}
 
+  @Public()
   @Get()
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {

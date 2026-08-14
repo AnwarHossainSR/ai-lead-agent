@@ -1,9 +1,10 @@
 import { type INestApplication } from "@nestjs/common";
-import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { type TestDatabase, setupTestDatabase } from "@mela/database/testing";
 import { createTestApp } from "../testing/app";
+import { authedRequest } from "../testing/authed-request";
+import { createAuthenticatedContext } from "../testing/authenticated-context";
 
 /**
  * API tests for the verification controller (task 7.4).
@@ -17,6 +18,21 @@ import { createTestApp } from "../testing/app";
 
 let harness: TestDatabase;
 let app: INestApplication | undefined;
+let authCookie: string;
+
+/** Every route requires a session now (task 4.1); this attaches one to every call below without touching each call site. */
+function request(server: Parameters<typeof authedRequest>[0]) {
+  return authedRequest(server, authCookie);
+}
+
+/** Every test here boots its own app rather than sharing one via `beforeEach` — this pairs an authenticated context with it, against the same database the app is configured to query. */
+async function startAuthenticatedApp(
+  overrides: Parameters<typeof createTestApp>[0] = {},
+): Promise<INestApplication> {
+  const nextApp = await createTestApp({ DATABASE_URL: harness.url, ...overrides });
+  authCookie = (await createAuthenticatedContext(harness.database)).cookie;
+  return nextApp;
+}
 
 beforeAll(async () => {
   harness = await setupTestDatabase();
@@ -33,7 +49,7 @@ afterAll(async () => {
 
 describe("POST /api/companies/:id/verify", () => {
   it("returns 404 for a non-existent company", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .post("/api/companies/00000000-0000-0000-0000-000000000000/verify")
@@ -42,7 +58,7 @@ describe("POST /api/companies/:id/verify", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/companies/00000000-0000-0000-0000-000000000000/verify")
@@ -58,7 +74,7 @@ describe("POST /api/companies/:id/verify", () => {
 
 describe("POST /api/verification/batch", () => {
   it("returns counts for an empty batch", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/verification/batch")
@@ -75,7 +91,7 @@ describe("POST /api/verification/batch", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .post("/api/verification/batch")
@@ -94,7 +110,7 @@ describe("POST /api/verification/batch", () => {
 
 describe("GET /api/companies/:id/verification", () => {
   it("returns 404 for a non-existent company", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/verification")
@@ -102,7 +118,7 @@ describe("GET /api/companies/:id/verification", () => {
   });
 
   it("does not include credentials in the response", async () => {
-    app = await createTestApp();
+    app = await startAuthenticatedApp();
 
     const response = await request(app.getHttpServer())
       .get("/api/companies/00000000-0000-0000-0000-000000000000/verification")

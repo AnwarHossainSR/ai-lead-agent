@@ -14,20 +14,25 @@ export interface ProviderOverride {
 }
 
 /**
- * Placeholder values for every required environment variable that has no
- * default. Tests must not depend on real secrets being available; passing
- * this object to `loadApiEnv` satisfies the Zod schema without hitting
- * `process.env`.
+ * The `SESSION_SECRET` every `createTestApp()` call uses unless overridden —
+ * exported so a test can compute a matching session-token hash without
+ * booting an app first.
+ */
+export const TEST_SESSION_SECRET = "changeme-generate-a-real-secret-with-openssl-rand-hex-32";
+
+/**
+ * Placeholder values for required environment variables that have no default
+ * and are not set in the CI environment. `DATABASE_URL` and `REDIS_URL` are
+ * intentionally omitted — they come from `process.env` where the CI workflow
+ * provisions real PostgreSQL and Redis service containers.
  */
 const TEST_ENV: Record<string, string> = {
   NODE_ENV: "development",
-  DATABASE_URL: "postgresql://test:test@127.0.0.1:1/test",
-  REDIS_URL: "redis://127.0.0.1:1",
   GEMINI_API_KEY: "test-gemini-key",
   CLOUDFLARE_ACCOUNT_ID: "test-cf-account",
   CLOUDFLARE_API_TOKEN: "test-cf-token",
   QSTASH_TOKEN: "test-qstash-token",
-  SESSION_SECRET: "changeme-generate-a-real-secret-with-openssl-rand-hex-32",
+  SESSION_SECRET: TEST_SESSION_SECRET,
 };
 
 /**
@@ -48,7 +53,7 @@ export async function createTestApp(
   overrides: Partial<ApiEnv> = {},
   providerOverrides: readonly ProviderOverride[] = [],
 ): Promise<INestApplication> {
-  const env: ApiEnv = { ...loadApiEnv(TEST_ENV), ...overrides };
+  const env: ApiEnv = { ...loadApiEnv({ ...process.env, ...TEST_ENV }), ...overrides };
 
   let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(API_ENV)

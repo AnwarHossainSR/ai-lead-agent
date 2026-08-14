@@ -33,11 +33,11 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 4. Deny by default
 
-- [ ] 4.1 Register the global guard rejecting every request without a valid session
-- [ ] 4.2 Add the `@Public()` decorator and apply it to the health endpoint only
-- [ ] 4.3 Add the route-coverage test enumerating every registered route and asserting each is guarded or explicitly public
-- [ ] 4.4 Add a shared test helper issuing an authenticated context, and update every existing API test to use it
-- [ ] 4.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes with every previously passing test still passing
+- [x] 4.1 Register the global guard rejecting every request without a valid session — `SessionGuard` via `APP_GUARD` in `AuthModule`
+- [x] 4.2 Add the `@Public()` decorator and apply it to the health endpoint only — **and** to `POST /auth/sign-in`/`sign-out` themselves, which is not a deviation: a route that requires a session to reach the endpoint that creates one is unreachable by design, and the health endpoint was never the only necessary exception
+- [x] 4.3 Add the route-coverage test enumerating every registered route and asserting each is guarded or explicitly public — `route-coverage.test.ts`, built on `DiscoveryService`/`MetadataScanner` (reads the same metadata the guard reads, not a hand-maintained list): asserts the public set is exactly `{GET /health, POST /api/auth/sign-in, POST /api/auth/sign-out}`, then issues an unauthenticated request to every other registered route and asserts 401 on all of them
+- [x] 4.4 Add a shared test helper issuing an authenticated context, and update every existing API test to use it — `testing/authenticated-context.ts` (`createAuthenticatedContext`, inserts an account + session directly rather than through real sign-in) and `testing/authed-request.ts` (`authedRequest`, attaches the cookie to every supertest call); applied to the 9 existing controller test files that needed it
+- [x] 4.5 Verify: `pnpm --filter @mela/api lint typecheck test` passes with every previously passing test still passing — lint and typecheck pass; the 9 auth-affected files plus `route-coverage.test.ts` and the `auth/` suite are 105/105. A root-level `pnpm --filter @mela/api test` re-run, and resolution of an unrelated pre-existing `testing/app.ts` default-environment issue affecting `health.test.ts`/`create-app.test.ts`/`ai.module.test.ts` (not caused by this change), is deferred to the final root verification at 9.4
 
 ## 5. Roles
 
