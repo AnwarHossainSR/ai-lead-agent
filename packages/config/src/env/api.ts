@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { httpUrl, positiveAmount, positiveInteger, postgresUrl, redisUrl, tcpPort } from "./fields";
 import { createEnvLoader } from "./load";
+import { assertSessionSecretIsSafe } from "./session-secret";
 
 /** Everything the NestJS API reads at startup. */
 export const apiEnvSchema = z.object({
@@ -175,8 +176,30 @@ export const apiEnvSchema = z.object({
     .min(1)
     .optional()
     .describe("Next QStash signing key for rotation. Verified when present, ignored otherwise."),
+
+  // ---------------------------------------------------------------------------
+  // Authentication
+  // ---------------------------------------------------------------------------
+
+  SESSION_SECRET: z
+    .string()
+    .min(1, "Expected the secret used to sign session cookies.")
+    .describe(
+      "Secret used to sign session cookies. Generate a real value with `openssl rand -hex 32` for anything but local development — never the committed placeholder. Secret — never logged, never returned in a health response, never present in an error message.",
+    ),
 });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;
 
-export const loadApiEnv = createEnvLoader("the API", apiEnvSchema);
+const loadApiEnvFromSchema = createEnvLoader("the API", apiEnvSchema);
+
+/**
+ * Wraps the schema-validated loader with the session-secret startup guard
+ * (design D3 / developer-environment spec): every caller gets the same
+ * refusal, rather than each one having to remember to ask for it separately.
+ */
+export function loadApiEnv(source?: Record<string, string | undefined>): Readonly<ApiEnv> {
+  const env = loadApiEnvFromSchema(source);
+  assertSessionSecretIsSafe(env);
+  return env;
+}

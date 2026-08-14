@@ -21,5 +21,8 @@ if (!process.env.CLOUDFLARE_ACCOUNT_ID) {
 if (!process.env.CLOUDFLARE_API_TOKEN) {
   process.env.CLOUDFLARE_API_TOKEN = "test-cf-api-token-not-real";
 }
+if (!process.env.SESSION_SECRET) {
+  process.env.SESSION_SECRET = "test-session-secret-not-real-0123456789";
+}
 
 hydrateEnvironment();

@@ -65,6 +65,7 @@ async function createPipeApp(): Promise<INestApplication> {
     QSTASH_TOKEN: "test-qstash-token",
     QSTASH_CURRENT_SIGNING_KEY: "sig_test",
     QSTASH_NEXT_SIGNING_KEY: "sig_test_next",
+    SESSION_SECRET: "test-session-secret-not-real-0123456789",
   } satisfies ApiEnv);
 
   await app.init();
