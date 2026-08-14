@@ -194,8 +194,8 @@ describe("metrics port equal to application port aborts startup", () => {
   });
 
   it("accepts different ports", () => {
-    const env = loadApiEnv({ ...validApiEnv, API_PORT: "3001", METRICS_PORT: "9090" });
-    expect(env.API_PORT).toBe(3001);
+    const env = loadApiEnv({ ...validApiEnv, API_PORT: "4000", METRICS_PORT: "9090" });
+    expect(env.API_PORT).toBe(4000);
     expect(env.METRICS_PORT).toBe(9090);
   });
 });
@@ -238,7 +238,7 @@ describe("a valid environment is accepted", () => {
     const env = loadApiEnv(validApiEnv);
 
     expect(env.NODE_ENV).toBe("development");
-    expect(env.API_PORT).toBe(3001);
+    expect(env.API_PORT).toBe(4000);
     expect(env.METRICS_PORT).toBe(9090);
     expect(env.LOG_LEVEL).toBe("log");
     expect(env.WEB_ORIGIN).toBe("http://localhost:3000");
@@ -262,8 +262,8 @@ describe("a valid environment is accepted", () => {
 
   it("ignores variables it was not asked about", () => {
     const env = loadWebEnv({
-      NEXT_PUBLIC_API_URL: "http://localhost:3001",
-      API_URL: "http://localhost:3001",
+      NEXT_PUBLIC_API_URL: "http://localhost:4000",
+      API_URL: "http://localhost:4000",
       UNRELATED_SECRET: "should-not-appear",
     });
 

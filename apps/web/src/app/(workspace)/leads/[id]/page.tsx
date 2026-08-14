@@ -4,8 +4,8 @@ import {
   ContactsPanel,
   OpportunitiesPanel,
   TechnologiesPanel,
-  Unavailable,
 } from "@/components/company-panels";
+import { Unavailable } from "@/components/data-state";
 import { ResearchSummaryView } from "@/components/lead-detail/research-summary-view";
 import { Panel } from "@/components/panel";
 import { apiUrl } from "@/lib/api";
@@ -29,7 +29,7 @@ async function ResearchSummaryPanel({ leadId }: { leadId: string }) {
       : await fetchWithTimeout<{ summary: ResearchSummary | null }>(url);
 
   if (result.status !== "ok") {
-    return <Unavailable title="Research summary" error={result.error} />;
+    return <Unavailable title="Research summary" status={result.status} error={result.error} />;
   }
 
   return <ResearchSummaryView summary={result.data.summary} />;
@@ -52,7 +52,7 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold tracking-tight">Lead</h1>
-        <Unavailable title="This lead" error={result.error} />
+        <Unavailable title="This lead" status={result.status} error={result.error} />
       </div>
     );
   }

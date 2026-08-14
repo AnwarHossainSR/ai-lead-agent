@@ -1,5 +1,8 @@
+import { FileTextIcon } from "lucide-react";
+
 import { Fact } from "@/components/fact";
 import { Generated } from "@/components/generated";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { ResearchSummary } from "@/lib/lead-detail";
 
 const SECTION_LABELS: readonly { key: string; label: string }[] = [
@@ -17,7 +20,13 @@ const SECTION_LABELS: readonly { key: string; label: string }[] = [
  */
 export function ResearchSummaryView({ summary }: { summary: ResearchSummary | null }) {
   if (summary === null) {
-    return <p className="text-sm text-muted-foreground">No research summary generated yet.</p>;
+    return (
+      <EmptyState
+        icon={<FileTextIcon />}
+        title="No research summary yet"
+        description="A summary is written once this lead has been scored and its research gathered. This is an absence, not an empty summary."
+      />
+    );
   }
 
   const sections = SECTION_LABELS.filter(({ key }) => (summary.sections[key]?.length ?? 0) > 0);

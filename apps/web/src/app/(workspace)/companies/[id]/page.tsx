@@ -1,5 +1,6 @@
 import { CompanyDetailSummary } from "@/components/company-detail-summary";
 import { ContactsPanel, OpportunitiesPanel, TechnologiesPanel } from "@/components/company-panels";
+import { Unavailable } from "@/components/data-state";
 import { Panel } from "@/components/panel";
 import { fetchAccounts, resolveAccountEmail } from "@/lib/accounts";
 import { apiUrl } from "@/lib/api";
@@ -23,10 +24,7 @@ export default async function CompanyDetailPage({ params }: CompanyDetailPagePro
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold tracking-tight">Company</h1>
-        <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-          <p className="text-sm font-medium text-destructive">This company is unavailable</p>
-          <p className="mt-1 text-sm text-muted-foreground">{result.error}</p>
-        </div>
+        <Unavailable title="This company" status={result.status} error={result.error} />
       </div>
     );
   }

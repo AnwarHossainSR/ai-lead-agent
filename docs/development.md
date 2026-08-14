@@ -128,7 +128,7 @@ ANALYSIS_ARTIFACT_ROOT=/path/to/artifacts
 
 ### Port Already in Use
 
-If port 3000 or 3001 is already in use:
+If port 3000 or 4000 is already in use:
 
 ```bash
 # Find process using the port

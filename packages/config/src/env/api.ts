@@ -17,7 +17,7 @@ export const apiEnvSchema = z.object({
   // Zod 4's .default() takes the *output* type and skips the pipeline, so this
   // is the parsed number rather than the string an env file would carry.
   API_PORT: tcpPort
-    .default(3001)
+    .default(4000)
     .describe(
       "TCP port the API listens on. Must match the port in API_URL and NEXT_PUBLIC_API_URL.",
     ),

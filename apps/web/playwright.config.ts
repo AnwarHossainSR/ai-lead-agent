@@ -7,7 +7,7 @@ export default defineConfig({
   timeout: 30_000,
   retries: 0,
   use: {
-    baseURL: "http://localhost:3001",
+    baseURL: "http://localhost:4000",
     trace: "on-first-retry",
   },
   webServer: [
@@ -18,8 +18,8 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: "pnpm dev --port 3001",
-      port: 3001,
+      command: "pnpm dev --port 4000",
+      port: 4000,
       reuseExistingServer: true,
       timeout: 120_000,
       env: {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Unavailable } from "@/components/data-state";
 import { CitedFactsPanel } from "@/components/outreach-review/cited-facts-panel";
 import { MessageReviewCard } from "@/components/outreach-review/message-review-card";
 import { fetchAccounts, resolveAccountEmail } from "@/lib/accounts";
@@ -34,10 +35,11 @@ export default async function OutreachReviewMessagePage({ params }: ReviewPagePr
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold tracking-tight">Outreach Review</h1>
-        <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-          <p className="text-sm font-medium text-destructive">This message is unavailable</p>
-          <p className="mt-1 text-sm text-muted-foreground">{outreachResult.error}</p>
-        </div>
+        <Unavailable
+          title="This message"
+          status={outreachResult.status}
+          error={outreachResult.error}
+        />
       </div>
     );
   }

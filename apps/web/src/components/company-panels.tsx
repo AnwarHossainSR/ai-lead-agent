@@ -1,3 +1,4 @@
+import { Unavailable } from "@/components/data-state";
 import { ContactList } from "@/components/lead-detail/contact-list";
 import { OpportunityList } from "@/components/lead-detail/opportunity-list";
 import { TechnologyList } from "@/components/lead-detail/technology-list";
@@ -17,15 +18,6 @@ import type {
  * same company-scoped opportunities, detections and contacts.
  */
 
-export function Unavailable({ title, error }: { title: string; error: string }) {
-  return (
-    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-      <p className="text-sm font-medium text-destructive">{title} is unavailable</p>
-      <p className="mt-1 text-sm text-muted-foreground">{error}</p>
-    </div>
-  );
-}
-
 export async function OpportunitiesPanel({ companyId }: { companyId: string }) {
   const url = apiUrl(`/companies/${companyId}/opportunities`);
   const result =
@@ -34,7 +26,7 @@ export async function OpportunitiesPanel({ companyId }: { companyId: string }) {
       : await fetchWithTimeout<OpportunityWithEvidence[]>(url);
 
   if (result.status !== "ok") {
-    return <Unavailable title="Opportunities" error={result.error} />;
+    return <Unavailable title="Opportunities" status={result.status} error={result.error} />;
   }
 
   return <OpportunityList opportunities={result.data} />;
@@ -45,7 +37,13 @@ export async function TechnologiesPanel({ companyId }: { companyId: string }) {
   const analysisUrl = apiUrl(`/companies/${companyId}/analysis/latest`);
 
   if (technologiesUrl === null || analysisUrl === null) {
-    return <Unavailable title="Detected technologies" error="API_URL is not configured." />;
+    return (
+      <Unavailable
+        title="Detected technologies"
+        status="unreachable"
+        error="API_URL is not configured."
+      />
+    );
   }
 
   const [technologiesResult, analysisResult] = await Promise.all([
@@ -54,7 +52,13 @@ export async function TechnologiesPanel({ companyId }: { companyId: string }) {
   ]);
 
   if (technologiesResult.status !== "ok") {
-    return <Unavailable title="Detected technologies" error={technologiesResult.error} />;
+    return (
+      <Unavailable
+        title="Detected technologies"
+        status={technologiesResult.status}
+        error={technologiesResult.error}
+      />
+    );
   }
 
   // A missing or failed analysis just means citations can't link to a source
@@ -72,7 +76,7 @@ export async function ContactsPanel({ companyId }: { companyId: string }) {
       : await fetchWithTimeout<{ contacts: Contact[] }>(url);
 
   if (result.status !== "ok") {
-    return <Unavailable title="Contacts" error={result.error} />;
+    return <Unavailable title="Contacts" status={result.status} error={result.error} />;
   }
 
   const accounts = await fetchAccounts();

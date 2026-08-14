@@ -10,7 +10,9 @@ import {
   ResponseRateChart,
   type ResponseRateDatum,
 } from "@/components/analytics/response-rate-chart";
+import { Unavailable } from "@/components/data-state";
 import { Panel } from "@/components/panel";
+import { ChartSkeleton } from "@/components/ui/skeleton";
 import type { AnalyticsSegment, OutreachAggregate } from "@/lib/analytics";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
@@ -71,12 +73,7 @@ async function SegmentChart({ segment, title }: { segment: AnalyticsSegment; tit
       : await fetchWithTimeout<OutreachAggregate[]>(url);
 
   if (result.status !== "ok") {
-    return (
-      <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-        <p className="text-sm font-medium text-destructive">{title} is unavailable</p>
-        <p className="mt-1 text-sm text-muted-foreground">{result.error}</p>
-      </div>
-    );
+    return <Unavailable title={title} status={result.status} error={result.error} />;
   }
 
   const sorted = [...result.data].sort((left, right) => {
@@ -109,7 +106,7 @@ export default function AnalyticsPage() {
       </div>
 
       {SEGMENTS.map(({ segment, title }) => (
-        <Panel key={segment} title={title}>
+        <Panel key={segment} title={title} fallback={<ChartSkeleton label={`Loading ${title.toLowerCase()}`} />}>
           <div className="rounded-lg border border-border p-4">
             <h2 className="mb-4 font-medium">{title}</h2>
             <SegmentChart segment={segment} title={title} />

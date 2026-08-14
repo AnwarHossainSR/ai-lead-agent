@@ -17,7 +17,7 @@ MELA (Middle East Lead Agent) is an AI-assisted B2B lead generation platform bui
 ┌─────────────────────────────────────────────────────────────┐
 │                       REST API                              │
 │                    (NestJS 11 + Drizzle)                    │
-│                     http://localhost:3001                    │
+│                     http://localhost:4000                    │
 └─────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┼───────────────┐

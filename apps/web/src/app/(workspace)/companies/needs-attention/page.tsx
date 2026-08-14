@@ -1,7 +1,9 @@
 import { findCity, findIndustry } from "@mela/config";
 import Link from "next/link";
 
+import { Unavailable } from "@/components/data-state";
 import { Panel } from "@/components/panel";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { apiUrl } from "@/lib/api";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { formatAge } from "@/lib/format-age";
@@ -72,12 +74,7 @@ async function NeedsAttentionSections() {
       : await fetchWithTimeout<NeedsAttentionResult>(url);
 
   if (result.status !== "ok") {
-    return (
-      <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-        <p className="text-sm font-medium text-destructive">Needs attention is unavailable</p>
-        <p className="mt-1 text-sm text-muted-foreground">{result.error}</p>
-      </div>
-    );
+    return <Unavailable title="Needs attention" status={result.status} error={result.error} />;
   }
 
   const { blocked, failed, unreachable } = result.data;
@@ -110,7 +107,7 @@ export default function NeedsAttentionPage() {
         </p>
       </div>
 
-      <Panel title="Needs attention">
+      <Panel title="Needs attention" fallback={<TableSkeleton rows={6} columns={6} label="Loading companies needing attention" />}>
         <NeedsAttentionSections />
       </Panel>
     </div>

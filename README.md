@@ -77,7 +77,7 @@ Two roles:
 pnpm dev
 
 # Or start individually
-pnpm --filter @mela/api dev      # API on port 3001
+pnpm --filter @mela/api dev      # API on port 4000
 pnpm --filter @mela/web dev      # Web on port 3000
 ```
 

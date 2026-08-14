@@ -1,7 +1,10 @@
 import { findCity, findIndustry } from "@mela/config";
+import { BuildingIcon, FilterXIcon } from "lucide-react";
 import Link from "next/link";
 
 import { Fact } from "@/components/fact";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { ListedCompany } from "@/lib/companies";
 import { formatLabel } from "@/lib/format-label";
 
@@ -12,9 +15,30 @@ import { formatLabel } from "@/lib/format-label";
  * from every other state — can be unit tested. jsdom cannot render an async
  * Server Component at all, so the fetch has to stay upstream of this.
  */
-export function CompanyListTable({ companies }: { companies: readonly ListedCompany[] }) {
+export function CompanyListTable({
+  companies,
+  filtered = false,
+}: { companies: readonly ListedCompany[]; filtered?: boolean }) {
   if (companies.length === 0) {
-    return <p className="text-sm text-muted-foreground">No companies match these filters.</p>;
+    return filtered ? (
+      <EmptyState
+        variant="filtered"
+        icon={<FilterXIcon />}
+        title="No companies match these filters"
+        description="Every company is hidden by the current filters — clearing them shows the full list."
+        action={
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/companies">Clear filters</Link>
+          </Button>
+        }
+      />
+    ) : (
+      <EmptyState
+        icon={<BuildingIcon />}
+        title="No companies yet"
+        description="A company appears once a discovery run stores one. Nothing is hidden — there is genuinely nothing here yet."
+      />
+    );
   }
 
   return (

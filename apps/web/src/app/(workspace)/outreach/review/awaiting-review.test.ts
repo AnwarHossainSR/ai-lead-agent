@@ -38,7 +38,7 @@ afterEach(() => {
  */
 describe("fetchAwaitingReview", () => {
   it("merges pending_approval and draft messages, newest first", async () => {
-    vi.stubEnv("API_URL", "http://localhost:3001");
+    vi.stubEnv("API_URL", "http://localhost:4000");
 
     const pending = record({
       id: "pending-1",
@@ -69,7 +69,7 @@ describe("fetchAwaitingReview", () => {
   });
 
   it("reports failure when either request fails", async () => {
-    vi.stubEnv("API_URL", "http://localhost:3001");
+    vi.stubEnv("API_URL", "http://localhost:4000");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
