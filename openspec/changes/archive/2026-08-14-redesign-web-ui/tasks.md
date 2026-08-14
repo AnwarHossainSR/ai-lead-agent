@@ -74,62 +74,62 @@
 
 ## 8. Dashboard and analytics
 
-- [ ] 8.1 Rebuild the dashboard stat cards in `app/(workspace)/page.tsx` on `Card`, with tone, trend affordance and a shaped `StatSkeleton`, keeping the same four fetches
-- [ ] 8.2 Add `lib/chart-theme.ts` resolving chart, grid, axis and tooltip colours from the CSS variables at render time (design D12)
-- [ ] 8.3 Restyle `components/analytics/response-rate-chart.tsx` onto the chart theme, with a shared themed tooltip and legend
-- [ ] 8.4 Add the chart empty state for when a series has no data
-- [ ] 8.5 Restyle `app/(workspace)/analytics/page.tsx` with the page-header pattern
-- [ ] 8.6 Update `response-rate-chart.test.tsx` for the restyle and add a test that the chart re-reads its colours per theme
-- [ ] 8.7 Verify: `pnpm --filter @mela/web test:unit`
+- [x] 8.1 Rebuild the dashboard stat cards in `app/(workspace)/page.tsx` on `Card`, with tone, trend affordance and a shaped `StatSkeleton`, keeping the same four fetches
+- [x] 8.2 Add `lib/chart-theme.ts` resolving chart, grid, axis and tooltip colours from the CSS variables at render time (design D12)
+- [x] 8.3 Restyle `components/analytics/response-rate-chart.tsx` onto the chart theme, with a shared themed tooltip and legend
+- [x] 8.4 Add the chart empty state for when a series has no data
+- [x] 8.5 Restyle `app/(workspace)/analytics/page.tsx` with the page-header pattern
+- [x] 8.6 Update `response-rate-chart.test.tsx` for the restyle and add a test that the chart re-reads its colours per theme
+- [x] 8.7 Verify: `pnpm --filter @mela/web test:unit`
 
 ## 9. Leads and companies
 
-- [ ] 9.1 Rebuild `components/lead-list-table.tsx` on the `Table` primitive, replacing the hard-coded `bg-amber-100 … dark:bg-amber-900/40` staleness pill with a tone-driven `Badge`
-- [ ] 9.2 Rebuild `components/company-list-table.tsx` the same way
-- [ ] 9.3 Add the responsive card presentation for tables with more than four columns, built from one shared row definition (design D9)
-- [ ] 9.4 Restyle `components/lead-filters-bar.tsx`, `company-filters-bar.tsx` and `filter-select.tsx`, adding a visible active-filter count and a clear-all control
-- [ ] 9.5 Restyle `app/(workspace)/leads/page.tsx` and `companies/page.tsx` with the page-header pattern
-- [ ] 9.6 Restyle `components/company-detail-summary.tsx` and `company-panels.tsx`, keeping the do-not-contact attribution display intact
-- [ ] 9.7 Restyle `components/lead-detail/contact-list.tsx`, `opportunity-list.tsx`, `technology-list.tsx` and `research-summary-view.tsx`
-- [ ] 9.8 Restyle the lead and company detail pages and `companies/needs-attention/page.tsx`
-- [ ] 9.9 Update the affected component tests — `lead-list-table`, `company-list-table`, `company-detail-summary`, `contact-list`, `opportunity-list`, `technology-list`, `research-summary-view` — updating selectors, never deleting assertions
-- [ ] 9.10 Add a test that the responsive card presentation shows the same cells as the table row for the same data (design D9)
-- [ ] 9.11 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 9.1 Rebuild `components/lead-list-table.tsx` on the `Table` primitive, replacing the hard-coded `bg-amber-100 … dark:bg-amber-900/40` staleness pill with a tone-driven `Badge`
+- [x] 9.2 Rebuild `components/company-list-table.tsx` the same way
+- [x] 9.3 Add the responsive card presentation for tables with more than four columns, built from one shared row definition (design D9)
+- [x] 9.4 Restyle `components/lead-filters-bar.tsx`, `company-filters-bar.tsx` and `filter-select.tsx`, adding a visible active-filter count and a clear-all control
+- [x] 9.5 Restyle `app/(workspace)/leads/page.tsx` and `companies/page.tsx` with the page-header pattern
+- [x] 9.6 Restyle `components/company-detail-summary.tsx` and `company-panels.tsx`, keeping the do-not-contact attribution display intact
+- [x] 9.7 Restyle `components/lead-detail/contact-list.tsx`, `opportunity-list.tsx`, `technology-list.tsx` and `research-summary-view.tsx`
+- [x] 9.8 Restyle the lead and company detail pages and `companies/needs-attention/page.tsx`
+- [x] 9.9 Update the affected component tests — `lead-list-table`, `company-list-table`, `company-detail-summary`, `contact-list`, `opportunity-list`, `technology-list`, `research-summary-view` — updating selectors, never deleting assertions
+- [x] 9.10 Add a test that the responsive card presentation shows the same cells as the table row for the same data (design D9)
+- [x] 9.11 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 10. Outreach review
 
-- [ ] 10.1 Rebuild `components/outreach-review/message-review-card.tsx` on `Card` and `Badge`, preserving every `canApprove` role gate exactly as it is today
-- [ ] 10.2 Restyle `components/outreach-review/cited-facts-panel.tsx` so each cited fact keeps its certainty marker and its evidence link
-- [ ] 10.3 Restyle the review queue and the review detail page with the page-header pattern and an empty state for an empty queue
-- [ ] 10.4 Make `app/(workspace)/outreach/review/actions.ts` return an `ActionResult` and wire approve, reject and record-as-sent to toasts, including the role-refusal message (spec: a refused action explains itself)
-- [ ] 10.5 Add a confirmation dialog for reject and for record-as-sent, with a pending state on the submitting control that prevents a double submit
-- [ ] 10.6 Diff every `canApprove` and role reference in the review area before and after, and confirm the existing gating tests in `message-review-card.test.tsx` still pass unmodified
-- [ ] 10.7 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 10.1 Rebuild `components/outreach-review/message-review-card.tsx` on `Card` and `Badge`, preserving every `canApprove` role gate exactly as it is today
+- [x] 10.2 Restyle `components/outreach-review/cited-facts-panel.tsx` so each cited fact keeps its certainty marker and its evidence link
+- [x] 10.3 Restyle the review queue and the review detail page with the page-header pattern and an empty state for an empty queue
+- [x] 10.4 Make `app/(workspace)/outreach/review/actions.ts` return an `ActionResult` and wire approve, reject and record-as-sent to toasts, including the role-refusal message (spec: a refused action explains itself)
+- [x] 10.5 Add a confirmation dialog for reject and for record-as-sent, with a pending state on the submitting control that prevents a double submit
+- [x] 10.6 Diff every `canApprove` and role reference in the review area before and after, and confirm the existing gating tests in `message-review-card.test.tsx` still pass unmodified
+- [x] 10.7 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 11. Operations and status
 
-- [ ] 11.1 Restyle `components/operations/failed-jobs-table.tsx` on the `Table` primitive with tone-driven job-state badges and the responsive card presentation
-- [ ] 11.2 Make `app/(workspace)/operations/actions.ts` return an `ActionResult` and wire retry to success and failure toasts
-- [ ] 11.3 Restyle `app/(workspace)/operations/page.tsx` and `api-status/page.tsx`, with health shown through the semantic tones
-- [ ] 11.4 Update `failed-jobs-table.test.tsx` for the restyle and add a test that a failed retry raises an error toast
-- [ ] 11.5 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
+- [x] 11.1 Restyle `components/operations/failed-jobs-table.tsx` on the `Table` primitive with tone-driven job-state badges and the responsive card presentation
+- [x] 11.2 Make `app/(workspace)/operations/actions.ts` return an `ActionResult` and wire retry to success and failure toasts
+- [x] 11.3 Restyle `app/(workspace)/operations/page.tsx` and `api-status/page.tsx`, with health shown through the semantic tones
+- [x] 11.4 Update `failed-jobs-table.test.tsx` for the restyle and add a test that a failed retry raises an error toast
+- [x] 11.5 Verify: `pnpm --filter @mela/web lint`, `typecheck`, `test:unit`
 
 ## 12. Accessibility and responsiveness
 
-- [ ] 12.1 Extend the `vitest-axe` setup so each existing `*.a11y.test.tsx` fixture runs twice, once per theme (spec: automated checks pass in both themes)
-- [ ] 12.2 Add a11y coverage for the pages that have none — dashboard, analytics, operations, companies list, sign-in
-- [ ] 12.3 Audit every page for one `main` landmark, a single `h1` and a correct heading order, and fix what fails
-- [ ] 12.4 Walk every page by keyboard alone and fix any control that is unreachable, has no visible focus indicator, or traps focus unintentionally
-- [ ] 12.5 Check every page at a small viewport width and confirm the page body does not scroll horizontally and navigation is reachable
-- [ ] 12.6 Confirm no component declares a literal colour — grep `src/` for hex, `rgb(` and `oklch(` outside `globals.css` and `theme-tokens.ts` (spec: no component hard-codes a colour)
-- [ ] 12.7 Verify: `pnpm --filter @mela/web test:unit`
+- [x] 12.1 Extend the `vitest-axe` setup so each existing `*.a11y.test.tsx` fixture runs twice, once per theme (spec: automated checks pass in both themes)
+- [x] 12.2 Add a11y coverage for the pages that have none — dashboard, analytics, operations, companies list, sign-in
+- [x] 12.3 Audit every page for one `main` landmark, a single `h1` and a correct heading order, and fix what fails
+- [x] 12.4 Walk every page by keyboard alone and fix any control that is unreachable, has no visible focus indicator, or traps focus unintentionally
+- [x] 12.5 Check every page at a small viewport width and confirm the page body does not scroll horizontally and navigation is reachable
+- [x] 12.6 Confirm no component declares a literal colour — grep `src/` for hex, `rgb(` and `oklch(` outside `globals.css` and `theme-tokens.ts` (spec: no component hard-codes a colour)
+- [x] 12.7 Verify: `pnpm --filter @mela/web test:unit`
 
 ## 13. Regression guard and completion
 
-- [ ] 13.1 Enumerate the routes under `app/` and confirm they are exactly the routes that existed before the redesign — none added, removed or renamed (spec: the route list is unchanged)
-- [ ] 13.2 Diff each page's fetch calls against the pre-redesign version and confirm no fetch was added, removed or changed
-- [ ] 13.3 Run the two existing Playwright specs and repair only the selectors the restyle broke, adding no new specs (proposal — Non-goals)
-- [ ] 13.4 Update `docs/architecture.md` with the design-system section — tokens, tones, primitives, the four data states — and `README.md` with the theme preference
-- [ ] 13.5 Add `redesign-web-ui` to the roadmap table in `docs/implementation-progress.md`
-- [ ] 13.6 Verify the whole workspace: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`
-- [ ] 13.7 Run `openspec validate redesign-web-ui --strict` and resolve anything it reports
+- [x] 13.1 Enumerate the routes under `app/` and confirm they are exactly the routes that existed before the redesign — none added, removed or renamed (spec: the route list is unchanged)
+- [x] 13.2 Diff each page's fetch calls against the pre-redesign version and confirm no fetch was added, removed or changed
+- [x] 13.3 Run the two existing Playwright specs and repair only the selectors the restyle broke, adding no new specs (proposal — Non-goals)
+- [x] 13.4 Update `docs/architecture.md` with the design-system section — tokens, tones, primitives, the four data states — and `README.md` with the theme preference
+- [x] 13.5 Add `redesign-web-ui` to the roadmap table in `docs/implementation-progress.md`
+- [x] 13.6 Verify the whole workspace: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`
+- [x] 13.7 Run `openspec validate redesign-web-ui --strict` and resolve anything it reports
