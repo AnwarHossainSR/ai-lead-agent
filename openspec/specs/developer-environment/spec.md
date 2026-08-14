@@ -99,7 +99,7 @@ The system SHALL expose an unauthenticated health endpoint that reports the API'
 
 ### Requirement: The web application renders a shell backed by live API status
 
-The system SHALL serve a web application shell containing the site chrome and a placeholder dashboard area, styled with the project's design system. The shell SHALL display the API health status obtained from the API, and SHALL render a clear degraded state rather than an error page when the API is unreachable.
+The system SHALL serve a web application containing the site chrome and the operator's working views — leads, companies, the outreach review queue, analytics and pipeline operations — styled with the project's design system. The application SHALL display the API health status obtained from the API, and SHALL render a clear degraded state rather than an error page when the API is unreachable, slow, or returns an error. Every server-side request SHALL be bounded by a timeout, and a panel whose data cannot be loaded SHALL degrade without affecting the rest of the page.
 
 #### Scenario: The shell renders with the API up
 
@@ -111,6 +111,21 @@ The system SHALL serve a web application shell containing the site chrome and a 
 - **WHEN** the web application is opened while the API is not running
 - **THEN** the shell still renders and displays an unavailable API status
 - **AND** no unhandled error page is shown
+
+#### Scenario: The operator's views are reachable
+
+- **WHEN** the web application is opened while the API is healthy
+- **THEN** the leads, companies, outreach review, analytics and operations views are reachable from the navigation
+
+#### Scenario: A slow API does not hang a page
+
+- **WHEN** the API does not respond within the configured timeout
+- **THEN** the page renders with the condition displayed
+
+#### Scenario: One failing panel does not take the page down
+
+- **WHEN** one panel's data cannot be loaded
+- **THEN** the remaining panels render normally
 
 ### Requirement: Continuous integration runs the full check suite
 
@@ -170,4 +185,113 @@ The system SHALL declare every AI provider environment variable in the committed
 
 - **WHEN** startup output and error output are inspected with the API key set to a recognisable value
 - **THEN** that value appears in neither
+
+### Requirement: Authentication configuration is declared, validated and secret
+
+The system SHALL declare every authentication environment variable in the committed example file with a placeholder and a comment, SHALL validate them at startup with a message naming the variable and its purpose on failure, and SHALL refuse to start outside development with a session secret that is missing, short, or equal to the committed placeholder.
+
+#### Scenario: A missing session secret aborts startup
+
+- **WHEN** the API starts with the session secret unset
+- **THEN** startup aborts naming the variable and what it is for
+- **AND** the process exits non-zero
+
+#### Scenario: The placeholder secret is refused outside development
+
+- **WHEN** the API starts outside development with the session secret equal to the committed placeholder
+- **THEN** startup aborts stating that the placeholder may not be used
+
+#### Scenario: The secret never reaches the logs
+
+- **WHEN** startup and error output are inspected with the session secret set to a recognisable value
+- **THEN** that value appears in neither
+
+### Requirement: The first account is created by a documented command
+
+The system SHALL provide a documented command that creates an operator account, SHALL refuse to create one with a weak password, and SHALL NOT print the password back.
+
+#### Scenario: The documented command creates an operator
+
+- **WHEN** the account creation command is run with an email and a password
+- **THEN** an operator account exists
+
+#### Scenario: A weak password is refused
+
+- **WHEN** the command is run with a password below the configured minimum strength
+- **THEN** it refuses stating the requirement and creates nothing
+
+#### Scenario: The command does not echo the password
+
+- **WHEN** the command completes
+- **THEN** its output contains no password
+
+### Requirement: The documentation reflects that the applications are protected
+
+The system SHALL update its documentation to describe sign-in, account creation and the two roles, and SHALL remove the statement that the applications are unauthenticated and local-only.
+
+#### Scenario: Setup documentation covers authentication
+
+- **WHEN** the setup documentation is read
+- **THEN** it describes creating the first account, signing in, and what each role may do
+
+#### Scenario: The local-only statement is gone
+
+- **WHEN** the documentation is inspected
+- **THEN** it no longer states that the applications carry no authentication
+
+### Requirement: The web application is checked for accessibility in CI
+
+The system SHALL run automated accessibility checks against the main views as part of the workflow, and SHALL fail the run when a violation at the configured level is found.
+
+#### Scenario: The workflow runs the accessibility checks
+
+- **WHEN** the workflow runs
+- **THEN** the accessibility checks run against the lead list, lead detail and outreach review views
+
+#### Scenario: A violation fails the run
+
+- **WHEN** an accessibility violation at the configured level is introduced
+- **THEN** the workflow reports a failing status
+
+### Requirement: The unauthenticated deployment posture is documented
+
+The system SHALL state in its documentation that the web application and the API carry no authentication and are intended to be run locally only, until an authentication capability exists.
+
+#### Scenario: The documentation states the posture
+
+- **WHEN** the setup documentation is read
+- **THEN** it states that there is no authentication and that the applications are intended for local use only
+
+### Requirement: Observability configuration is declared and validated
+
+The system SHALL declare every observability environment variable in the committed example file with a placeholder and a comment, and SHALL validate them at startup with a message naming the variable and its purpose on failure. The metrics port SHALL differ from the application port, and a configuration where they match SHALL abort startup.
+
+#### Scenario: A malformed metrics port aborts startup
+
+- **WHEN** the metrics port is set to a value that is not a valid port
+- **THEN** startup aborts naming the variable and the expected shape
+
+#### Scenario: A metrics port equal to the application port aborts startup
+
+- **WHEN** the metrics port equals the application port
+- **THEN** startup aborts stating that they must differ
+
+#### Scenario: The example file lists the observability variables
+
+- **WHEN** the observability variables the processes read are compared against the committed example file
+- **THEN** every one is present with a placeholder and a comment
+
+### Requirement: No credential or personal data appears in any output
+
+The system SHALL ensure that startup output, request output, job output, error output and metrics output contain no connection string, API key, session identifier, password, email address or captured page content. This SHALL be verified by an automated check rather than by inspection.
+
+#### Scenario: An automated check scans real output
+
+- **WHEN** the applications are exercised with recognisable credential and personal data values configured
+- **THEN** an automated check confirms none of those values appears in any output
+
+#### Scenario: The check fails when a leak is introduced
+
+- **WHEN** a log call is added that would write a credential
+- **THEN** the automated check fails
 
