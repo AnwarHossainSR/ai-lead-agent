@@ -12,6 +12,7 @@ import {
 } from "@mela/database";
 import { Inject, Injectable } from "@nestjs/common";
 
+import { AuditService } from "../audit/audit.service";
 import { API_ENV } from "../config/env.module";
 import { DATABASE } from "../database/database.module";
 import { DUMMY_PASSWORD_HASH, verifyPassword } from "./password";
@@ -62,6 +63,7 @@ export class AuthService {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     @Inject(API_ENV) private readonly env: ApiEnv,
+    private readonly auditService: AuditService,
   ) {
     this.rateLimiter = new SignInRateLimiter(
       AUTHENTICATION_CONFIG.rateLimit.windowMinutes * 60_000,
@@ -72,6 +74,12 @@ export class AuthService {
 
   async signIn(email: string, password: string, sourceAddress: string): Promise<SignInResult> {
     if (!this.rateLimiter.registerAttempt(email, sourceAddress)) {
+      await this.auditService.record({
+        event: "sign_in_failed",
+        outcome: "failed",
+        sourceAddress,
+        detail: { email, reason: "rate_limited" },
+      });
       return { ok: false, error: RATE_LIMITED_MESSAGE, rateLimited: true };
     }
 
@@ -85,6 +93,13 @@ export class AuthService {
     const passwordMatches = await verifyPassword(hashToCompare, password);
 
     if (account === undefined || account.disabledAt !== null || !passwordMatches) {
+      await this.auditService.record({
+        accountId: account?.id,
+        event: "sign_in_failed",
+        outcome: "failed",
+        sourceAddress,
+        detail: { email },
+      });
       return { ok: false, error: SIGN_IN_FAILURE_MESSAGE, rateLimited: false };
     }
 
@@ -97,6 +112,13 @@ export class AuthService {
     await insertSession(this.database, { accountId: account.id, tokenHash, expiresAt });
 
     const { passwordHash: _passwordHash, ...publicAccount } = account;
+
+    await this.auditService.record({
+      accountId: account.id,
+      event: "sign_in",
+      outcome: "succeeded",
+      sourceAddress,
+    });
 
     return { ok: true, account: publicAccount, token, expiresAt };
   }
@@ -139,12 +161,18 @@ export class AuthService {
     return { account, sessionId: session.id };
   }
 
-  async signOut(rawToken: string): Promise<void> {
+  async signOut(rawToken: string, sourceAddress?: string): Promise<void> {
     const tokenHash = hashSessionToken(this.env.SESSION_SECRET, rawToken);
     const session = await findSessionByTokenHash(this.database, tokenHash);
 
     if (session !== undefined) {
       await revokeSession(this.database, session.id);
+      await this.auditService.record({
+        accountId: session.accountId,
+        event: "sign_out",
+        outcome: "succeeded",
+        sourceAddress,
+      });
     }
   }
 

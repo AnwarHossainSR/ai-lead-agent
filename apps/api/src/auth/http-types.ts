@@ -25,4 +25,5 @@ export interface RequestWithCookieHeader {
   readonly headers: { readonly cookie?: string };
   readonly ip?: string;
   readonly socket?: { readonly remoteAddress?: string };
+  readonly params?: Readonly<Record<string, string>>;
 }

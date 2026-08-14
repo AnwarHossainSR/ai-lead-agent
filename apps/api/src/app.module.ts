@@ -4,6 +4,7 @@ import { AccountsModule } from "./accounts/accounts.module";
 import { AIModule } from "./ai/ai.module";
 import { AnalysisModule } from "./analysis/analysis.module";
 import { AnalyticsModule } from "./analytics/analytics.module";
+import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { CompaniesModule } from "./companies/companies.module";
 import { EnvModule } from "./config/env.module";
@@ -28,6 +29,7 @@ import { VerificationModule } from "./verification/verification.module";
   imports: [
     EnvModule,
     DatabaseModule,
+    AuditModule,
     AuthModule,
     AccountsModule,
     RedisModule,

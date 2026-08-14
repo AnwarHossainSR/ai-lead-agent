@@ -29,7 +29,7 @@ const FAKE_ID = "00000000-0000-0000-0000-000000000000";
 
 interface GatedRoute {
   readonly name: string;
-  readonly method: "post" | "patch";
+  readonly method: "post" | "patch" | "get";
   readonly path: string;
   readonly body?: Record<string, unknown>;
   readonly action: string;
@@ -142,6 +142,13 @@ const GATED_ROUTES: readonly GatedRoute[] = [
     method: "post",
     path: `/api/accounts/${FAKE_ID}/disable`,
     action: "Disabling an account",
+    triggersModelCall: false,
+  },
+  {
+    name: "view audit log",
+    method: "get",
+    path: "/api/audit-log",
+    action: "Viewing the audit log",
     triggersModelCall: false,
   },
 ];

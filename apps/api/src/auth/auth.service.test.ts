@@ -6,6 +6,7 @@ import { Test } from "@nestjs/testing";
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
+import { AuditService } from "../audit/audit.service";
 import { API_ENV } from "../config/env.module";
 import { DATABASE } from "../database/database.module";
 import { AuthService, RATE_LIMITED_MESSAGE, SIGN_IN_FAILURE_MESSAGE } from "./auth.service";
@@ -22,6 +23,7 @@ async function buildService(): Promise<AuthService> {
       { provide: DATABASE, useValue: harness.database },
       { provide: API_ENV, useValue: { SESSION_SECRET: TEST_SESSION_SECRET, NODE_ENV: "test" } },
       AuthService,
+      AuditService,
     ],
   }).compile();
 

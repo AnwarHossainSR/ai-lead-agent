@@ -84,7 +84,7 @@ export class AuthController {
     const token = parseCookieHeader(req.headers.cookie)[SESSION_COOKIE_NAME];
 
     if (token !== undefined) {
-      await this.authService.signOut(token);
+      await this.authService.signOut(token, sourceAddressOf(req));
     }
 
     res.clearCookie(SESSION_COOKIE_NAME, sessionCookieAttributes(this.env.NODE_ENV));
