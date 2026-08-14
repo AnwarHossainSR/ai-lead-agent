@@ -66,7 +66,10 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
         cityId={filters.cityId}
       />
 
-      <Panel title="Companies" fallback={<TableSkeleton rows={8} columns={7} label="Loading companies" />}>
+      <Panel
+        title="Companies"
+        fallback={<TableSkeleton rows={8} columns={7} label="Loading companies" />}
+      >
         <CompanyList query={query} filtered={hasFilters} />
       </Panel>
     </div>

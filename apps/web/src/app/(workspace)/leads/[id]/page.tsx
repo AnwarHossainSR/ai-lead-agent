@@ -1,10 +1,6 @@
 import { findCity, findIndustry } from "@mela/config";
 
-import {
-  ContactsPanel,
-  OpportunitiesPanel,
-  TechnologiesPanel,
-} from "@/components/company-panels";
+import { ContactsPanel, OpportunitiesPanel, TechnologiesPanel } from "@/components/company-panels";
 import { Unavailable } from "@/components/data-state";
 import { ResearchSummaryView } from "@/components/lead-detail/research-summary-view";
 import { Panel } from "@/components/panel";

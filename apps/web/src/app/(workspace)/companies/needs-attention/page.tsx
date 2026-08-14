@@ -107,7 +107,12 @@ export default function NeedsAttentionPage() {
         </p>
       </div>
 
-      <Panel title="Needs attention" fallback={<TableSkeleton rows={6} columns={6} label="Loading companies needing attention" />}>
+      <Panel
+        title="Needs attention"
+        fallback={
+          <TableSkeleton rows={6} columns={6} label="Loading companies needing attention" />
+        }
+      >
         <NeedsAttentionSections />
       </Panel>
     </div>

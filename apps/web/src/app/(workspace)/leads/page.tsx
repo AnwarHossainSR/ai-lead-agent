@@ -1,6 +1,6 @@
+import { Unavailable } from "@/components/data-state";
 import { LeadFiltersBar } from "@/components/lead-filters-bar";
 import { LeadListTable } from "@/components/lead-list-table";
-import { Unavailable } from "@/components/data-state";
 import { Panel } from "@/components/panel";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { apiUrl } from "@/lib/api";

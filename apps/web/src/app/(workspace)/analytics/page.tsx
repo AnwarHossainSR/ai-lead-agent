@@ -106,7 +106,11 @@ export default function AnalyticsPage() {
       </div>
 
       {SEGMENTS.map(({ segment, title }) => (
-        <Panel key={segment} title={title} fallback={<ChartSkeleton label={`Loading ${title.toLowerCase()}`} />}>
+        <Panel
+          key={segment}
+          title={title}
+          fallback={<ChartSkeleton label={`Loading ${title.toLowerCase()}`} />}
+        >
           <div className="rounded-lg border border-border p-4">
             <h2 className="mb-4 font-medium">{title}</h2>
             <SegmentChart segment={segment} title={title} />

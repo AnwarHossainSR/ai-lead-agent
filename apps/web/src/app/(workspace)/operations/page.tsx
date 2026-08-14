@@ -200,21 +200,30 @@ export default function OperationsPage() {
         </p>
       </div>
 
-      <Panel title="Queues" fallback={<TableSkeleton rows={4} columns={5} label="Loading queues" />}>
+      <Panel
+        title="Queues"
+        fallback={<TableSkeleton rows={4} columns={5} label="Loading queues" />}
+      >
         <div className="rounded-lg border border-border p-4">
           <h2 className="mb-4 font-medium">Queues</h2>
           <QueuesPanel />
         </div>
       </Panel>
 
-      <Panel title="Failed jobs" fallback={<TableSkeleton rows={4} columns={5} label="Loading failed jobs" />}>
+      <Panel
+        title="Failed jobs"
+        fallback={<TableSkeleton rows={4} columns={5} label="Loading failed jobs" />}
+      >
         <div className="rounded-lg border border-border p-4">
           <h2 className="mb-4 font-medium">Failed jobs</h2>
           <FailedJobsPanel />
         </div>
       </Panel>
 
-      <Panel title="Discovery runs" fallback={<TableSkeleton rows={5} columns={8} label="Loading discovery runs" />}>
+      <Panel
+        title="Discovery runs"
+        fallback={<TableSkeleton rows={5} columns={8} label="Loading discovery runs" />}
+      >
         <div className="rounded-lg border border-border p-4">
           <h2 className="mb-4 font-medium">Discovery runs</h2>
           <DiscoveryRunsPanel />
