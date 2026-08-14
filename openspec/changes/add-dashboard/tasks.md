@@ -63,10 +63,10 @@ Work one task at a time. After each task: run the relevant checks, report what c
 
 ## 8. Operations
 
-- [ ] 8.1 Build the operations view showing queue depths, failed jobs with reasons and an explicit retry action
-- [ ] 8.2 Show discovery runs with their per-source counts and outcomes
-- [ ] 8.3 Add tests covering the retry action and the degraded state when Redis is unreachable
-- [ ] 8.4 Verify: `pnpm --filter @mela/web lint typecheck test build` passes
+- [x] 8.1 Build the operations view showing queue depths, failed jobs with reasons and an explicit retry action — **adapted**: jobs run through Upstash QStash (HTTP push), not a Redis-backed local queue, so there is no pollable "pending depth"; the view shows each queue's configuration alongside its real dead-letter (failed) count, sourced from QStash's DLQ API, per user decision
+- [x] 8.2 Show discovery runs with their per-source counts and outcomes
+- [x] 8.3 Add tests covering the retry action and the degraded state when Redis is unreachable — **adapted**: the queue/failed-jobs panel's actual dependency is QStash, not Redis (Redis is unused beyond the health check); its API test covers the retry action and the panel degrading when QStash is unreachable, and the frontend's existing per-panel Suspense/error boundary (proven in task 3.4) covers independent panel degradation generically
+- [x] 8.4 Verify: `pnpm --filter @mela/web lint typecheck test build` passes
 
 ## 9. Accessibility and final verification
 
