@@ -35,7 +35,7 @@ export function Fact<T>({ fact, format, className }: FactProps<T>) {
         className={cn(
           // A dashed chip: not a value, not a placeholder waiting to be
           // replaced, and impossible to mistake for an empty cell or a zero.
-          "inline-flex items-center rounded border border-dashed border-border px-1.5 py-0 align-baseline text-xs text-muted-foreground italic",
+          "inline-flex items-center rounded-sm border border-dashed border-border px-1.5 py-0 align-baseline text-label text-muted-foreground italic",
           className,
         )}
       >

@@ -39,12 +39,12 @@ class PanelErrorBoundary extends Component<PanelErrorBoundaryProps, PanelErrorBo
           role="alert"
           data-slot="panel-error"
           data-tone="danger"
-          className="flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger-subtle/50 p-4"
+          className="flex items-start gap-2.5 rounded-lg border border-danger/30 bg-danger-subtle/50 p-4"
         >
           <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden="true" />
           <div className="min-w-0">
-            <p className="text-sm font-medium text-danger">{this.props.title} is unavailable</p>
-            <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
+            <p className="text-body font-semibold text-danger">{this.props.title} is unavailable</p>
+            <p className="mt-1 text-meta text-muted-foreground">{error.message}</p>
             <Button
               type="button"
               variant="outline"

@@ -1,8 +1,18 @@
 import { Inject, Injectable } from "@nestjs/common";
 
 import { MINIMUM_REPORTING_SAMPLE_SIZE } from "@mela/config";
-import type { Database } from "@mela/database";
-import { companies, leads, opportunities, outreach, outreachResponses } from "@mela/database";
+import type { AnalyticsSeries, Database } from "@mela/database";
+import {
+  companies,
+  leads,
+  opportunities,
+  outreach,
+  outreachResponses,
+  readConversionSeries,
+  readDiscoverySeries,
+  readScoreSeries,
+  readSpendSeries,
+} from "@mela/database";
 import { eq, sql } from "drizzle-orm";
 import { DATABASE } from "../database/database.module";
 
@@ -104,6 +114,41 @@ export class AnalyticsService {
     }
 
     return result;
+  }
+
+  /**
+   * The four series the analytics screen charts.
+   *
+   * Each is computed in SQL and carries its own sample size; the minimum
+   * reporting size is applied in the read layer, where withholding a rate is
+   * one branch rather than four call sites that could each forget it.
+   */
+  async getDiscoverySeries(windowDays?: number): Promise<AnalyticsSeries> {
+    return readDiscoverySeries(this.database, {
+      windowDays,
+      minimumSampleSize: MINIMUM_REPORTING_SAMPLE_SIZE,
+    });
+  }
+
+  async getScoreSeries(windowDays?: number): Promise<AnalyticsSeries> {
+    return readScoreSeries(this.database, {
+      windowDays,
+      minimumSampleSize: MINIMUM_REPORTING_SAMPLE_SIZE,
+    });
+  }
+
+  async getConversionSeries(windowDays?: number): Promise<AnalyticsSeries> {
+    return readConversionSeries(this.database, {
+      windowDays,
+      minimumSampleSize: MINIMUM_REPORTING_SAMPLE_SIZE,
+    });
+  }
+
+  async getSpendSeries(windowDays?: number): Promise<AnalyticsSeries> {
+    return readSpendSeries(this.database, {
+      windowDays,
+      minimumSampleSize: MINIMUM_REPORTING_SAMPLE_SIZE,
+    });
   }
 
   private getSegmentKey(row: any, segment?: string): string {

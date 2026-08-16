@@ -502,3 +502,86 @@ MX records are checked via DNS-over-HTTPS (Google DNS) to determine if a domain 
 - `unknown` — lookup failed or timed out
 - Per-domain caching prevents repeated lookups
 - Addresses are never filtered out based on deliverability
+
+## Design System
+
+The workspace's visual language lives in `apps/web/src/app/globals.css` and the
+primitives in `apps/web/src/components/ui/`. A screen composes primitives and
+names tokens; it does not carry a colour, a font size or a shadow of its own.
+
+### The density scale
+
+Five named rungs, declared in `@theme` and used by name. Values are in rem
+against a 16px root, so a reader who enlarges text gets what they asked for; the
+px column is what renders at the browser default.
+
+| Token | px | Used for |
+|---|---|---|
+| `--text-label` | 10 | Eyebrows, column headers, field labels |
+| `--text-meta` | 11 | Table cells, timestamps, supporting text |
+| `--text-body` | 13 | The base the whole workspace is set in |
+| `--text-heading` | 15 | Panel and section titles |
+| `--text-figure` | 26 | The headline number on a stat card |
+| `--text-title` | 30 | The page title, once per screen |
+
+The 11px rung is restricted to supporting text that repeats something already
+legible — never the only statement of a fact.
+
+### Layout and surface tokens
+
+| Token | Value |
+|---|---|
+| `--size-sidebar` | 246px |
+| `--size-sidebar-collapsed` | 72px |
+| `--size-topbar` | 62px |
+| `--size-content-max` | 1500px |
+| `--surface-sidebar` | `color-mix(in oklch, var(--card) 65%, var(--background))` |
+| `--surface-topbar` | `color-mix(in oklch, var(--background) 85%, var(--card))` |
+
+Both surfaces are mixes of `--card` and `--background`, which are themselves
+redefined per theme on `:root`, so one declaration is correct in both themes.
+
+### Contrast
+
+`theme-contrast.test.ts` was removed when the test suite was cut to a fifty-case
+ceiling, so these ratios are computed by hand from `src/lib/theme-tokens.ts` and
+recorded here for a later reader to re-check. Text pairs must clear 4.5:1;
+pairs that carry meaning without text must clear 3:1.
+
+Resolved surface colours:
+
+| Surface | Light | Dark |
+|---|---|---|
+| `--surface-sidebar` | `oklch(0.988 0.0034 255)` | `oklch(0.21925 0.01695 258)` |
+| `--surface-topbar` | `oklch(0.978 0.0054 255)` | `oklch(0.19675 0.01545 258)` |
+
+Text pairs on the two new surfaces:
+
+| Pair | Light | Dark | Floor |
+|---|---|---|---|
+| `foreground` on `surface-sidebar` | 16.73:1 | 15.44:1 | 4.5 |
+| `muted-foreground` on `surface-sidebar` | 6.59:1 | 7.52:1 | 4.5 |
+| `primary` on `surface-sidebar` | 5.93:1 | 6.44:1 | 4.5 |
+| `foreground` on `surface-topbar` | 16.26:1 | 16.23:1 | 4.5 |
+| `muted-foreground` on `surface-topbar` | 6.40:1 | 7.91:1 | 4.5 |
+| `primary` on `surface-topbar` | 5.76:1 | 6.77:1 | 4.5 |
+
+Non-text pairs on the two new surfaces:
+
+| Pair | Light | Dark | Floor |
+|---|---|---|---|
+| `input` on `surface-sidebar` | 3.25:1 | 3.15:1 | 3.0 |
+| `ring` on `surface-sidebar` | 5.89:1 | 4.72:1 | 3.0 |
+| `ring` on `surface-topbar` | 5.72:1 | 4.96:1 | 3.0 |
+| `success` on `surface-sidebar` | 5.95:1 | 8.23:1 | 3.0 |
+| `warning` on `surface-sidebar` | 5.88:1 | 8.84:1 | 3.0 |
+| `danger` on `surface-sidebar` | 5.90:1 | 6.02:1 | 3.0 |
+| `info` on `surface-sidebar` | 5.36:1 | 7.78:1 | 3.0 |
+
+`border` against the two surfaces is 1.48:1 / 1.44:1 in light and 1.60:1 /
+1.68:1 in dark. It is decorative — no state or control identity rests on it —
+and matches `border` against `background` and `card` elsewhere in the palette.
+
+Every text pair clears 4.5:1, which is the small-text floor, so the 10px and
+11px rungs do not relax anything: the ratios above are already the stricter
+requirement.

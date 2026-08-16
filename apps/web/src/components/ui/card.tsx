@@ -28,7 +28,7 @@ function Card({
       data-rail={rail}
       data-tone={tone}
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-xs transition-[box-shadow,transform,border-color] duration-(--duration-base)",
+        "relative flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-xs transition-[box-shadow,transform,border-color] duration-(--duration-base)",
         // A hairline of light along the top edge is what makes the surface read
         // as lit rather than as a rectangle with a border.
         "after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-[var(--elevation-highlight)]",
@@ -46,7 +46,10 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-header"
-      className={cn("flex flex-wrap items-start justify-between gap-2 px-5 pt-5 pb-3", className)}
+      className={cn(
+        "flex flex-wrap items-start justify-between gap-2 px-4.5 pt-4.5 pb-3",
+        className,
+      )}
       {...props}
     />
   );
@@ -54,11 +57,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 
 function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
   return (
-    <h3
-      data-slot="card-title"
-      className={cn("text-sm font-semibold tracking-tight", className)}
-      {...props}
-    />
+    <h3 data-slot="card-title" className={cn("text-heading font-semibold", className)} {...props} />
   );
 }
 
@@ -68,7 +67,7 @@ function CardEyebrow({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="card-eyebrow"
       className={cn(
-        "text-[0.6875rem] font-medium tracking-[0.12em] text-muted-foreground uppercase",
+        "text-label font-semibold tracking-eyebrow text-muted-foreground uppercase",
         className,
       )}
       {...props}
@@ -80,7 +79,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-meta text-muted-foreground", className)}
       {...props}
     />
   );
@@ -98,7 +97,7 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="card-content" className={cn("px-5 pb-5", className)} {...props} />;
+  return <div data-slot="card-content" className={cn("px-4.5 pb-4.5", className)} {...props} />;
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -106,7 +105,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "mt-auto flex flex-wrap items-center gap-2 border-t border-border bg-muted/30 px-5 py-3",
+        "mt-auto flex flex-wrap items-center gap-2 border-t border-border bg-muted/30 px-4.5 py-3",
         className,
       )}
       {...props}

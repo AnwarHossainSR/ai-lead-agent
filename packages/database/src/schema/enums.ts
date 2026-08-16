@@ -258,6 +258,25 @@ export const contactResearchOutcomeEnum = pgEnum(
 );
 
 /**
+ * What one health probe found. `degraded` is a dependency that answered but
+ * badly — slow, or erroring on a real query while still accepting a connection
+ * — and it is kept apart from `down` for the same reason the interface keeps
+ * them apart: they mean different things to whoever is deciding what to do.
+ *
+ * There is deliberately no `unknown`: a probe that did not run writes no row,
+ * and an absent row is what "unsampled" means. Storing "unknown" would make a
+ * gap indistinguishable from a probe that ran and learned nothing.
+ */
+export const DEPENDENCY_HEALTH_STATUSES = ["up", "degraded", "down"] as const;
+
+export type DependencyHealthStatus = (typeof DEPENDENCY_HEALTH_STATUSES)[number];
+
+export const dependencyHealthStatusEnum = pgEnum(
+  "dependency_health_status",
+  DEPENDENCY_HEALTH_STATUSES,
+);
+
+/**
  * The two roles design D4 draws: `operator` may take every action; `viewer`
  * may read but not approve outreach, mark do-not-contact, record a send, or
  * trigger anything that spends on a model call.

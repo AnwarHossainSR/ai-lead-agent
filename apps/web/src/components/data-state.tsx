@@ -39,7 +39,7 @@ export function Unavailable({
       data-tone={degraded ? "warning" : "danger"}
       data-status={status}
       className={cn(
-        "flex items-start gap-3 rounded-xl border p-4 pl-5",
+        "flex items-start gap-3 rounded-lg border p-4 pl-5",
         degraded
           ? "border-warning/30 bg-warning-subtle/40"
           : "border-danger/30 bg-danger-subtle/40",
@@ -51,11 +51,11 @@ export function Unavailable({
         aria-hidden="true"
       />
       <div className="min-w-0 flex-1">
-        <p className={cn("text-sm font-medium", degraded ? "text-warning" : "text-danger")}>
+        <p className={cn("text-body font-semibold", degraded ? "text-warning" : "text-danger")}>
           {degraded ? `${title} answered with an error` : `${title} is unreachable`}
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">{error}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-meta text-muted-foreground">{error}</p>
+        <p className="mt-1 text-label text-muted-foreground">
           {degraded
             ? "The source responded, so what is shown elsewhere on this page is current."
             : "Nothing was returned, so this panel has no data to show — not zero."}

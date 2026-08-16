@@ -64,7 +64,8 @@
       "playwright-report",
       "drizzle",
       "**/tsconfig*.json",
-      "**/provider/gemini.ts"
+      "**/provider/gemini.ts",
+      "template"
     ]
   },
   "overrides": [

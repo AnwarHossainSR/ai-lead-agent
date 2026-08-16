@@ -28,7 +28,7 @@ function EmptyState({
       data-slot="empty-state"
       data-variant={variant}
       className={cn(
-        "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card/50 px-6 py-10 text-center",
+        "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card/50 px-6 py-10 text-center",
         className,
       )}
       {...props}
@@ -41,9 +41,9 @@ function EmptyState({
           {icon}
         </div>
       ) : null}
-      <p className="text-sm font-medium">{title}</p>
+      <p className="text-body font-semibold">{title}</p>
       {description ? (
-        <p className="max-w-prose text-sm text-muted-foreground">{description}</p>
+        <p className="max-w-prose text-meta text-muted-foreground">{description}</p>
       ) : null}
       {action ? <div className="mt-2 flex items-center gap-2">{action}</div> : null}
     </div>

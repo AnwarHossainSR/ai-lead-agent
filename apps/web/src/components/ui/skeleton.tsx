@@ -62,7 +62,7 @@ function TableSkeleton({
   return (
     <SkeletonRegion
       label={label}
-      className={cn("overflow-hidden rounded-xl border border-border bg-card", className)}
+      className={cn("overflow-hidden rounded-lg border border-border bg-card", className)}
     >
       <div className="flex gap-4 border-b border-border bg-muted/50 px-4 py-2.5">
         {shapeKeys(columns, "head").map((key) => (
@@ -94,7 +94,7 @@ function CardSkeleton({
   return (
     <SkeletonRegion
       label={label}
-      className={cn("space-y-3 rounded-xl border border-border bg-card p-5", className)}
+      className={cn("space-y-3 rounded-lg border border-border bg-card p-4.5", className)}
     >
       <Skeleton className="h-4 w-1/3" />
       {lineKeys.map((key, index) => (
@@ -115,7 +115,7 @@ function StatSkeleton({
   return (
     <SkeletonRegion
       label={label}
-      className={cn("space-y-3 rounded-xl border border-border bg-card p-5", className)}
+      className={cn("space-y-3 rounded-lg border border-border bg-card p-4.5", className)}
     >
       <Skeleton className="h-3 w-24" />
       <Skeleton className="h-7 w-16" />
@@ -136,7 +136,7 @@ function ChartSkeleton({
   return (
     <SkeletonRegion
       label={label}
-      className={cn("space-y-3 rounded-xl border border-border bg-card p-5", className)}
+      className={cn("space-y-3 rounded-lg border border-border bg-card p-4.5", className)}
     >
       <Skeleton className="h-3 w-32" />
       <div className="flex h-40 items-end gap-3">
